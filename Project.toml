@@ -1,0 +1,13 @@
+name = "AllocationOpt"
+uuid = "c8d4fa36-652a-4cad-a59b-8b946e6f88a6"
+authors = ["The Graph Foundation"]
+version = "0.1.0"
+
+[compat]
+julia = "1.7"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
