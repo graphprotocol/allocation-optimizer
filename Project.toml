@@ -3,6 +3,9 @@ uuid = "c8d4fa36-652a-4cad-a59b-8b946e6f88a6"
 authors = ["The Graph Foundation"]
 version = "0.1.0"
 
+[deps]
+GraphQLClient = "09d831e3-9c21-47a9-bfd8-076871817219"
+
 [compat]
 julia = "1.7"
 

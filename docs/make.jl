@@ -13,11 +13,7 @@ makedocs(;
         canonical="https://anirudh2.github.io/AllocationOpt.jl",
         assets=String[],
     ),
-    pages=[
-        "Home" => "index.md",
-    ],
+    pages=["Home" => "index.md"],
 )
 
-deploydocs(;
-    repo="github.com/anirudh2/AllocationOpt.jl",
-)
+deploydocs(; repo="github.com/anirudh2/AllocationOpt.jl")
