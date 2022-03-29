@@ -11,7 +11,7 @@ function allocations(id::String, sgraph_ids::Vector{String}, repo::Repository)
         indexer_allocations = first(filter(x -> x.id == id, repo.indexers)).allocations
     catch err
         if isa(err, BoundsError)
-            throw(UndefRefError())
+            throw(UnknownIndexerError(id))
         end
     end
     alloc = zeros(length(sgraph_ids))
@@ -21,7 +21,7 @@ function allocations(id::String, sgraph_ids::Vector{String}, repo::Repository)
             ix = first(findall(x -> x == al.id, sgraph_ids))
         catch err
             if isa(err, BoundsError)
-                throw(UndefRefError())
+                throw(UnknownSubgraphError(al.id))
             end
         end
         alloc[ix] = al.amount

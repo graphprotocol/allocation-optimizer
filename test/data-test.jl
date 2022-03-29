@@ -38,7 +38,7 @@
         ],
         [Subgraph("0x011", 10.0), Subgraph("0x010", 5.0)],
     )
-    @test_throws UndefRefError allocations("0x000", fake_repository)
+    @test_throws UnknownSubgraphError allocations("0x000", fake_repository)
 
     # Try to get allocation of indexer that doesn't exist
     fake_repository = Repository(
@@ -52,7 +52,7 @@
         ],
         [Subgraph("0x011", 10.0), Subgraph("0x010", 5.0)],
     )
-    @test_throws UndefRefError allocations("0x100", fake_repository)
+    @test_throws UnknownIndexerError allocations("0x100", fake_repository)
 
     # Allocation matrix for full repo
     fake_repository = Repository(
