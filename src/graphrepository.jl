@@ -64,7 +64,9 @@ function snapshot(;
     # Subgraphs
     if isnothing(subgraph_query)
         subgraph_query = GQLQuery(
-            Dict("orderBy" => "signalledTokens", "orderDirection" => "desc"),
+            Dict(
+                "first" => 1000, "orderBy" => "signalledTokens", "orderDirection" => "desc"
+            ),
             ["id", "signalledTokens"],
         )
     end
@@ -74,7 +76,10 @@ function snapshot(;
     # Indexers
     if isnothing(indexer_query)
         indexer_query = GQLQuery(
-            Dict("where" => Dict("stakedTokens_gte" => "100000000000000000000000")),
+            Dict(
+                "first" => 1000,
+                "where" => Dict("stakedTokens_gte" => "100000000000000000000000"),
+            ),
             [
                 "id",
                 "delegatedTokens",

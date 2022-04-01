@@ -27,6 +27,7 @@ function optimize(optimize_id::String, repository::Repository, whitelist, blackl
     end
     whitelist_with_indexer = vcat(other_indexers, whitelist)
 
+    ids = map(x -> x.id, repository.indexers)
     indexer = first(filter(x -> x.id == optimize_id, repository.indexers))
     σ = indexer.stake + indexer.delegation
     filtered_repo = whitelist_repo(whitelist_with_indexer, repository)
@@ -39,5 +40,5 @@ function optimize(optimize_id::String, repository::Repository, whitelist, blackl
 
     # TODO: Hope's gas algorithm
 
-    return alloc
+    return alloc, filtered_repo
 end

@@ -12,14 +12,15 @@
     )
     @test_throws ArgumentError optimize("0x000", fake_repository, ("0x010",), ("0x010",))
 
-    allocations = optimize("0x000", fake_repository, nothing, nothing)
+    allocations, _ = optimize("0x000", fake_repository, nothing, nothing)
+    println(allocations)
     @test isapprox(allocations["0x010"], 4.2; atol=0.1)
     @test isapprox(allocations["0x011"], 0.8; atol=0.1)
 
-    allocations = optimize("0x000", fake_repository, nothing, ["0x010"])
+    allocations, _ = optimize("0x000", fake_repository, nothing, ["0x010"])
     @test allocations["0x011"] ≈ 5.0
 
-    allocations = optimize("0x000", fake_repository, ["0x010"], nothing)
+    allocations, _ = optimize("0x000", fake_repository, ["0x010"], nothing)
     @test allocations["0x010"] ≈ 5.0
 
     fake_repository = Repository(
@@ -33,7 +34,7 @@
         ],
         [Subgraph("0x010", 1.0), Subgraph("0x011", 5.0)],
     )
-    allocations = optimize("0x000", fake_repository, nothing, nothing)
+    allocations, _ = optimize("0x000", fake_repository, nothing, nothing)
     @test allocations["0x010"] ≈ 0.0
     @test allocations["0x011"] ≈ 2.0
 end
