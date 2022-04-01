@@ -67,7 +67,7 @@
         [Subgraph("0x011", 10.0), Subgraph("0x010", 5.0)],
     )
     alloc_vec = allocations(fake_repository)
-    @test [[2.5, 2.5], [8.0, 2.0]] == alloc_vec
+    @test [2.5 2.5; 8.0 2.0] == alloc_vec
 
     # Signals for subgraphs
     ψ = signals(fake_repository)

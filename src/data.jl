@@ -33,7 +33,8 @@ end
 function allocations(repo::Repository)
     sgraph_ids = map(x -> x.id, repo.subgraphs)
     alloc = map(x -> allocations(x.id, sgraph_ids, repo), repo.indexers)
-    return alloc
+    mat = reduce(vcat, transpose.(alloc))
+    return mat
 end
 
 function signals(repo::Repository)
@@ -42,4 +43,25 @@ end
 
 function stakes(repo::Repository)
     return map(x -> x.stake + x.delegation, repo.indexers)
+end
+
+function whitelist_repo(ids::Vector{String}, repo::Repository)
+    updated_indexers = filter(x -> x.id in ids, repo.indexers)
+    updated_subgraphs = filter(x -> x.id in ids, repo.subgraphs)
+    updated_allocations = map(
+        x -> filter(y -> y.id in ids, x.allocations), updated_indexers
+    )
+
+    new_indexers = map(
+        (x, y) -> Indexer(x.id, x.delegation, x.stake, y),
+        updated_indexers,
+        updated_allocations,
+    )
+
+    return Repository(new_indexers, updated_subgraphs)
+end
+
+function blacklist_to_whitelist(ids::Vector{String}, data)
+    all_ids = map(x -> x.id, data)
+    return filter(x -> !(x in ids), all_ids)
 end

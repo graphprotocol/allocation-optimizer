@@ -5,6 +5,7 @@ version = "0.1.0"
 
 [deps]
 GraphQLClient = "09d831e3-9c21-47a9-bfd8-076871817219"
+Roots = "f2b01f46-fcfa-551c-844a-d8ac1e96c665"
 
 [compat]
 julia = "1.7"
