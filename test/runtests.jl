@@ -5,4 +5,5 @@ using Test
     include("graphrepository-test.jl")
     include("data-test.jl")
     include("optimize-test.jl")
+    include("allocationopt-test.jl")
 end

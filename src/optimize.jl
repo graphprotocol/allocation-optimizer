@@ -38,7 +38,5 @@ function optimize(optimize_id::String, repository::Repository, whitelist, blackl
     sgraph_ids = map(x -> x.id, filtered_repo.subgraphs)
     alloc = Dict(sgraph_ids .=> ω)
 
-    # TODO: Hope's gas algorithm
-
     return alloc, filtered_repo
 end
