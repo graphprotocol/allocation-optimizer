@@ -16,13 +16,9 @@ function allocations(id::String, sgraph_ids::Vector{String}, repo::Repository)
     end
     alloc = zeros(length(sgraph_ids))
     for al in indexer_allocations
-        ix = nothing
-        try
-            ix = first(findall(x -> x == al.id, sgraph_ids))
-        catch err
-            if isa(err, BoundsError)
-                throw(UnknownSubgraphError(al.id))
-            end
+        ix = findfirst(x -> x == al.id, sgraph_ids)
+        if (isnothing(ix))
+            throw(UnknownSubgraphError(al.id))
         end
         alloc[ix] = al.amount
     end
@@ -37,8 +33,20 @@ function allocations(repo::Repository)
     return mat
 end
 
+function allocations(repo::Repository, subg_id::String)
+    allocAmount = 0
+    for indexer in repo.indexers
+        allocAmount += first(filter(alloc -> alloc.id == subg_id, first(filter(x -> x.id == indexer.id, repo.indexers)).allocations)).amount
+    end
+    return allocAmount
+end
+
 function signals(repo::Repository)
     return map(x -> x.signal, repo.subgraphs)
+end
+
+function signals(repo::Repository, subg_id::String)
+    return repo.subgraphs[findfirst(x -> x.id == subg_id, repo.subgraphs)].signal
 end
 
 function stakes(repo::Repository)
