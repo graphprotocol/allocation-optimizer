@@ -1,4 +1,4 @@
-export allocations, signals, stakes
+export allocations, signals, stakes, indexer
 
 function allocations(id::String, repo::Repository)
     sgraph_ids = map(x -> x.id, repo.subgraphs)
@@ -73,3 +73,7 @@ function blacklist_to_whitelist(ids::Vector{String}, data)
     all_ids = map(x -> x.id, data)
     return filter(x -> !(x in ids), all_ids)
 end
+
+indexer(id::String, repository::Repository) = first(filter(x -> x.id == id, repository.indexers))
+
+subgraph_allocations(repo::Repository) = dropdims(sum(allocations(repo); dims=1); dims=1)
