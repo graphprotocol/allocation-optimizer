@@ -1,4 +1,4 @@
-@testset "data" begin
+@testset "data.jl" begin
     fake_repository = Repository(
         [
             Indexer(
