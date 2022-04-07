@@ -1,5 +1,12 @@
 # Changelog
 
+# [1.1.0](https://github.com/graphprotocol/AllocationOpt.jl/compare/v1.0.1...v1.1.0) (2022-04-07)
+
+
+### Features
+
+* Return DataFrame instead of write CSV ([b3ecd14](https://github.com/graphprotocol/AllocationOpt.jl/commit/b3ecd149f98bb5b8579c23edbbfa2d440873a43e))
+
 ## [1.0.1](https://github.com/graphprotocol/AllocationOpt.jl/compare/v1.0.0...v1.0.1) (2022-04-06)
 
 
