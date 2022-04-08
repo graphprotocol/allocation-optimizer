@@ -2,20 +2,22 @@ using Roots
 
 export optimize
 
-function optimize(optimize_id::String, repository::Repository, gas::Float64, whitelist, blacklist)
+function optimize(optimize_id::String, repository::Repository, gas::Float64, network::Network, alloc_lifetime::Int, whitelist, blacklist)
     # Base case
     alloc, frepo = optimize(optimize_id, repository, whitelist, blacklist)
-    profit = estimated_profit(frepo, alloc, gas)
+    profit = estimated_profit(frepo, alloc, gas, network, alloc_lifetime)
+
+    println("maximum profit without gas: $(profit)\n")
 
     # preset parameters
-    allocation_min_thresholds::Vector{Float64} = map(x -> gas * x, 1:50)
+    allocation_min_thresholds::Vector{Float64} = map(x -> 1000000.0 + gas * x * 1000, 1:10)
 
     # Filter whitelist, reducing the number of subgraphs
     for threshold in allocation_min_thresholds
         whitelist = filter(x -> alloc[x] > threshold, map(x -> x.id, frepo.subgraphs))
         if !isempty(whitelist)
             talloc, tfrepo = optimize(optimize_id, repository, whitelist, nothing)
-            tprofit = estimated_profit(tfrepo, talloc, gas)
+            tprofit = estimated_profit(tfrepo, talloc, gas, network, alloc_lifetime)
             if tprofit >= profit
                 alloc = talloc
                 frepo = tfrepo
@@ -62,6 +64,8 @@ function optimize(optimize_id::String, repository::Repository, whitelist, blackl
     # Output as a dict mapping subgraph ids to allocations
     sgraph_ids = map(x -> x.id, filtered_repo.subgraphs)
     alloc = Dict(sgraph_ids .=> ω)
+
+    @assert (sum(values(alloc)) <= σ + 1)
 
     return alloc, filtered_repo
 end

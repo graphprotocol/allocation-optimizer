@@ -1,6 +1,6 @@
 using GraphQLClient
 
-export Allocation, Indexer, Subgraph, GQLQuery, Repository, snapshot
+export Allocation, Indexer, Subgraph, Network, GQLQuery, Repository, snapshot, network_issuance
 
 function togrt(x)::Float64
     return parse(Float64, x) / 1e18
@@ -54,6 +54,19 @@ struct Repository
     subgraphs::Vector{Subgraph}
 end
 
+struct Network
+    id::String
+    principle_supply::Float64
+    issuance_rate_per_block::Float64
+    block_per_epoch::Int
+    total_tokens_signalled::Float64
+
+    Network(id, principle_supply::String, issuance_rate_per_block::String, block_per_epoch::Int, total_tokens_signalled::String) = 
+        new(id, togrt(principle_supply), togrt(issuance_rate_per_block), block_per_epoch, togrt(total_tokens_signalled))
+    Network(id, principle_supply::Float64, issuance_rate_per_block::Float64, block_per_epoch::Int, total_tokens_signalled::Float64) = 
+        new(id, principle_supply, issuance_rate_per_block, block_per_epoch, total_tokens_signalled)
+end
+
 function snapshot(;
     url::String,
     indexer_query::Union{Nothing,GQLQuery},
@@ -97,4 +110,23 @@ function snapshot(;
     # Make repository
     repository = Repository(indexers, subgraphs)
     return repository
+end
+
+function network_issuance(;
+    url::String,
+    network_id::Union{Nothing,Int},
+    network_query::Union{Nothing,GQLQuery},
+)
+    client = Client(url)
+
+    if isnothing(network_query)
+        network_query =  GQLQuery(
+            Dict(
+                "id" => isnothing(network_id) ? 1 : network_id,
+            ),
+            ["id", "totalSupply", "networkGRTIssuance", "epochLength", "totalTokensSignalled"]
+        )
+    end
+    network_data = query(client, "graphNetwork"; query_args=network_query.args, output_fields=network_query.fields).data["graphNetwork"]
+    Network(network_data["id"], network_data["totalSupply"], network_data["networkGRTIssuance"], network_data["epochLength"], network_data["totalTokensSignalled"])
 end

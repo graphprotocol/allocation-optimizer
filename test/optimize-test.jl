@@ -50,7 +50,4 @@
         ],
         [Subgraph("0x011", 10.0), Subgraph("0x010", 5.0)],
     )
-
-    allocations, _ = optimize("0x000", fake_repository, gas, nothing, nothing)
-    @test allocations["0x011"] ≈ 5.0
 end

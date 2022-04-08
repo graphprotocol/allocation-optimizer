@@ -49,6 +49,11 @@ function signals(repo::Repository, subg_id::String)
     return repo.subgraphs[findfirst(x -> x.id == subg_id, repo.subgraphs)].signal
 end
 
+function signal_shares(repo::Repository, network::Network)
+    total_signalled = network.total_tokens_signalled
+    return map(x -> x.signal / total_signalled, repo.subgraphs)
+end
+
 function stakes(repo::Repository)
     return map(x -> x.stake + x.delegation, repo.indexers)
 end
