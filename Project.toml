@@ -13,7 +13,7 @@ Roots = "f2b01f46-fcfa-551c-844a-d8ac1e96c665"
 DataFrames = "1"
 GraphQLClient = "0.7"
 Revise = "3"
-Roots = "1"
+Roots = "1, 2"
 julia = "1.7"
 
 [extras]
