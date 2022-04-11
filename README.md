@@ -57,7 +57,7 @@ julia> using AllocationOpt
 ```
 8. Call the `optimize_indexer` function with the relevant arguments.
 ```julia-repl
-julia> optimize_indexer("0x001", 2.0, whitelist=nothing, blacklist=["0x010", "0x011"])
+julia> optimize_indexer("0x001", 200.0, alloc_lifetime=14, whitelist=nothing, blacklist=["0x010", "0x011"])
 ```
 The allocations will be returned as a `DataFrame`.
 
@@ -67,6 +67,7 @@ The allocations will be returned as a `DataFrame`.
 ```julia
 id::String  # The id of the indexer to optimise
 grtgas::Float64  # The gas cost in GRT
+alloc_lifetime::Int64  # How long you're planning to index in days
 whitelist::Union{nothing, Vector{String}}  # A list of subgraph ids to which you want to be able to allocate to. Must be `nothing` if `blacklist` is specified.
 blacklist::Union{nothing, Vector{String}}  # A list of subgraph ids to which you don't want to be able to allocate to. Must be `nothing` if `whitelist` is specified.
 ```
