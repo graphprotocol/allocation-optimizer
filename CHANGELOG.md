@@ -1,5 +1,12 @@
 # Changelog
 
+# [1.2.0](https://github.com/graphprotocol/AllocationOpt.jl/compare/v1.1.0...v1.2.0) (2022-04-11)
+
+
+### Features
+
+* Rewards scaled to allocation lifetime and GRT ([6e692bf](https://github.com/graphprotocol/AllocationOpt.jl/commit/6e692bf187ac3c460be3af86b7d3985dcb635ed5))
+
 # [1.1.0](https://github.com/graphprotocol/AllocationOpt.jl/compare/v1.0.1...v1.1.0) (2022-04-07)
 
 
