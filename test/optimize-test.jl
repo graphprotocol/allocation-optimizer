@@ -36,10 +36,4 @@
     allocations, _ = optimize("0x000", fake_repository, nothing, nothing)
     @test allocations["0x010"] ≈ 0.0
     @test allocations["0x011"] ≈ 2.0
-
-    # Test incorporating gas fees, 
-    alloc_df = optimize_indexer(;id="0xc60d0c8c74b5d3a33ed51c007ebae682490de261", 
-                                grtgas=200.0, alloc_lifetime=14, whitelist=nothing, blacklist=nothing)
-
-    # println(alloc_df)
 end
