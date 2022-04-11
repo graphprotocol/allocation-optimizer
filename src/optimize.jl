@@ -7,7 +7,7 @@ function optimize(optimize_id::String, repository::Repository, gas::Float64, net
     alloc, frepo = optimize(optimize_id, repository, whitelist, blacklist)
     profit = estimated_profit(frepo, alloc, gas, network, alloc_lifetime)
 
-    println("maximum profit without gas: $(profit)\n")
+    # println("maximum profit without gas: $(profit)\n")
 
     # preset parameters
     allocation_min_thresholds::Vector{Float64} = map(x -> 1000000.0 + gas * x * 1000, 1:10)
