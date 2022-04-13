@@ -1,7 +1,7 @@
 name = "AllocationOpt"
 uuid = "c8d4fa36-652a-4cad-a59b-8b946e6f88a6"
 authors = ["The Graph Foundation"]
-version = "1.1.0"
+version = "1.2.0"
 
 [deps]
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
@@ -13,7 +13,7 @@ Roots = "f2b01f46-fcfa-551c-844a-d8ac1e96c665"
 DataFrames = "1"
 GraphQLClient = "0.7"
 Revise = "3"
-Roots = "1"
+Roots = "1, 2"
 julia = "1.7"
 
 [extras]

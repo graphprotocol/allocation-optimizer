@@ -10,6 +10,19 @@ include("data.jl")
 include("costbenefit.jl")
 include("optimize.jl")
 
+"""
+    optimize_indexer(;id::String, grtgas::Float64, alloc_lifetime::Int64, whitelist::Union{Nothing,Vector{string}}, blacklist::Union{Nothing,Vector{String}})
+
+Optimize the indexer specified by `id`.
+
+# White/Blacklisting
+
+You can either specify `whitelist`, `blacklist`, or neither (setting both to `nothing`). You cannot set both to be non-nothing.
+
+# Return Value
+
+The optimizer will return a Julia DataFrame.
+"""
 function optimize_indexer(;
     id::String,
     grtgas::Float64,

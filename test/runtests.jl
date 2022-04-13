@@ -6,4 +6,5 @@ using Test
     include("data-test.jl")
     include("costbenefit-test.jl")
     include("optimize-test.jl")
+    include("test-e2e.jl")
 end
