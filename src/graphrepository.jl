@@ -14,9 +14,10 @@ end
 struct Allocation
     id::String
     amount::Float64
+    created_at_epoch::Int64
 
-    Allocation(id, amount::String) = new(id, togrt(amount))
-    Allocation(id, amount::Float64) = new(id, amount)
+    Allocation(id, amount::String, created_at_epoch) = new(id, togrt(amount), created_at_epoch)
+    Allocation(id, amount::Float64, created_at_epoch) = new(id, amount, created_at_epoch)
 end
 
 struct Indexer
@@ -31,7 +32,7 @@ struct Indexer
             togrt(delegation),
             togrt(stake),
             map(
-                x -> Allocation(x["subgraphDeployment"]["id"], x["allocatedTokens"]),
+                x -> Allocation(x["subgraphDeployment"]["id"], x["allocatedTokens"], x["createdAtEpoch"]),
                 allocation,
             ),
         )
@@ -60,11 +61,12 @@ struct Network
     issuance_rate_per_block::Float64
     block_per_epoch::Int
     total_tokens_signalled::Float64
+    current_epoch::Int
 
-    Network(id, principle_supply::String, issuance_rate_per_block::String, block_per_epoch::Int, total_tokens_signalled::String) = 
-        new(id, togrt(principle_supply), togrt(issuance_rate_per_block), block_per_epoch, togrt(total_tokens_signalled))
-    Network(id, principle_supply::Float64, issuance_rate_per_block::Float64, block_per_epoch::Int, total_tokens_signalled::Float64) = 
-        new(id, principle_supply, issuance_rate_per_block, block_per_epoch, total_tokens_signalled)
+    Network(id, principle_supply::String, issuance_rate_per_block::String, block_per_epoch::Int, total_tokens_signalled::String, current_epoch::Int) = 
+        new(id, togrt(principle_supply), togrt(issuance_rate_per_block), block_per_epoch, togrt(total_tokens_signalled), current_epoch)
+    Network(id, principle_supply::Float64, issuance_rate_per_block::Float64, block_per_epoch::Int, total_tokens_signalled::Float64, current_epoch::Int) = 
+        new(id, principle_supply, issuance_rate_per_block, block_per_epoch, total_tokens_signalled, current_epoch)
 end
 
 function snapshot(;
@@ -97,7 +99,7 @@ function snapshot(;
                 "id",
                 "delegatedTokens",
                 "stakedTokens",
-                "allocations(where: {status:\"Active\"}){allocatedTokens,subgraphDeployment{id}}",
+                "allocations(where: {status:\"Active\"}){allocatedTokens,createdAtEpoch,subgraphDeployment{id}}",
             ],
         )
     end
@@ -124,9 +126,9 @@ function network_issuance(;
             Dict(
                 "id" => isnothing(network_id) ? 1 : network_id,
             ),
-            ["id", "totalSupply", "networkGRTIssuance", "epochLength", "totalTokensSignalled"]
+            ["id", "totalSupply", "networkGRTIssuance", "epochLength", "totalTokensSignalled", "currentEpoch"]
         )
     end
     network_data = query(client, "graphNetwork"; query_args=network_query.args, output_fields=network_query.fields).data["graphNetwork"]
-    Network(network_data["id"], network_data["totalSupply"], network_data["networkGRTIssuance"], network_data["epochLength"], network_data["totalTokensSignalled"])
+    Network(network_data["id"], network_data["totalSupply"], network_data["networkGRTIssuance"], network_data["epochLength"], network_data["totalTokensSignalled"], network_data["currentEpoch"])
 end

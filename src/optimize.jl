@@ -5,19 +5,17 @@ export optimize
 function optimize(optimize_id::String, repository::Repository, gas::Float64, network::Network, alloc_lifetime::Int, whitelist, blacklist)
     # Base case
     alloc, frepo = optimize(optimize_id, repository, whitelist, blacklist)
-    profit = estimated_profit(frepo, alloc, gas, network, alloc_lifetime)
-
-    # println("maximum profit without gas: $(profit)\n")
+    profit = sum(values(estimated_profit(frepo, alloc, gas, network, alloc_lifetime)))
 
     # preset parameters
-    allocation_min_thresholds::Vector{Float64} = map(x -> 1000000.0 + gas * x * 1000, 1:10)
+    allocation_min_thresholds::Vector{Float64} = map(x -> 100000 + gas * x * 10000, 1:10)
 
     # Filter whitelist, reducing the number of subgraphs
     for threshold in allocation_min_thresholds
         whitelist = filter(x -> alloc[x] > threshold, map(x -> x.id, frepo.subgraphs))
         if !isempty(whitelist)
             talloc, tfrepo = optimize(optimize_id, repository, whitelist, nothing)
-            tprofit = estimated_profit(tfrepo, talloc, gas, network, alloc_lifetime)
+            tprofit = sum(values(estimated_profit(tfrepo, talloc, gas, network, alloc_lifetime)))
             if tprofit >= profit
                 alloc = talloc
                 frepo = tfrepo

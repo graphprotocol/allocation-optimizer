@@ -1,4 +1,4 @@
-export allocations, signals, stakes, indexer
+export allocations, signals, stakes, indexer, filter_young_allocations, allocations_by_indexer
 
 function allocations(id::String, repo::Repository)
     sgraph_ids = map(x -> x.id, repo.subgraphs)
@@ -33,12 +33,35 @@ function allocations(repo::Repository)
     return mat
 end
 
+function allocations(repo::Repository, subg_ids::Vector{String})
+    map(subg_id -> allocations(repo, subg_id), subg_ids)
+end
+
 function allocations(repo::Repository, subg_id::String)
     allocAmount = 0
     for indexer in repo.indexers
-        allocAmount += first(filter(alloc -> alloc.id == subg_id, first(filter(x -> x.id == indexer.id, repo.indexers)).allocations)).amount
+        allos = filter(alloc -> alloc.id == subg_id, allocations_by_indexer(indexer.id, repo))
+        allocAmount += sum(map(x -> x.amount, allos))
     end
     return allocAmount
+end
+
+function allocations_by_indexer(id::String, repo::Repository)
+    try
+        return first(filter(x -> x.id == id, repo.indexers)).allocations
+    catch err
+        if isa(err, BoundsError)
+            throw(UnknownIndexerError(id))
+        end
+    end
+end
+
+function filter_young_allocations(id::String, repo::Repository, allocLiftime::Int, network::Network)
+    allocs_by_indexer = allocations_by_indexer(id, repo)
+    
+    young_allocations = filter(ix -> ix.created_at_epoch + allocLiftime > network.current_epoch, allocs_by_indexer)
+    
+    return map(x -> x.id, young_allocations)
 end
 
 function signals(repo::Repository)
@@ -52,6 +75,12 @@ end
 function signal_shares(repo::Repository, network::Network)
     total_signalled = network.total_tokens_signalled
     return map(x -> x.signal / total_signalled, repo.subgraphs)
+end
+
+function signal_shares(repo::Repository, network::Network, alloc_list::Dict{String, Float64})
+    total_signalled = network.total_tokens_signalled
+    ids = collect(keys(alloc_list))
+    return map(x -> x.signal / total_signalled, filter(x-> x.id in ids, repo.subgraphs))
 end
 
 function stakes(repo::Repository)
@@ -82,3 +111,5 @@ end
 indexer(id::String, repository::Repository) = first(filter(x -> x.id == id, repository.indexers))
 
 subgraph_allocations(repo::Repository) = dropdims(sum(allocations(repo); dims=1); dims=1)
+
+subgraph_allocations(repo::Repository, alloc_list::Vector{String}) = allocations(repo, alloc_list)
