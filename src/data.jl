@@ -56,6 +56,22 @@ function allocations_by_indexer(id::String, repo::Repository)
     end
 end
 
+function allocations(id::String, repo::Repository, sgraph_id::String)
+    indexer_allocations = nothing
+    try
+        indexer_allocations = first(filter(x -> x.id == id, repo.indexers)).allocations
+    catch err
+        if isa(err, BoundsError)
+            throw(UnknownIndexerError(id))
+        end
+    end
+    alloc = first(filter(x -> x.id == sgraph_id, indexer_allocations))
+    if (isnothing(alloc))
+        throw(UnknownSubgraphError(alloc))
+    end
+    return alloc
+end
+
 function filter_young_allocations(id::String, repo::Repository, allocLiftime::Int, network::Network)
     allocs_by_indexer = allocations_by_indexer(id, repo)
     

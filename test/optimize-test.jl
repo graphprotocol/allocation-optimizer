@@ -39,8 +39,8 @@
 
     # Test incorporating gas fees, 
     alloc_df = optimize_indexer(;id="0x6125ea331851367716bee301ecde7f38a7e429e7", 
-                                grtgas=200.0, alloc_lifetime=14, whitelist=nothing, blacklist=nothing, alloc_lifetime_threshold=20)
+                                grtgas=200.0, alloc_lifetime=14, whitelist=nothing, blacklist=nothing, alloc_lifetime_threshold=20, preference_threshold=1.00)
 
-    # println(alloc_df)
+    println(alloc_df)
     @test true
 end

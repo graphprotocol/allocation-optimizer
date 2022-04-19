@@ -63,6 +63,7 @@ function optimize(optimize_id::String, repository::Repository, whitelist, blackl
     sgraph_ids = map(x -> x.id, filtered_repo.subgraphs)
     alloc = Dict(sgraph_ids .=> ω)
 
+    # Check the constraint as a test (+1 due to small rounding error
     @assert (sum(values(alloc)) <= σ + 1)
 
     return alloc, filtered_repo

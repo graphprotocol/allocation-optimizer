@@ -56,6 +56,7 @@ function optimize_indexer(;
     whitelist::Union{Nothing,Vector{String}},
     blacklist::Union{Nothing,Vector{String}},
     alloc_lifetime_threshold::Int64,
+    preference_threshold::Float64,
 )
     if (alloc_lifetime_threshold <= 0)
         optimize_indexer(; id, grtgas, alloc_lifetime, whitelist, blacklist)
@@ -84,8 +85,8 @@ function optimize_indexer(;
     #         number of allocations: $(length(filter(a -> a > 0.0, collect(values(alloc)))))
     #         indexer_subgraph_rewards: $(sum(indexer_subgraph_rewards(filtered, network, alloc, alloc_lifetime)))
     #         indicator_gas_fee: $(sum(indicator_gas_fee(alloc, grtgas)))
-    #         compare_rewards: $(compare_rewards(id, filtered, repository, network, alloc, alloc_lifetime, grtgas))
-    #         """)
+    #         compare_rewards: $(compare_rewards(id, filtered, repository, network, alloc, alloc_lifetime, grtgas, preference_threshold))
+    #          """)
 
     df = DataFrame(
         "Subgraph ID" => collect(keys(alloc)), "Allocation in GRT" => collect(values(alloc))
@@ -93,7 +94,7 @@ function optimize_indexer(;
     df[!, "Subgraph Signal"] = map(x -> x.signal, filtered.subgraphs)
     df[!, "Subgraph Indexing Reward"] = subgraph_rewards(filtered, network, alloc_lifetime)
     df[!, "Estimated Profit"] = estimated_profit(filtered, alloc, grtgas, network, alloc_lifetime)
-    df[!, "Surplus if renew"] = compare_rewards(id, filtered, repository, network, alloc, alloc_lifetime, grtgas)
+    df[!, "Surplus if renew"] = compare_rewards(id, filtered, repository, network, alloc, alloc_lifetime, grtgas, preference_threshold)
 
     return df
 end
