@@ -10,7 +10,7 @@
         ],
         [Subgraph("0x011", 10.0), Subgraph("0x010", 5.0)],
     )
-    alloc_vec = allocations("0x001", fake_repository)
+    alloc_vec = allocation_amounts("0x001", fake_repository)
     @test [8.0, 2.0] == alloc_vec
 
     # Indexer has no allocations
@@ -23,7 +23,7 @@
         ],
         [Subgraph("0x011", 10.0), Subgraph("0x010", 5.0)],
     )
-    alloc_vec = allocations("0x000", fake_repository)
+    alloc_vec = allocation_amounts("0x000", fake_repository)
     @test [0.0, 0.0] == alloc_vec
 
     # Indexer has allocation that doesn't correspond to a valid subgraph
@@ -38,7 +38,7 @@
         ],
         [Subgraph("0x011", 10.0), Subgraph("0x010", 5.0)],
     )
-    @test_throws UnknownSubgraphError allocations("0x000", fake_repository)
+    @test_throws UnknownSubgraphError allocation_amounts("0x000", fake_repository)
 
     # Try to get allocation of indexer that doesn't exist
     fake_repository = Repository(
@@ -52,7 +52,7 @@
         ],
         [Subgraph("0x011", 10.0), Subgraph("0x010", 5.0)],
     )
-    @test_throws UnknownIndexerError allocations("0x100", fake_repository)
+    @test_throws UnknownIndexerError allocation_amounts("0x100", fake_repository)
 
     # Allocation matrix for full repo
     fake_repository = Repository(
@@ -66,7 +66,7 @@
         ],
         [Subgraph("0x011", 10.0), Subgraph("0x010", 5.0)],
     )
-    alloc_vec = allocations(fake_repository)
+    alloc_vec = allocation_amounts(fake_repository)
     @test [2.5 2.5; 8.0 2.0] == alloc_vec
 
     # Signals for subgraphs

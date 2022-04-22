@@ -1,19 +1,23 @@
-export allocations, signals, stakes, indexer, filter_young_allocations, allocations_by_indexer
+export allocation_amounts, signals, stakes, indexer, filter_young_allocations, allocations_by_indexer
 
-function allocations(id::String, repo::Repository)
-    sgraph_ids = map(x -> x.id, repo.subgraphs)
-    return allocations(id, sgraph_ids, repo)
-end
 
-function allocations(id::String, sgraph_ids::Vector{String}, repo::Repository)
-    indexer_allocations = nothing
+function allocations_by_indexer(id::String, repo::Repository)
     try
-        indexer_allocations = first(filter(x -> x.id == id, repo.indexers)).allocations
+        return first(filter(x -> x.id == id, repo.indexers)).allocations
     catch err
         if isa(err, BoundsError)
             throw(UnknownIndexerError(id))
         end
     end
+end
+
+function allocation_amounts(id::String, repo::Repository)
+    sgraph_ids = map(x -> x.id, repo.subgraphs)
+    return allocation_amounts(id, sgraph_ids, repo)
+end
+
+function allocation_amounts(id::String, sgraph_ids::Vector{String}, repo::Repository)
+    indexer_allocations = allocations_by_indexer(id, repo)
     alloc = zeros(length(sgraph_ids))
     for al in indexer_allocations
         ix = findfirst(x -> x == al.id, sgraph_ids)
@@ -26,18 +30,18 @@ function allocations(id::String, sgraph_ids::Vector{String}, repo::Repository)
     return alloc
 end
 
-function allocations(repo::Repository)
+function allocation_amounts(repo::Repository)
     sgraph_ids = map(x -> x.id, repo.subgraphs)
-    alloc = map(x -> allocations(x.id, sgraph_ids, repo), repo.indexers)
+    alloc = map(x -> allocation_amounts(x.id, sgraph_ids, repo), repo.indexers)
     mat = reduce(vcat, transpose.(alloc))
     return mat
 end
 
-function allocations(repo::Repository, subg_ids::Vector{String})
-    map(subg_id -> allocations(repo, subg_id), subg_ids)
+function allocation_amounts(repo::Repository, subg_ids::Vector{String})
+    map(subg_id -> allocation_amounts(repo, subg_id), subg_ids)
 end
 
-function allocations(repo::Repository, subg_id::String)
+function allocation_amounts(repo::Repository, subg_id::String)
     allocAmount = 0
     for indexer in repo.indexers
         allos = filter(alloc -> alloc.id == subg_id, allocations_by_indexer(indexer.id, repo))
@@ -46,31 +50,15 @@ function allocations(repo::Repository, subg_id::String)
     return allocAmount
 end
 
-function allocations_by_indexer(id::String, repo::Repository)
-    try
-        return first(filter(x -> x.id == id, repo.indexers)).allocations
-    catch err
-        if isa(err, BoundsError)
-            throw(UnknownIndexerError(id))
-        end
-    end
-end
-
-function allocations(id::String, repo::Repository, sgraph_id::String)
-    indexer_allocations = nothing
-    try
-        indexer_allocations = first(filter(x -> x.id == id, repo.indexers)).allocations
-    catch err
-        if isa(err, BoundsError)
-            throw(UnknownIndexerError(id))
-        end
-    end
+function allocation_amounts(id::String, repo::Repository, sgraph_id::String)
+    indexer_allocations = allocations_by_indexer(id, repo)
     alloc = first(filter(x -> x.id == sgraph_id, indexer_allocations))
     if (isnothing(alloc))
         throw(UnknownSubgraphError(alloc))
     end
     return alloc
 end
+
 
 function filter_young_allocations(id::String, repo::Repository, allocLiftime::Int, network::Network)
     allocs_by_indexer = allocations_by_indexer(id, repo)
@@ -96,6 +84,12 @@ end
 function signal_shares(repo::Repository, network::Network, alloc_list::Dict{String, Float64})
     total_signalled = network.total_tokens_signalled
     ids = collect(keys(alloc_list))
+    return map(x -> x.signal / total_signalled, filter(x-> x.id in ids, repo.subgraphs))
+end
+
+function signal_shares(repo::Repository, network::Network, alloc_list::Vector{Allocation})
+    total_signalled = network.total_tokens_signalled
+    ids = map(a -> a.id, alloc_list)
     return map(x -> x.signal / total_signalled, filter(x-> x.id in ids, repo.subgraphs))
 end
 
@@ -126,6 +120,6 @@ end
 
 indexer(id::String, repository::Repository) = first(filter(x -> x.id == id, repository.indexers))
 
-subgraph_allocations(repo::Repository) = dropdims(sum(allocations(repo); dims=1); dims=1)
+subgraph_allocations(repo::Repository) = dropdims(sum(allocation_amounts(repo); dims=1); dims=1)
 
-subgraph_allocations(repo::Repository, alloc_list::Vector{String}) = allocations(repo, alloc_list)
+subgraph_allocations(repo::Repository, alloc_list::Vector{String}) = allocation_amounts(repo, alloc_list)

@@ -76,26 +76,32 @@ function optimize_indexer(;
     end
 
     alloc, filtered = optimize(id, repository, grtgas, network, alloc_lifetime, whitelist, blacklist)
+    alloc_list = filter(a -> a.amount != 0, map(alloc_id -> Allocation(alloc_id, alloc[alloc_id], network.current_epoch), collect(keys(alloc))))
+    actions = create_actions(id, filtered, repository, network, alloc_list, alloc_lifetime, grtgas, preference_threshold)
 
+    # if there are close actions, the optimized result should be updated - run optimizer again here as we put subgraphs to close into blacklist
+    blacklist = append!(map(action -> action.id, actions[1]), blacklist)
+
+    # run a second time for the updated blacklist
+    alloc, filtered = optimize(id, repository, grtgas, network, alloc_lifetime, whitelist, blacklist)
+    alloc_list = filter(a -> a.amount != 0, map(alloc_id -> Allocation(alloc_id, alloc[alloc_id], network.current_epoch), collect(keys(alloc))))
+    actions = create_actions(id, filtered, repository, network, alloc_list, alloc_lifetime, grtgas, preference_threshold)
+   
     # println("""- brief summary -
-    #         indexer: $(indexer.id)
-    #         available_stake: $(indexer.stake + indexer.delegation)
-    #         use gas in grt: $(grtgas) 
-    #         use allocation lifetime: $(alloc_lifetime)
-    #         number of allocations: $(length(filter(a -> a > 0.0, collect(values(alloc)))))
+    #         indexer: $(indexer.id) , available_stake: $(indexer.stake + indexer.delegation)
+    #         use gas in grt: $(grtgas) , use allocation lifetime: $(alloc_lifetime), number of allocations: $(length(filter(a -> a > 0.0, collect(values(alloc)))))
     #         indexer_subgraph_rewards: $(sum(indexer_subgraph_rewards(filtered, network, alloc, alloc_lifetime)))
-    #         indicator_gas_fee: $(sum(indicator_gas_fee(alloc, grtgas)))
-    #         compare_rewards: $(compare_rewards(id, filtered, repository, network, alloc, alloc_lifetime, grtgas, preference_threshold))
-    #          """)
+    #         actions: $(actions)
+    #         """)
 
     df = DataFrame(
-        "Subgraph ID" => collect(keys(alloc)), "Allocation in GRT" => collect(values(alloc))
+        "Subgraph ID" => map(a -> a.id, alloc_list), "Allocation in GRT" => map(a -> a.amount, alloc_list)
     )
     df[!, "Subgraph Signal"] = map(x -> x.signal, filtered.subgraphs)
     df[!, "Subgraph Indexing Reward"] = subgraph_rewards(filtered, network, alloc_lifetime)
-    df[!, "Estimated Profit"] = estimated_profit(filtered, alloc, grtgas, network, alloc_lifetime)
-    df[!, "Surplus if renew"] = compare_rewards(id, filtered, repository, network, alloc, alloc_lifetime, grtgas, preference_threshold)
-
+    df[!, "Estimated Profit"] = estimated_profit(filtered, alloc_list, grtgas, network, alloc_lifetime)
+    # add rows for close actions. Currently only have Open or Reallocate
+    df[!, "Action"] = map(a -> a in actions[2] ? "Open" : "Reallocate" , alloc_list)
     return df
 end
 end

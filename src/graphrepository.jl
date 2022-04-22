@@ -15,6 +15,8 @@ struct Allocation
     id::String
     amount::Float64
     created_at_epoch::Int64
+    #TODO: each allocation could have their own lifetime in indexer management rules
+    # lifetime_limit::Int64
 
     Allocation(id, amount::String, created_at_epoch) = new(id, togrt(amount), created_at_epoch)
     Allocation(id, amount::Float64, created_at_epoch) = new(id, amount, created_at_epoch)
