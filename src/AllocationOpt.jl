@@ -1,5 +1,6 @@
 module AllocationOpt
 using DataFrames
+using Formatting
 
 export optimize_indexer
 
@@ -25,8 +26,6 @@ The optimizer will return a Julia DataFrame.
 """
 function optimize_indexer(;
     id::String,
-    grtgas::Float64,
-    alloc_lifetime::Int64,
     whitelist::Union{Nothing,Vector{String}},
     blacklist::Union{Nothing,Vector{String}},
 )
@@ -34,7 +33,7 @@ function optimize_indexer(;
     repository = snapshot(; url=url, indexer_query=nothing, subgraph_query=nothing)
     network = network_issuance(; url=url, network_id=nothing, network_query=nothing)
 
-    alloc, filtered = optimize(id, repository, grtgas, network, alloc_lifetime, whitelist, blacklist)
+    alloc, filtered = optimize(id, repository, whitelist, blacklist)
 
     df = DataFrame(
         "Subgraph ID" => collect(keys(alloc)), "Allocation in GRT" => collect(values(alloc))
@@ -62,46 +61,50 @@ function optimize_indexer(;
         optimize_indexer(; id, grtgas, alloc_lifetime, whitelist, blacklist)
     end
 
+    # Fetch data
     url = "https://api.thegraph.com/subgraphs/name/graphprotocol/graph-network-mainnet"
     repository = snapshot(; url=url, indexer_query=nothing, subgraph_query=nothing)
     network = network_issuance(; url=url, network_id=nothing, network_query=nothing)
     indexer::Indexer = repository.indexers[findfirst(x -> x.id == id, repository.indexers)]
 
+    # Do not consider any allocations younger than alloc_lifetime_threshold 
     young_list = filter_young_allocations(id, repository, alloc_lifetime_threshold, network)
-
     if isnothing(blacklist)
         blacklist = young_list
     else
-        append!(blacklist, young_list)
+        blacklist = append!(blacklist, young_list)
     end
 
-    alloc, filtered = optimize(id, repository, grtgas, network, alloc_lifetime, whitelist, blacklist)
+    # Optimize and create summary
+    alloc, filtered = optimize(id, repository, grtgas, network, alloc_lifetime, preference_threshold, whitelist, blacklist)
     alloc_list = filter(a -> a.amount != 0, map(alloc_id -> Allocation(alloc_id, alloc[alloc_id], network.current_epoch), collect(keys(alloc))))
-    actions = create_actions(id, filtered, repository, network, alloc_list, alloc_lifetime, grtgas, preference_threshold)
-
-    # if there are close actions, the optimized result should be updated - run optimizer again here as we put subgraphs to close into blacklist
-    blacklist = append!(map(action -> action.id, actions[1]), blacklist)
-
-    # run a second time for the updated blacklist
-    alloc, filtered = optimize(id, repository, grtgas, network, alloc_lifetime, whitelist, blacklist)
-    alloc_list = filter(a -> a.amount != 0, map(alloc_id -> Allocation(alloc_id, alloc[alloc_id], network.current_epoch), collect(keys(alloc))))
-    actions = create_actions(id, filtered, repository, network, alloc_list, alloc_lifetime, grtgas, preference_threshold)
-   
-    # println("""- brief summary -
-    #         indexer: $(indexer.id) , available_stake: $(indexer.stake + indexer.delegation)
-    #         use gas in grt: $(grtgas) , use allocation lifetime: $(alloc_lifetime), number of allocations: $(length(filter(a -> a > 0.0, collect(values(alloc)))))
-    #         indexer_subgraph_rewards: $(sum(indexer_subgraph_rewards(filtered, network, alloc, alloc_lifetime)))
-    #         actions: $(actions)
-    #         """)
+    actions = create_actions(id, filtered, repository, network, alloc_list, alloc_lifetime, grtgas, preference_threshold, young_list)
 
     df = DataFrame(
         "Subgraph ID" => map(a -> a.id, alloc_list), "Allocation in GRT" => map(a -> a.amount, alloc_list)
     )
-    df[!, "Subgraph Signal"] = map(x -> x.signal, filtered.subgraphs)
-    df[!, "Subgraph Indexing Reward"] = subgraph_rewards(filtered, network, alloc_lifetime)
-    df[!, "Estimated Profit"] = estimated_profit(filtered, alloc_list, grtgas, network, alloc_lifetime)
-    # add rows for close actions. Currently only have Open or Reallocate
-    df[!, "Action"] = map(a -> a in actions[2] ? "Open" : "Reallocate" , alloc_list)
+    df[!, "Subgraph Signal"] = map(x -> x.signal, filter(sg -> sg.id in map(a->a.id,alloc_list), filtered.subgraphs))
+    df[!, "Indexing Reward"] = indexer_subgraph_rewards(filtered, network, alloc_list, alloc_lifetime)
+    # Add alloc rows for close actions? Currently only have allocations that want to Open or Reallocate
+    df[!, "Action"] = map(a -> a in actions[2] ? "Open" : (a in actions[3] ? "Reallocate" : "Do not open") , alloc_list)
+
+    # print_summary(indexer, df, alloc_list, actions[1], alloc_lifetime)
+        
     return df
 end
+
+function print_summary(indexer, df, alloc_list, close_actions, alloc_lifetime)
+    println("""- brief summary -
+            indexer: $(indexer.id) , available_stake: $(indexer.stake + indexer.delegation)
+            use allocation lifetime: $(alloc_lifetime), number of allocations: $(length(alloc_list))
+            dataframe: $(df)
+            """)
+    for a in alloc_list
+        println("graph indexer rules set $(a.id) decisionBasis always allocationLifetime $(alloc_lifetime) allocationAmount $(format(a.amount))")
+    end
+    for a in close_actions
+        println("graph indexer rules stop ", a.id)
+    end
+end
+
 end

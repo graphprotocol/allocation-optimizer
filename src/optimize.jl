@@ -2,21 +2,23 @@ using Roots
 
 export optimize
 
-function optimize(optimize_id::String, repository::Repository, gas::Float64, network::Network, alloc_lifetime::Int, whitelist, blacklist)
+function optimize(optimize_id::String, repository::Repository, gas::Float64, network::Network, alloc_lifetime::Int64, preference_threshold::Float64, whitelist, blacklist)
     # Base case
     alloc, frepo = optimize(optimize_id, repository, whitelist, blacklist)
-    profit = sum(values(estimated_profit(frepo, alloc, gas, network, alloc_lifetime)))
 
-    # preset parameters
-    allocation_min_thresholds::Vector{Float64} = map(x -> 100000 + gas * x * 10000, 1:10)
-
+    # Create threshold based on suggested optimization without gas
+    allocation_min_thresholds::Vector{Float64} = sort!(unique(values(alloc)))
+    
     # Filter whitelist, reducing the number of subgraphs
+    profit = 0.0
     for threshold in allocation_min_thresholds
         whitelist = filter(x -> alloc[x] > threshold, map(x -> x.id, frepo.subgraphs))
         if !isempty(whitelist)
             talloc, tfrepo = optimize(optimize_id, repository, whitelist, nothing)
             tprofit = sum(values(estimated_profit(tfrepo, talloc, gas, network, alloc_lifetime)))
             if tprofit >= profit
+                if tprofit > profit
+                end
                 alloc = talloc
                 frepo = tfrepo
                 profit = tprofit
@@ -24,7 +26,14 @@ function optimize(optimize_id::String, repository::Repository, gas::Float64, net
         end
     end
 
-    return alloc, frepo
+    # Create vector of allocations that should be created this epoch
+    alloc_list = filter(a -> a.amount != 0, map(alloc_id -> Allocation(alloc_id, alloc[alloc_id], network.current_epoch), collect(keys(alloc))))
+    actions = create_actions(optimize_id, frepo, repository, network, alloc_list, alloc_lifetime, gas, preference_threshold, blacklist)
+
+    # Excluding actions that are deemed to close, do final optimization
+    whitelist =  map(x -> x.id, actions[2] ∪ actions[3])
+   
+    return optimize(optimize_id, repository, whitelist, nothing)
 end
 
 function optimize(optimize_id::String, repository::Repository, whitelist, blacklist)
@@ -64,7 +73,7 @@ function optimize(optimize_id::String, repository::Repository, whitelist, blackl
     alloc = Dict(sgraph_ids .=> ω)
 
     # Check the constraint as a test (+1 due to small rounding error
-    @assert (sum(values(alloc)) <= σ + 1)
+    @assert (sum(values(alloc)) >= σ - 1 && (sum(values(alloc)) <= σ + 1))
 
     return alloc, filtered_repo
 end

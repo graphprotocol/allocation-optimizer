@@ -38,9 +38,9 @@
     @test allocs["0x011"] ≈ 2.0
 
     # Test incorporating gas fees, 
-    alloc_df = optimize_indexer(;id="0xc60d0c8c74b5d3a33ed51c007ebae682490de261", 
-                                grtgas=200.0, alloc_lifetime=14, whitelist=nothing, blacklist=nothing, alloc_lifetime_threshold=20, preference_threshold=1.00)
+    alloc_df = optimize_indexer(;id="0xa959b5afe73c6faa803541b5c4edc0492dfda294", 
+                                grtgas=500.0, alloc_lifetime=14, whitelist=nothing, blacklist=nothing, alloc_lifetime_threshold=20, preference_threshold=1.00)
 
     # println(alloc_df)
-    @test true
+    # @test true
 end

@@ -34,7 +34,7 @@ struct Indexer
             togrt(delegation),
             togrt(stake),
             map(
-                x -> Allocation(x["subgraphDeployment"]["id"], x["allocatedTokens"], x["createdAtEpoch"]),
+                x -> Allocation(x["subgraphDeployment"]["ipfsHash"], x["allocatedTokens"], x["createdAtEpoch"]),
                 allocation,
             ),
         )
@@ -82,13 +82,14 @@ function snapshot(;
     if isnothing(subgraph_query)
         subgraph_query = GQLQuery(
             Dict(
-                "first" => 1000, "orderBy" => "signalledTokens", "orderDirection" => "desc"
+                "first" => 1000, "orderBy" => "signalledTokens", "orderDirection" => "desc",
+                "where" => Dict("signalledTokens_gte" => "1000000000000000000000"),
             ),
-            ["id", "signalledTokens"],
+            ["ipfsHash", "signalledTokens"],
         )
     end
     subgraphs_data = query(client, "subgraphDeployments"; query_args=subgraph_query.args, output_fields=subgraph_query.fields).data["subgraphDeployments"]
-    subgraphs = map(x -> Subgraph(x["id"], x["signalledTokens"]), subgraphs_data)
+    subgraphs = map(x -> Subgraph(x["ipfsHash"], x["signalledTokens"]), subgraphs_data)
 
     # Indexers
     if isnothing(indexer_query)
@@ -101,7 +102,7 @@ function snapshot(;
                 "id",
                 "delegatedTokens",
                 "stakedTokens",
-                "allocations(where: {status:\"Active\"}){allocatedTokens,createdAtEpoch,subgraphDeployment{id}}",
+                "allocations(where: {status:\"Active\"}){allocatedTokens,createdAtEpoch,subgraphDeployment{ipfsHash}}",
             ],
         )
     end

@@ -44,6 +44,7 @@ function indicator_gas_fee(allocs::Vector{Allocation}, gas)
     calculate_gas_fee(allocs, gas) + calculate_gas_fee(allocs, gas) + calculate_gas_fee(allocs, claim_gas)
 end
 
+#TODO: prefer to use Vector{Allocation} over dictionaries, clean up format
 function estimated_profit(repo::Repository, allocs::Vector{Allocation}, gas::Float64, network::Network, alloc_lifetime::Int)
     return indexer_subgraph_rewards(repo, network, allocs, alloc_lifetime) - indicator_gas_fee(allocs, gas)
 end
@@ -52,7 +53,7 @@ function estimated_profit(repo::Repository, allocs::Dict{String, Float64}, gas::
     return indexer_subgraph_rewards(repo, network, allocs, alloc_lifetime) - indicator_gas_fee(allocs, gas)
 end
 
-# daily issuance
+# Daily issuance of the network
 function issued_token(network::Network)
     network.principle_supply * network.issuance_rate_per_block ^ network.block_per_epoch - network.principle_supply
 end
@@ -97,6 +98,7 @@ function does_exist(alloc_id::String, existing_allocations_in_plan)
     findfirst(y -> y.id == alloc_id, existing_allocations_in_plan)
 end
 
+# For existing allocations, take the rest of its lifetime and estimate rewards without gas
 function compare_rewards(indexer_id::String, filtered_repo::Repository, current_repo::Repository, network::Network, alloc_list::Vector{Allocation}, alloc_lifetime::Int, gas::Float64, preference_threshold::Float64)
     new_allocation_ids = map(a -> a.id, filter(a -> (a.id in map(a -> a.id, allocations_by_indexer(indexer_id, current_repo))), alloc_list))
 
@@ -108,7 +110,7 @@ function compare_rewards(indexer_id::String, filtered_repo::Repository, current_
                 a.id, 
                 allocation_amounts(indexer_id, current_repo, a.id).amount, 
                 (a.created_at_epoch + alloc_lifetime - network.current_epoch)
-            ))
+            ) - gas * 1.5)
     ), alloc_list)
 
     plan_estimated_profit = estimated_profit(filtered_repo, alloc_list, gas, network, alloc_lifetime)
@@ -116,22 +118,23 @@ function compare_rewards(indexer_id::String, filtered_repo::Repository, current_
     return plan_estimated_profit - reward_without_reallocate
 end
 
-function create_actions(indexer_id::String, filtered_repo::Repository, current_repo::Repository, network::Network, alloc_list::Vector{Allocation}, alloc_lifetime::Int, gas::Float64, preference_threshold::Float64)
+function create_actions(indexer_id::String, filtered_repo::Repository, current_repo::Repository, network::Network, alloc_list::Vector{Allocation}, alloc_lifetime::Int, gas::Float64, preference_threshold::Float64, young_allocation_ids::Union{Nothing,Vector{String}})
     # Identify allocations that need to be closed, reallocated, opened
     alloc_current = allocations_by_indexer(indexer_id, current_repo)
-    alloc_id_in_plan = map(a->a.id, alloc_list)
     alloc_id_current = map(a->a.id, alloc_current)
 
-    # Close the ones in indexer's current repo but not in alloc_list at all
-    close_actions::Vector{Allocation} = filter(a -> !(a.id in alloc_id_in_plan), alloc_current)
-    # Open the ones in indexer's alloc_list not in current repo at all
-    open_actions::Vector{Allocation} = filter(a -> !(a.id in alloc_id_current), alloc_list)
-
-    comparison = compare_rewards(indexer_id, filtered_repo, current_repo, network, alloc_list, alloc_lifetime, gas, preference_threshold)
-    indicators = allocation_indicator(comparison)
-
-    realloc_actions = map(i -> alloc_list[i], findall(isone, indicators))
-    close_actions = append!(map(i -> alloc_list[i], findall(iszero, indicators)), close_actions)
+    # Reallocate current allocations if compared rewards is positive
+    indicators = allocation_indicator(compare_rewards(indexer_id, filtered_repo, current_repo, network, alloc_list, alloc_lifetime, gas, preference_threshold))
+    worthy_allocations = map(i -> alloc_list[i], findall(isone, indicators))
+    worthy_allocation_ids = map(i -> i.id, worthy_allocations)
+    realloc_actions::Vector{Allocation} = filter(a -> a.id in alloc_id_current , worthy_allocations)
+    # Close current allocations in indexer's current repo that are not in alloc_list and make sure unworthy allocations cannot open, filtering out younger allocations
+    do_not_close_ids = isnothing(young_allocation_ids) ? worthy_allocation_ids : (young_allocation_ids ∪ worthy_allocation_ids)
+    close_actions::Vector{Allocation} = filter(a -> !(a.id in do_not_close_ids), alloc_current)
     
+    # Open the ones worthy not in current repo
+    open_actions::Vector{Allocation} = filter(a -> !(a.id in alloc_id_current) , worthy_allocations)
+
+    @assert length(close_actions ∩ open_actions ∩ realloc_actions) == 0
     return (close_actions, open_actions, realloc_actions)
 end

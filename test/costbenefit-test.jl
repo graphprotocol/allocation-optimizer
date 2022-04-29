@@ -42,7 +42,7 @@
     @test indexing_reward ≈ estimated_prof
 
     # After getting optimize to run correctly, check against trivial allocation above and compare_rewards
-    optimized_alloc_list, optimized_filterd_repo = optimize("1x001", fake_repository, gas, network, alloc_lifetime, nothing, nothing)
+    optimized_alloc_list, optimized_filterd_repo = optimize("1x001", fake_repository, gas, network, alloc_lifetime, preference, nothing, nothing)
     # add one for optimized_alloc_list = Dict("0x011" => 3.7132034355964256, "0x010" => 6.2867965644035735)
 
     # Whatever the original allocations are, the optimized solution should be at least as much
@@ -54,19 +54,17 @@
     @test sum(compared) >= 0
 
     # test create actions with different time in the network
-    actions = create_actions("1x001", optimized_filterd_repo, fake_repository, network, allocs_list, alloc_lifetime, gas, 1.0)
+    actions = create_actions("1x001", optimized_filterd_repo, fake_repository, network, allocs_list, alloc_lifetime, gas, 1.0, nothing)
     @test length(actions[3]) == 2
-    actions_2 = create_actions("1x001", optimized_filterd_repo, fake_repository, Network("1", 100.0, 1.0001, 15, 15.0, 0), allocs_list, alloc_lifetime, gas, 1.0)
-    @test length(actions_2[1]) == 2
-    actions_3 = create_actions("1x001", optimized_filterd_repo, fake_repository, Network("1", 100.0, 1.0001, 15, 15.0, 2), allocs_list, alloc_lifetime, gas, 1.0)
-    @test length(actions_3[1]) == 1 && length(actions_3[2]) == 0 && length(actions_3[3]) == 1
+    actions_2 = create_actions("1x001", optimized_filterd_repo, fake_repository, Network("1", 100.0, 1.0001, 15, 15.0, 0), allocs_list, alloc_lifetime, gas, 1.0, nothing)
+    @test length(actions_2[1]) == 1 && length(actions_2[3]) == 1
 
     # Test for the other player
-    optimized_alloc_list_2, optimized_filterd_repo_2 = optimize("1x000", fake_repository, gas, network, alloc_lifetime, nothing, nothing)
+    optimized_alloc_list_2, optimized_filterd_repo_2 = optimize("1x000", fake_repository, gas, network, alloc_lifetime, preference, nothing, nothing)
     alloc_list_2 = map(a -> Allocation(a, optimized_alloc_list_2[a], network.current_epoch), collect(keys(optimized_alloc_list_2)))
     compared = compare_rewards("1x000", optimized_filterd_repo_2, fake_repository, network, alloc_list_2, alloc_lifetime, gas, 1.0)
-    actions_2_1 = create_actions("1x000", optimized_filterd_repo_2, fake_repository, network, alloc_list_2, alloc_lifetime, gas, 1.0)
-    @test length(actions_2_1[1]) == 2
+    actions_3 = create_actions("1x000", optimized_filterd_repo_2, fake_repository, network, alloc_list_2, alloc_lifetime, gas, 1.0, nothing)
+    @test length(actions_3[1]) == 1
 
     # Test gas calculations
     gas = 0.1

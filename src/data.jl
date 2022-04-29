@@ -93,6 +93,11 @@ function signal_shares(repo::Repository, network::Network, alloc_list::Vector{Al
     return map(x -> x.signal / total_signalled, filter(x-> x.id in ids, repo.subgraphs))
 end
 
+function stakes(repo::Repository, indexer_id::String)
+    indexer = repo.indexers[findfirst(x -> x.id == indexer_id, repo.indexers)]
+    return indexer.stake + indexer.delegation
+end
+
 function stakes(repo::Repository)
     return map(x -> x.stake + x.delegation, repo.indexers)
 end
