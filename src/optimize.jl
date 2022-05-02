@@ -2,23 +2,32 @@ using Roots
 
 export optimize
 
-function optimize(optimize_id::String, repository::Repository, gas::Float64, network::Network, alloc_lifetime::Int64, preference_threshold::Float64, whitelist, blacklist)
+function optimize(
+    optimize_id::String,
+    repository::Repository,
+    gas::Float64,
+    network::GraphNetworkParameters,
+    alloc_lifetime::Int64,
+    preference_ratio::Float64,
+    whitelist,
+    blacklist,
+)
     # Base case
     alloc, frepo = optimize(optimize_id, repository, whitelist, blacklist)
 
     # Create threshold based on suggested optimization without gas
     allocation_min_thresholds::Vector{Float64} = sort!(unique(values(alloc)))
-    
+
     # Filter whitelist, reducing the number of subgraphs
     profit = 0.0
     for threshold in allocation_min_thresholds
         whitelist = filter(x -> alloc[x] > threshold, map(x -> x.id, frepo.subgraphs))
         if !isempty(whitelist)
             talloc, tfrepo = optimize(optimize_id, repository, whitelist, nothing)
-            tprofit = sum(values(estimated_profit(tfrepo, talloc, gas, network, alloc_lifetime)))
+            tprofit = sum(
+                values(estimated_profit(tfrepo, talloc, gas, network, alloc_lifetime))
+            )
             if tprofit >= profit
-                if tprofit > profit
-                end
                 alloc = talloc
                 frepo = tfrepo
                 profit = tprofit
@@ -27,17 +36,32 @@ function optimize(optimize_id::String, repository::Repository, gas::Float64, net
     end
 
     # Create vector of allocations that should be created this epoch
-    alloc_list = filter(a -> a.amount != 0, map(alloc_id -> Allocation(alloc_id, alloc[alloc_id], network.current_epoch), collect(keys(alloc))))
-    actions = create_actions(optimize_id, frepo, repository, network, alloc_list, alloc_lifetime, gas, preference_threshold, blacklist)
+    alloc_list = filter(
+        a -> a.amount != 0,
+        map(
+            alloc_id -> Allocation(alloc_id, alloc[alloc_id], network.current_epoch),
+            collect(keys(alloc)),
+        ),
+    )
+    actions = create_actions(
+        optimize_id,
+        frepo,
+        repository,
+        network,
+        alloc_list,
+        alloc_lifetime,
+        gas,
+        preference_ratio,
+        blacklist,
+    )
 
-    # Excluding actions that are deemed to close, do final optimization
-    whitelist =  map(x -> x.id, actions[2] ∪ actions[3])
-   
+    # Excluding actions that are deemed to close, do final optimization (actions[2] is open, actions[3] is reallocate)
+    whitelist = map(x -> x.id, actions[2] ∪ actions[3])
+
     return optimize(optimize_id, repository, whitelist, nothing)
 end
 
 function optimize(optimize_id::String, repository::Repository, whitelist, blacklist)
-
     function solve_dual(Ω, ψ, σ)
         lower_bound = 1e-25
         upper_bound = (sum(.√(ψ .* Ω)))^2 / σ

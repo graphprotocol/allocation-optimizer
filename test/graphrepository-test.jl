@@ -3,6 +3,5 @@
     # repository = snapshot(url=url, indexer_query=nothing, subgraph_query=nothing)
     # network = network_issuance(url=url, network_id=nothing, network_query=nothing)
 
-    
     # @test true
 end

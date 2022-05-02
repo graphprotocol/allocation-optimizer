@@ -7,6 +7,7 @@ version = "1.2.0"
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 Formatting = "59287772-0a20-5a39-b81b-1366585eb4c0"
 GraphQLClient = "09d831e3-9c21-47a9-bfd8-076871817219"
+JuliaFormatter = "98e50ef6-434e-11e9-1051-2b60c6c9e899"
 Revise = "295af30f-e4ad-537b-8983-00126c2a3abe"
 Roots = "f2b01f46-fcfa-551c-844a-d8ac1e96c665"
 

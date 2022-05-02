@@ -1,5 +1,5 @@
-export allocation_amounts, signals, stakes, indexer, filter_young_allocations, allocations_by_indexer
-
+export allocation_amounts,
+    signals, stakes, indexer, filter_young_allocations, allocations_by_indexer
 
 function allocations_by_indexer(id::String, repo::Repository)
     try
@@ -38,13 +38,15 @@ function allocation_amounts(repo::Repository)
 end
 
 function allocation_amounts(repo::Repository, subg_ids::Vector{String})
-    map(subg_id -> allocation_amounts(repo, subg_id), subg_ids)
+    return map(subg_id -> allocation_amounts(repo, subg_id), subg_ids)
 end
 
 function allocation_amounts(repo::Repository, subg_id::String)
     allocAmount = 0
     for indexer in repo.indexers
-        allos = filter(alloc -> alloc.id == subg_id, allocations_by_indexer(indexer.id, repo))
+        allos = filter(
+            alloc -> alloc.id == subg_id, allocations_by_indexer(indexer.id, repo)
+        )
         allocAmount += sum(map(x -> x.amount, allos))
     end
     return allocAmount
@@ -59,12 +61,15 @@ function allocation_amounts(id::String, repo::Repository, sgraph_id::String)
     return alloc
 end
 
-
-function filter_young_allocations(id::String, repo::Repository, allocLiftime::Int, network::Network)
+function filter_young_allocations(
+    id::String, repo::Repository, allocLiftime::Int, network::GraphNetworkParameters
+)
     allocs_by_indexer = allocations_by_indexer(id, repo)
-    
-    young_allocations = filter(ix -> ix.created_at_epoch + allocLiftime > network.current_epoch, allocs_by_indexer)
-    
+
+    young_allocations = filter(
+        ix -> ix.created_at_epoch + allocLiftime > network.current_epoch, allocs_by_indexer
+    )
+
     return map(x -> x.id, young_allocations)
 end
 
@@ -76,21 +81,21 @@ function signals(repo::Repository, subg_id::String)
     return repo.subgraphs[findfirst(x -> x.id == subg_id, repo.subgraphs)].signal
 end
 
-function signal_shares(repo::Repository, network::Network)
+function signal_shares(repo::Repository, network::GraphNetworkParameters)
     total_signalled = network.total_tokens_signalled
     return map(x -> x.signal / total_signalled, repo.subgraphs)
 end
 
-function signal_shares(repo::Repository, network::Network, alloc_list::Dict{String, Float64})
+function signal_shares(repo::Repository, network::GraphNetworkParameters, alloc_list::Dict{String,Float64})
     total_signalled = network.total_tokens_signalled
     ids = collect(keys(alloc_list))
-    return map(x -> x.signal / total_signalled, filter(x-> x.id in ids, repo.subgraphs))
+    return map(x -> x.signal / total_signalled, filter(x -> x.id in ids, repo.subgraphs))
 end
 
-function signal_shares(repo::Repository, network::Network, alloc_list::Vector{Allocation})
+function signal_shares(repo::Repository, network::GraphNetworkParameters, alloc_list::Vector{Allocation})
     total_signalled = network.total_tokens_signalled
     ids = map(a -> a.id, alloc_list)
-    return map(x -> x.signal / total_signalled, filter(x-> x.id in ids, repo.subgraphs))
+    return map(x -> x.signal / total_signalled, filter(x -> x.id in ids, repo.subgraphs))
 end
 
 function stakes(repo::Repository, indexer_id::String)
@@ -123,8 +128,14 @@ function blacklist_to_whitelist(ids::Vector{String}, data)
     return filter(x -> !(x in ids), all_ids)
 end
 
-indexer(id::String, repository::Repository) = first(filter(x -> x.id == id, repository.indexers))
+function indexer(id::String, repository::Repository)
+    return first(filter(x -> x.id == id, repository.indexers))
+end
 
-subgraph_allocations(repo::Repository) = dropdims(sum(allocation_amounts(repo); dims=1); dims=1)
+function subgraph_allocations(repo::Repository)
+    return dropdims(sum(allocation_amounts(repo); dims=1); dims=1)
+end
 
-subgraph_allocations(repo::Repository, alloc_list::Vector{String}) = allocation_amounts(repo, alloc_list)
+function subgraph_allocations(repo::Repository, alloc_list::Vector{String})
+    return allocation_amounts(repo, alloc_list)
+end

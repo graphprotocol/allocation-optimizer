@@ -2,10 +2,16 @@
     fake_repository = Repository(
         [
             Indexer(
-                "0x000", 5.0, 0.0, [Allocation("0x010", 2.5, 14), Allocation("0x011", 2.5, 14)]
+                "0x000",
+                5.0,
+                0.0,
+                [Allocation("0x010", 2.5, 14), Allocation("0x011", 2.5, 14)],
             ),
             Indexer(
-                "0x001", 10.0, 0.0, [Allocation("0x010", 2.0, 14), Allocation("0x011", 8.0, 14)]
+                "0x001",
+                10.0,
+                0.0,
+                [Allocation("0x010", 2.0, 14), Allocation("0x011", 8.0, 14)],
             ),
         ],
         [Subgraph("0x011", 10.0), Subgraph("0x010", 5.0)],
@@ -18,7 +24,10 @@
         [
             Indexer("0x000", 5.0, 0.0, []),
             Indexer(
-                "0x001", 10.0, 0.0, [Allocation("0x010", 2.0, 14), Allocation("0x011", 8.0, 14)]
+                "0x001",
+                10.0,
+                0.0,
+                [Allocation("0x010", 2.0, 14), Allocation("0x011", 8.0, 14)],
             ),
         ],
         [Subgraph("0x011", 10.0), Subgraph("0x010", 5.0)],
@@ -30,10 +39,16 @@
     fake_repository = Repository(
         [
             Indexer(
-                "0x000", 5.0, 0.0, [Allocation("0x110", 2.5, 14), Allocation("0x011", 2.5, 14)]
+                "0x000",
+                5.0,
+                0.0,
+                [Allocation("0x110", 2.5, 14), Allocation("0x011", 2.5, 14)],
             ),
             Indexer(
-                "0x001", 10.0, 0.0, [Allocation("0x010", 2.0, 14), Allocation("0x011", 8.0, 14)]
+                "0x001",
+                10.0,
+                0.0,
+                [Allocation("0x010", 2.0, 14), Allocation("0x011", 8.0, 14)],
             ),
         ],
         [Subgraph("0x011", 10.0), Subgraph("0x010", 5.0)],
@@ -44,10 +59,16 @@
     fake_repository = Repository(
         [
             Indexer(
-                "0x000", 5.0, 0.0, [Allocation("0x010", 2.5, 14), Allocation("0x011", 2.5, 14)]
+                "0x000",
+                5.0,
+                0.0,
+                [Allocation("0x010", 2.5, 14), Allocation("0x011", 2.5, 14)],
             ),
             Indexer(
-                "0x001", 10.0, 0.0, [Allocation("0x010", 2.0, 14), Allocation("0x011", 8.0, 14)]
+                "0x001",
+                10.0,
+                0.0,
+                [Allocation("0x010", 2.0, 14), Allocation("0x011", 8.0, 14)],
             ),
         ],
         [Subgraph("0x011", 10.0), Subgraph("0x010", 5.0)],
@@ -58,10 +79,16 @@
     fake_repository = Repository(
         [
             Indexer(
-                "0x000", 5.0, 0.0, [Allocation("0x010", 2.5, 14), Allocation("0x011", 2.5, 14)]
+                "0x000",
+                5.0,
+                0.0,
+                [Allocation("0x010", 2.5, 14), Allocation("0x011", 2.5, 14)],
             ),
             Indexer(
-                "0x001", 10.0, 0.0, [Allocation("0x010", 2.0, 14), Allocation("0x011", 8.0, 14)]
+                "0x001",
+                10.0,
+                0.0,
+                [Allocation("0x010", 2.0, 14), Allocation("0x011", 8.0, 14)],
             ),
         ],
         [Subgraph("0x011", 10.0), Subgraph("0x010", 5.0)],
@@ -81,10 +108,16 @@
     fake_repository = Repository(
         [
             Indexer(
-                "0x000", 5.0, 7.0, [Allocation("0x010", 2.5, 14), Allocation("0x011", 2.5, 14)]
+                "0x000",
+                5.0,
+                7.0,
+                [Allocation("0x010", 2.5, 14), Allocation("0x011", 2.5, 14)],
             ),
             Indexer(
-                "0x001", 10.0, 2.0, [Allocation("0x010", 2.0, 14), Allocation("0x011", 8.0, 14)]
+                "0x001",
+                10.0,
+                2.0,
+                [Allocation("0x010", 2.0, 14), Allocation("0x011", 8.0, 14)],
             ),
         ],
         [Subgraph("0x011", 10.0), Subgraph("0x010", 5.0)],
