@@ -143,7 +143,7 @@ function indexer_subgraph_rewards(
 )
     ω_i = map(a -> a.amount, alloc_list)
     Ω = ω_i + subgraph_allocations(repo, map(a -> a.id, alloc_list))  # Does not include optimised indexer
-    ans = replace!(
+    ans = replace(
         ((subgraph_rewards(repo, network, alloc_lifetime, alloc_list) .* ω_i) ./ Ω),
         NaN => 0.0,
     )

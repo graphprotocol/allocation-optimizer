@@ -80,12 +80,8 @@ function optimize_indexer(;
     indexer::Indexer = repository.indexers[findfirst(x -> x.id == id, repository.indexers)]
 
     # Do not consider any allocations younger than alloc_lifetime_threshold 
-    young_list = filter_young_allocations(id, repository, alloc_lifetime_threshold, network)
-    if isnothing(blacklist)
-        blacklist = young_list
-    else
-        blacklist = append!(blacklist, young_list)
-    end
+    young_list = young_allocations(id, repository, alloc_lifetime_threshold, network)
+    blacklist = isnothing(blacklist) ? young_list : vcat(blacklist, young_list)
 
     # Optimize and create summary
     alloc, filtered = optimize(
@@ -133,7 +129,7 @@ function optimize_indexer(;
         alloc_list,
     )
 
-    print_summary(indexer, df, alloc_list, actions[1], alloc_lifetime)
+    # print_summary(indexer, df, alloc_list, actions[1], alloc_lifetime)
 
     return df
 end

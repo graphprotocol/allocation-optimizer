@@ -9,14 +9,14 @@ function optimize(
     network::GraphNetworkParameters,
     alloc_lifetime::Int64,
     preference_ratio::Float64,
-    whitelist,
-    blacklist,
+    whitelist::Union{Nothing,Vector{String}},
+    blacklist::Union{Nothing,Vector{String}},
 )
     # Base case
     alloc, frepo = optimize(optimize_id, repository, whitelist, blacklist)
 
     # Create threshold based on suggested optimization without gas
-    allocation_min_thresholds::Vector{Float64} = sort!(unique(values(alloc)))
+    allocation_min_thresholds::Vector{Float64} = sort(unique(values(alloc)))
 
     # Filter whitelist, reducing the number of subgraphs
     profit = 0.0
@@ -92,12 +92,12 @@ function optimize(optimize_id::String, repository::Repository, whitelist, blackl
     v = solve_dual(Ω, ψ, σ)
     ω = solve_primal(Ω, ψ, v)
 
-    # Output as a dict mapping subgraph ids to allocations
-    sgraph_ids = map(x -> x.id, filtered_repo.subgraphs)
-    alloc = Dict(sgraph_ids .=> ω)
+   # Output as a dict mapping subgraph ids to allocations
+   sgraph_ids = map(x -> x.id, filtered_repo.subgraphs)
+   alloc = Dict(sgraph_ids .=> ω)
 
-    # Check the constraint as a test (+1 due to small rounding error
-    @assert (sum(values(alloc)) >= σ - 1 && (sum(values(alloc)) <= σ + 1))
+   # Check the constraint as a test (+1 due to small rounding error
+   @assert (sum(values(alloc)) >= σ - 1 && (sum(values(alloc)) <= σ + 1))
 
     return alloc, filtered_repo
 end

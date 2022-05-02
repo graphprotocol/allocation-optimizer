@@ -1,5 +1,5 @@
 export allocation_amounts,
-    signals, stakes, indexer, filter_young_allocations, allocations_by_indexer
+    signals, stakes, indexer, young_allocations, allocations_by_indexer
 
 function allocations_by_indexer(id::String, repo::Repository)
     try
@@ -61,13 +61,11 @@ function allocation_amounts(id::String, repo::Repository, sgraph_id::String)
     return alloc
 end
 
-function filter_young_allocations(
-    id::String, repo::Repository, allocLiftime::Int, network::GraphNetworkParameters
+function young_allocations(
+    id::String, repo::Repository, alloc_lifetime::Int, network::GraphNetworkParameters
 )
-    allocs_by_indexer = allocations_by_indexer(id, repo)
-
     young_allocations = filter(
-        ix -> ix.created_at_epoch + allocLiftime > network.current_epoch, allocs_by_indexer
+        ix -> ix.created_at_epoch + alloc_lifetime > network.current_epoch, allocations_by_indexer(id, repo)
     )
 
     return map(x -> x.id, young_allocations)
