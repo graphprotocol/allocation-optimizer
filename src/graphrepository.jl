@@ -1,7 +1,13 @@
 using GraphQLClient
 
 export Allocation,
-    Indexer, Subgraph, GraphNetworkParameters, GQLQuery, Repository, snapshot, network_issuance
+    Indexer,
+    Subgraph,
+    GraphNetworkParameters,
+    GQLQuery,
+    Repository,
+    snapshot,
+    network_issuance
 
 function togrt(x)::Float64
     return parse(Float64, x) / 1e18

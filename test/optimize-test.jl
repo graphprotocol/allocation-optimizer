@@ -52,18 +52,11 @@
     # Test incorporating gas fees, 
     alloc_df = optimize_indexer(;
         id="0x6125ea331851367716bee301ecde7f38a7e429e7",
-        grtgas=2500.0,
-        alloc_lifetime=28,
+        grtgas=500.0,
+        alloc_lifetime=14,
         whitelist=nothing,
         blacklist=nothing,
         alloc_lifetime_threshold=20,
         preference_ratio=1.00,
     )
-
-    # 'lemnis': '0xc60d0c8c74b5d3a33ed51c007ebae682490de261'
-    # 'prime1': '0x6ac85b9d834b51b14a7b0ed849bb5199e04c05c5'
-    # 'prime2': '0x6125ea331851367716bee301ecde7f38a7e429e7'
-
-    # println(alloc_df)
-    # @test true
 end

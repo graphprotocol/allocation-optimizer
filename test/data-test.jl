@@ -34,6 +34,8 @@
     )
     alloc_vec = allocation_amounts("0x000", fake_repository)
     @test [0.0, 0.0] == alloc_vec
+    @test ids(fake_repository.indexers[2]) == ["0x010", "0x011"]
+    @test ids(fake_repository.indexers[2].allocations) == ["0x010", "0x011"]
 
     # Indexer has allocation that doesn't correspond to a valid subgraph
     fake_repository = Repository(
@@ -82,13 +84,13 @@
                 "0x000",
                 5.0,
                 0.0,
-                [Allocation("0x010", 2.5, 14), Allocation("0x011", 2.5, 14)],
+                [Allocation("0x010", 2.5, 1), Allocation("0x011", 2.5, 2)],
             ),
             Indexer(
                 "0x001",
                 10.0,
                 0.0,
-                [Allocation("0x010", 2.0, 14), Allocation("0x011", 8.0, 14)],
+                [Allocation("0x010", 2.0, 4), Allocation("0x011", 8.0, 0)],
             ),
         ],
         [Subgraph("0x011", 10.0), Subgraph("0x010", 5.0)],

@@ -92,7 +92,9 @@ function issued_token(network::GraphNetworkParameters, alloc_lifetime::Int)
     ) - network.principle_supply
 end
 
-function subgraph_rewards(repo::Repository, network::GraphNetworkParameters, alloc_lifetime::Int)
+function subgraph_rewards(
+    repo::Repository, network::GraphNetworkParameters, alloc_lifetime::Int
+)
     return signal_shares(repo, network) * issued_token(network, alloc_lifetime)
 end
 
@@ -106,7 +108,10 @@ function subgraph_rewards(
 end
 
 function subgraph_rewards(
-    repo::Repository, network::GraphNetworkParameters, alloc_lifetime::Int, alloc_list::Vector{Allocation}
+    repo::Repository,
+    network::GraphNetworkParameters,
+    alloc_lifetime::Int,
+    alloc_list::Vector{Allocation},
 )
     return signal_shares(repo, network, alloc_list) * issued_token(network, alloc_lifetime)
 end
@@ -139,7 +144,10 @@ function indexer_subgraph_rewards(
 end
 
 function indexer_subgraph_rewards(
-    repo::Repository, network::GraphNetworkParameters, alloc_list::Vector{Allocation}, alloc_lifetime::Int
+    repo::Repository,
+    network::GraphNetworkParameters,
+    alloc_list::Vector{Allocation},
+    alloc_lifetime::Int,
 )
     ω_i = map(a -> a.amount, alloc_list)
     Ω = ω_i + subgraph_allocations(repo, map(a -> a.id, alloc_list))  # Does not include optimised indexer
@@ -165,28 +173,27 @@ function compare_rewards(
     gas::Float64,
     preference_ratio::Float64,
 )
-    existing_allocation_ids = map(
-        a -> a.id,
-        filter(
-            a -> (a.id in map(a -> a.id, allocations_by_indexer(indexer_id, current_repo))),
-            alloc_list,
-        ),
+    current_allocations = allocations_by_indexer(indexer_id, current_repo)
+    overlapping_allocation_ids = map(
+        a -> a.id, filter(a -> (a.id in map(a -> a.id, current_allocations)), alloc_list)
     )
 
     reward_without_reallocate = map(
         a -> (
-            if !(a.id in existing_allocation_ids)
+            if !(a.id in overlapping_allocation_ids)
                 0.0
             else
                 (
-                preference_ratio * indexer_subgraph_rewards(
-                    current_repo,
-                    network,
-                    a.id,
-                    allocation_amounts(indexer_id, current_repo, a.id).amount,
-                    (a.created_at_epoch + alloc_lifetime - network.current_epoch),
-                ) - gas * 1.5
-            )
+                    preference_ratio * indexer_subgraph_rewards(
+                        filtered_repo,
+                        network,
+                        a.id,
+                        allocation_amounts(indexer_id, current_repo, a.id).amount,
+                        current_allocations[findfirst(
+                            x -> x == a.id, overlapping_allocation_ids
+                        )].created_at_epoch + alloc_lifetime - network.current_epoch,
+                    ) - gas * 1.5
+                )
             end
         ),
         alloc_list,
@@ -215,23 +222,27 @@ function create_actions(
     alloc_id_current = map(a -> a.id, alloc_current)
 
     # Reallocate current allocations if compared rewards is positive
-    indicators = allocation_indicator(
-        compare_rewards(
-            indexer_id,
-            filtered_repo,
-            current_repo,
-            network,
-            alloc_list,
-            alloc_lifetime,
-            gas,
-            preference_ratio,
-        ),
+    compared_rewards = compare_rewards(
+        indexer_id,
+        filtered_repo,
+        current_repo,
+        network,
+        alloc_list,
+        alloc_lifetime,
+        gas,
+        preference_ratio,
     )
+    indicators = allocation_indicator(compared_rewards)
     worthy_allocations = map(i -> alloc_list[i], findall(isone, indicators))
     worthy_allocation_ids = map(i -> i.id, worthy_allocations)
     realloc_actions::Vector{Allocation} = filter(
         a -> a.id in alloc_id_current, worthy_allocations
     )
+    # Open the ones worthy not in current repo
+    open_actions::Vector{Allocation} = filter(
+        a -> !(a.id in alloc_id_current), worthy_allocations
+    )
+
     # Close current allocations in indexer's current repo that are not in alloc_list and make sure unworthy allocations cannot open, filtering out younger allocations
     do_not_close_ids = if isnothing(young_allocation_ids)
         worthy_allocation_ids
@@ -240,11 +251,6 @@ function create_actions(
     end
     close_actions::Vector{Allocation} = filter(
         a -> !(a.id in do_not_close_ids), alloc_current
-    )
-
-    # Open the ones worthy not in current repo
-    open_actions::Vector{Allocation} = filter(
-        a -> !(a.id in alloc_id_current), worthy_allocations
     )
 
     @assert length(close_actions ∩ open_actions ∩ realloc_actions) == 0

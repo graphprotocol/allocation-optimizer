@@ -1,5 +1,20 @@
-export allocation_amounts,
-    signals, stakes, indexer, young_allocations, allocations_by_indexer
+export ids,
+    allocation_amounts,
+    signals,
+    stakes,
+    indexer,
+    young_allocations,
+    allocations_by_indexer,
+    signal_shares,
+    remaining_lifetime
+
+function ids(v::Vector)
+    return map(a -> a.id, v)
+end
+
+function ids(indexer::Indexer)
+    return ids(indexer.allocations)
+end
 
 function allocations_by_indexer(id::String, repo::Repository)
     try
@@ -65,7 +80,8 @@ function young_allocations(
     id::String, repo::Repository, alloc_lifetime::Int, network::GraphNetworkParameters
 )
     young_allocations = filter(
-        ix -> ix.created_at_epoch + alloc_lifetime > network.current_epoch, allocations_by_indexer(id, repo)
+        ix -> ix.created_at_epoch + alloc_lifetime > network.current_epoch,
+        allocations_by_indexer(id, repo),
     )
 
     return map(x -> x.id, young_allocations)
@@ -84,13 +100,17 @@ function signal_shares(repo::Repository, network::GraphNetworkParameters)
     return map(x -> x.signal / total_signalled, repo.subgraphs)
 end
 
-function signal_shares(repo::Repository, network::GraphNetworkParameters, alloc_list::Dict{String,Float64})
+function signal_shares(
+    repo::Repository, network::GraphNetworkParameters, alloc_list::Dict{String,Float64}
+)
     total_signalled = network.total_tokens_signalled
     ids = collect(keys(alloc_list))
     return map(x -> x.signal / total_signalled, filter(x -> x.id in ids, repo.subgraphs))
 end
 
-function signal_shares(repo::Repository, network::GraphNetworkParameters, alloc_list::Vector{Allocation})
+function signal_shares(
+    repo::Repository, network::GraphNetworkParameters, alloc_list::Vector{Allocation}
+)
     total_signalled = network.total_tokens_signalled
     ids = map(a -> a.id, alloc_list)
     return map(x -> x.signal / total_signalled, filter(x -> x.id in ids, repo.subgraphs))

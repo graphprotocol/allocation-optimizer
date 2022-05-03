@@ -29,7 +29,6 @@ function optimize_indexer(;
     whitelist::Union{Nothing,Vector{String}},
     blacklist::Union{Nothing,Vector{String}},
 )
-    
     repository, network = snapshot()
 
     alloc, filtered = optimize(id, repository, whitelist, blacklist)
@@ -123,13 +122,31 @@ function optimize_indexer(;
     df[!, "Indexing Reward"] = indexer_subgraph_rewards(
         filtered, network, alloc_list, alloc_lifetime
     )
+    df[!, "Estimated Profit"] = estimated_profit(
+        filtered, alloc_list, grtgas, network, alloc_lifetime
+    )
+    df[!, "Marginal Profit"] = compare_rewards(
+        id,
+        filtered,
+        repository,
+        network,
+        alloc_list,
+        alloc_lifetime,
+        grtgas,
+        preference_ratio,
+    )
+
     # Add alloc rows for close actions? Currently only have allocations that want to Open or Reallocate
     df[!, "Action"] = map(
-        a -> a in actions[2] ? "Open" : (a in actions[3] ? "Reallocate" : "Do not open"),
+        a -> if a in actions[2]
+            "Open"
+        else
+            (a in actions[3] ? "Reallocate" : "Close, do not open")
+        end,
         alloc_list,
     )
 
-    # print_summary(indexer, df, alloc_list, actions[1], alloc_lifetime)
+    print_summary(indexer, df, alloc_list, actions[1], alloc_lifetime)
 
     return df
 end
