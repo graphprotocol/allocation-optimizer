@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.1](https://github.com/graphprotocol/AllocationOpt.jl/compare/v1.2.0...v1.2.1) (2022-05-03)
+
+
+### Bug Fixes
+
+* uses existing allocation created_at_epoch ([11cb9f7](https://github.com/graphprotocol/AllocationOpt.jl/commit/11cb9f7cc2cba39cf42c24b00e7512a043fa4ded))
+
 # [1.2.0](https://github.com/graphprotocol/AllocationOpt.jl/compare/v1.1.0...v1.2.0) (2022-04-11)
 
 

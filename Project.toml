@@ -1,7 +1,7 @@
 name = "AllocationOpt"
 uuid = "c8d4fa36-652a-4cad-a59b-8b946e6f88a6"
 authors = ["The Graph Foundation"]
-version = "1.2.0"
+version = "1.2.1"
 
 [deps]
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
