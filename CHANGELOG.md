@@ -1,5 +1,12 @@
 # Changelog
 
+# [1.3.0](https://github.com/graphprotocol/AllocationOpt.jl/compare/v1.2.1...v1.3.0) (2022-05-13)
+
+
+### Features
+
+* Refactor and frozenlist support ([d9ad223](https://github.com/graphprotocol/AllocationOpt.jl/commit/d9ad22389db14743c8d3952080a518006dbc554a))
+
 ## [1.2.1](https://github.com/graphprotocol/AllocationOpt.jl/compare/v1.2.0...v1.2.1) (2022-05-03)
 
 
