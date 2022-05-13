@@ -25,10 +25,10 @@ shell> cd projects/AllocationOpt.jl
 ```
 
 5. Exit *shell mode* by hitting `Backspace` and enter *Pkg mode* by pressing `]`.
-6. Precompile the project to install the necessary packages
+6. Instantiate the project to install the necessary packages
 
 ```julia-repl
-pkg> precompile
+pkg> instantiate
 ```
 
 ## Usage
@@ -57,17 +57,17 @@ julia> using AllocationOpt
 ```
 8. Call the `optimize_indexer` function with the relevant arguments.
 ```julia-repl
-julia> optimize_indexer("0x001", 200.0, alloc_lifetime=14, whitelist=nothing, blacklist=["0x010", "0x011"])
+julia> optimize_indexer("0x6ac85b9d834b51b14a7b0ed849bb5199e04c05c5", String["QmP4oSiQ7Wc4JTFk86m2JxGvR912NyBbxJnEdZawkYLTk4"], String[], String[], String[])
 ```
-The allocations will be returned as a `DataFrame`.
+The allocations will be returned as a tuple of ipfs hashs and allocation amounts in GRT.
 
 ### The `optimize_indexer` Function
 
 **Arguments:**
 ```julia
-id::String  # The id of the indexer to optimise
-grtgas::Float64  # The gas cost in GRT
-alloc_lifetime::Int64  # How long you're planning to index in days
-whitelist::Union{nothing, Vector{String}}  # A list of subgraph ids to which you want to be able to allocate to. Must be `nothing` if `blacklist` is specified.
-blacklist::Union{nothing, Vector{String}}  # A list of subgraph ids to which you don't want to be able to allocate to. Must be `nothing` if `whitelist` is specified.
+id::AbstractString  # The id of the indexer to optimise.
+whitelist::Vector{AbstractString}  # Subgraph deployment IPFS hashes included in this list will be considered for, but not guaranteed allocation.
+blacklist::Vector{AbstractString}  # Subgraph deployment IPFS hashes included in this list will not be considered, and will be suggested to close if there's an existing allocation.
+pinnedlist::Vector{AbstractString}  # Subgraph deployment IPFS hashes included in this list will be guaranteed allocation. Currently unsupported.
+frozenlist::Vector{AbstractString}  # Subgraph deployment IPFS hashes included in this list will not be considered during optimisation. Any allocations you have on these subgraphs deployments will remain.
 ```

@@ -1,172 +1,77 @@
 module AllocationOpt
-using DataFrames
-using Formatting
 
 export optimize_indexer
 
 include("exceptions.jl")
-include("graphrepository.jl")
-include("data.jl")
-include("costbenefit.jl")
-include("optimize.jl")
+include("domain.jl")
+include("query.jl")
+include("service.jl")
 
 """
-    optimize_indexer(;id::String, grtgas::Float64, alloc_lifetime::Int64, whitelist::Union{Nothing,Vector{string}}, blacklist::Union{Nothing,Vector{String}})
-
-Optimize the indexer specified by `id`.
-
-# White/Blacklisting
-
-You can either specify `whitelist`, `blacklist`, or neither (setting both to `nothing`). You cannot set both to be non-nothing.
-
-# Return Value
-
-The optimizer will return a Julia DataFrame.
-"""
-#TODO: We might remove this since it is not being used
-function optimize_indexer(;
-    id::String,
-    whitelist::Union{Nothing,Vector{String}},
-    blacklist::Union{Nothing,Vector{String}},
-)
-    repository, network = snapshot()
-
-    alloc, filtered = optimize(id, repository, whitelist, blacklist)
-
-    df = DataFrame(
-        "Subgraph ID" => collect(keys(alloc)), "Allocation in GRT" => collect(values(alloc))
-    )
-    df[!, "Subgraph Signal"] = map(x -> x.signal, filtered.subgraphs)
-    df[!, "Subgraph Indexing Reward"] = subgraph_rewards(filtered, network, alloc_lifetime)
-    df[!, "Estimated to Indexer"] = indexer_subgraph_rewards(
-        filtered, network, alloc, alloc_lifetime
-    )
-    #TODO: incorporate indexer reward cut to account for reward efficiency, indexing indexer rewards, and indexing delegator rewards 
-    df[!, "Subgraph Indexing Reward to Indexer"] = map(x -> x.signal, filtered.subgraphs)
-
-    return df
-end
-
-"""
-optimize_indexer(;id::String, grtgas::Float64, alloc_lifetime::Int64, 
-                    whitelist::Union{Nothing,Vector{String}}, blacklist::Union{Nothing,Vector{String}},
-                    alloc_lifetime_threshold::Int64, preference_ratio::Float64)::DataFrame
+    function optimize_indexer(id, whitelist, blacklist, pinnedlist, frozenlist)
 
 # Arguments
-- `id::String`: indexer address
-- `grtgas::Float64`: the price you would want pay for each allocation transaction (grtgas * 1 for open, grtgas * 1 for close, grtgas * 0.3 for claim). Higher setting will lead to smaller set of allocations.
-- `alloc_lifetime::Int64`: the frequency to renew a specific allocation. Smaller alloction lifetime allows less time to accumulate indexing rewards, thus lead to smaller set of allocations.
-- `whitelist::Union{Nothing,Vector{String}}`: when set, optimizer will only consider these subgraphs (Qm...), and you cannot set blacklist.
-- `blacklist::Union{Nothing,Vector{String}}`: when set, optimizer will not consider these subgraphs (Qm...), and you cannot set whitelist.
-- `alloc_lifetime_threshold::Int64`: determine which current allocations should be re-considered during optimization. With higher threshold, the optimizer blacklist more subgrpahs. If you set this to 0, all current allocations will be considered in optimization.
-- `preference_ratio::Float64`: the ratio between reallocating or keep open the current allocations. If you set to 1.0, optimizer simply takes the higher reward. If you set this to >1.0, you prefer to reallocate, if you set this to <1.0, you prefer to keep current allocation until it expires. 
+- `id::AbstractString`: The id of the indexer to optimise.
+- `whitelist::Vector{AbstractString}`: Subgraph deployment IPFS hashes included in this list will be considered for, but not guaranteed allocation.
+- `blacklist::Vector{AbstractString}`: Subgraph deployment IPFS hashes included in this list will not be considered, and will be suggested to close if there's an existing allocation.
+- `pinnedlist::Vector{AbstractString}`: Subgraph deployment IPFS hashes included in this list will be guaranteed allocation. Currently unsupported.
+- `frozenlist::Vector{AbstractString}`: Subgraph deployment IPFS hashes included in this list will not be considered during optimisation. Any allocations you have on these subgraphs deployments will remain.
+    
+# Examples
+```julia-repl
+julia> using AllocationOpt
+julia> optimize_indexer("0x6ac85b9d834b51b14a7b0ed849bb5199e04c05c5", String["QmP4oSiQ7Wc4JTFk86m2JxGvR912NyBbxJnEdZawkYLTk4"], String[], String[], String[])
+1-element Vector{Tuple{String, Float64}}:
+ ("QmP4oSiQ7Wc4JTFk86m2JxGvR912NyBbxJnEdZawkYLTk4", 5.539482411224138e6)
+julia> optimize_indexer("foo", String["QmP4oSiQ7Wc4JTFk86m2JxGvR912NyBbxJnEdZawkYLTk4"], String[], String[], String[])
+ERROR: AllocationOpt.UnknownIndexerError()
+julia> optimize_indexer("0x6ac85b9d834b51b14a7b0ed849bb5199e04c05c5", String["foo"], String[], String[], String[])
+ERROR: AllocationOpt.BadSubgraphIpfsHashError()
+Stacktrace:
+ [1] optimize_indexer(id::String, whitelist::Vector{String}, blacklist::Vector{String}, pinnedlist::Vector{String}, frozenlist::Vector{String})
+```
 """
-function optimize_indexer(;
-    id::String,
-    grtgas::Float64,
-    alloc_lifetime::Int64,
-    whitelist::Union{Nothing,Vector{String}},
-    blacklist::Union{Nothing,Vector{String}},
-    alloc_lifetime_threshold::Int64,
-    preference_ratio::Float64,
-)
-    if (alloc_lifetime_threshold <= 0)
-        throw("alloc_lifetime_threshold minimum value is 1, please change it.")
+function optimize_indexer(
+    id::AbstractString,
+    whitelist::Vector{T},
+    blacklist::Vector{T},
+    pinnedlist::Vector{T},
+    frozenlist::Vector{T},
+) where {T<:AbstractString}
+    userlists = vcat(whitelist, blacklist, pinnedlist, frozenlist)
+    if !verify_ipfshashes(userlists)
+        throw(BadSubgraphIpfsHashError())
     end
 
-    # Fetch data
-    repository, network = snapshot()
-    indexer::Indexer = repository.indexers[findfirst(x -> x.id == id, repository.indexers)]
-
-    # Do not consider any allocations younger than alloc_lifetime_threshold 
-    young_list = young_allocations(id, repository, alloc_lifetime_threshold, network)
-    blacklist = isnothing(blacklist) ? young_list : vcat(blacklist, young_list)
-
-    # Optimize and create summary
-    alloc, filtered = optimize(
-        id,
-        repository,
-        grtgas,
-        network,
-        alloc_lifetime,
-        preference_ratio,
-        whitelist,
-        blacklist,
-    )
-    alloc_list = filter(
-        a -> a.amount != 0,
-        map(
-            alloc_id -> Allocation(alloc_id, alloc[alloc_id], network.current_epoch),
-            collect(keys(alloc)),
-        ),
-    )
-    actions = create_actions(
-        id,
-        filtered,
-        repository,
-        network,
-        alloc_list,
-        alloc_lifetime,
-        grtgas,
-        preference_ratio,
-        young_list,
-    )
-
-    df = DataFrame(
-        "Subgraph ID" => map(a -> a.id, alloc_list),
-        "Allocation in GRT" => map(a -> a.amount, alloc_list),
-    )
-    df[!, "Subgraph Signal"] = map(
-        x -> x.signal, filter(sg -> sg.id in map(a -> a.id, alloc_list), filtered.subgraphs)
-    )
-    df[!, "Indexing Reward"] = indexer_subgraph_rewards(
-        filtered, network, alloc_list, alloc_lifetime
-    )
-    df[!, "Estimated Profit"] = estimated_profit(
-        filtered, alloc_list, grtgas, network, alloc_lifetime
-    )
-    df[!, "Marginal Profit"] = compare_rewards(
-        id,
-        filtered,
-        repository,
-        network,
-        alloc_list,
-        alloc_lifetime,
-        grtgas,
-        preference_ratio,
-    )
-
-    # Add alloc rows for close actions? Currently only have allocations that want to Open or Reallocate
-    df[!, "Action"] = map(
-        a -> if a in actions[2]
-            "Open"
-        else
-            (a in actions[3] ? "Reallocate" : "Close, do not open")
-        end,
-        alloc_list,
-    )
-
-    print_summary(indexer, df, alloc_list, actions[1], alloc_lifetime)
-
-    return df
-end
-
-function print_summary(indexer, df, alloc_list, close_actions, alloc_lifetime)
-    println(
-        """- brief summary -
-        indexer: $(indexer.id) , available_stake: $(indexer.stake + indexer.delegation)
-        use allocation lifetime: $(alloc_lifetime), number of allocations: $(length(alloc_list))
-        dataframe: $(df)
-        """,
-    )
-    for a in alloc_list
-        println(
-            "graph indexer rules set $(a.id) decisionBasis always allocationAmount $(format(a.amount))",
-        )
+    if !isempty(pinnedlist)
+        @warn "pinnedlist is not currently optimised for."
     end
-    for a in close_actions
-        println("graph indexer rules stop ", a.id)
-    end
+
+    # Construct whitelist and blacklist
+    query_ipfshash_in = ipfshash_in(whitelist, pinnedlist)
+    query_ipfshash_not_in = ipfshash_not_in(blacklist, frozenlist)
+
+    # Get client
+    client = gql_client()
+
+    # Pull data from mainnet subgraph
+    repo, network = snapshot(client, query_ipfshash_in, query_ipfshash_not_in)
+
+    # Handle frozenlist
+    # Get indexer
+    indexer, repo = detach_indexer(repo, id)
+
+    # Reduce indexer stake by frozenlist
+    fstake = frozen_stake(client, id, frozenlist)
+    indexer = Indexer(indexer.id, indexer.stake - fstake, indexer.allocations)
+
+    # Optimise
+    ω = optimize(indexer, repo)
+    suggested_allocations = map((x, y) -> (x.ipfshash, y), repo.subgraphs, ω)
+
+    # TODO: Push results to action queue
+
+    return suggested_allocations
 end
 
 end
