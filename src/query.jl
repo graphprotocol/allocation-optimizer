@@ -1,25 +1,25 @@
 using GraphQLClient
 
-function verify_ipfshashes(xs::Vector{T}) where {T<:AbstractString}
+function verify_ipfshashes(xs::AbstractVector{<:AbstractString})
     return all(verify_ipfshash.(xs))
 end
 
-function ipfshash_in(whitelist::Vector{T}, pinnedlist::Vector{T}) where {T<:AbstractString}
+function ipfshash_in(
+    whitelist::AbstractVector{T}, pinnedlist::AbstractVector{T}
+) where {T<:AbstractString}
     return whitelist ∪ pinnedlist
 end
 
 function ipfshash_not_in(
-    blacklist::Vector{T}, frozenlist::Vector{T}
+    blacklist::AbstractVector{T}, frozenlist::AbstractVector{T}
 ) where {T<:AbstractString}
     return blacklist ∪ frozenlist
 end
 
 function frozen_stake(
-    client::Client, id::AbstractString, frozenlist::Vector{T}
-) where {T<:AbstractString}
-    allocations_where_query::Dict{String,Union{String,Vector{String}}} = Dict(
-        "status" => "Active", "indexer" => id
-    )
+    client::Client, id::AbstractString, frozenlist::AbstractVector{<:AbstractString}
+)
+    allocations_where_query = Dict("status" => "Active", "indexer" => id)
 
     allocations_query = GQLQuery(
         Dict("where" => allocations_where_query),
@@ -37,9 +37,9 @@ function frozen_stake(
 end
 
 function query_subgraphs(
-    client::Client, ipfsin::Vector{T}, ipfs_notin::Vector{T}
+    client::Client, ipfsin::AbstractVector{T}, ipfs_notin::AbstractVector{T}
 ) where {T<:AbstractString}
-    subgraph_where_query::Dict{String,Union{String,Vector{String}}} = Dict(
+    subgraph_where_query::Dict{AbstractString,Union{AbstractString,AbstractVector{<:AbstractString}}} = Dict(
         "signalledTokens_gte" => "1000000000000000000000"
     )
     if !isempty(ipfsin)
@@ -65,12 +65,11 @@ function query_subgraphs(
     return subgraphs
 end
 
-function query_indexers(client::Client, subgraphs::Vector{SubgraphDeployment})
-    allocations_where_query::Dict{String,Union{String,Vector{String}}} = Dict(
-        "status" => "Active"
-    )
+function query_indexers(client::Client, subgraphs::AbstractVector{SubgraphDeployment})
     subgraph_ids = id.(subgraphs)
-    allocations_where_query["subgraphDeployment_in"] = subgraph_ids
+    allocations_where_query = Dict(
+        "status" => "Active", "subgraphDeployment_in" => subgraph_ids
+    )
     allocations_query = GraphQLClient.directly_write_query_args(
         Dict("where" => allocations_where_query)
     )
@@ -127,7 +126,7 @@ function gql_client()
 end
 
 function snapshot(
-    client, ipfsin::Vector{T}, ipfs_notin::Vector{T}
+    client::Client, ipfsin::AbstractVector{T}, ipfs_notin::AbstractVector{T}
 ) where {T<:AbstractString}
     subgraphs = query_subgraphs(client, ipfsin, ipfs_notin)
     indexers = query_indexers(client, subgraphs)

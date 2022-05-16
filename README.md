@@ -6,6 +6,7 @@
 [![Coverage](https://codecov.io/gh/graphprotocol/AllocationOpt.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/graphprotocol/AllocationOpt.jl)
 [![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)](https://github.com/semantic-release/semantic-release)
 
+**Important:** You must run this on a computer that supports 64-bit operations. 32-bit doesn't have enough precision to solve the optimisation problem.
 
 ## Installation
 

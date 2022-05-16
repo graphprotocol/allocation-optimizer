@@ -2,29 +2,31 @@ abstract type GraphEntity end
 abstract type IPFSEntity <: GraphEntity end
 
 struct GQLQuery
-    args::Dict{String,Any}
-    fields::Vector{String}
+    args::Dict{AbstractString,Any}
+    fields::AbstractVector{AbstractString}
 end
 
 struct Allocation <: IPFSEntity
-    ipfshash::String
-    amount::Float64
-    created_at_epoch::Int64
+    ipfshash::AbstractString
+    amount::Real
+    created_at_epoch::Integer
 
-    function Allocation(ipfshash::String, amount::String, created_at_epoch::Int64)
+    function Allocation(
+        ipfshash::AbstractString, amount::AbstractString, created_at_epoch::Integer
+    )
         return new(ipfshash, togrt(amount), created_at_epoch)
     end
-    function Allocation(ipfshash::String, amount::Float64, created_at_epoch::Int64)
+    function Allocation(ipfshash::AbstractString, amount::Real, created_at_epoch::Integer)
         return new(ipfshash, amount, created_at_epoch)
     end
 end
 
 struct Indexer <: GraphEntity
-    id::String
-    stake::Float64
-    allocations::Vector{Allocation}
+    id::AbstractString
+    stake::Real
+    allocations::AbstractVector{Allocation}
 
-    function Indexer(id, delegation::String, stake::String, allocation)
+    function Indexer(id, delegation::AbstractString, stake::AbstractString, allocation)
         return new(
             id,
             togrt(stake) + togrt(delegation),
@@ -38,40 +40,42 @@ struct Indexer <: GraphEntity
             ),
         )
     end
-    function Indexer(id, stake::Float64, allocation)
+    function Indexer(id, stake::Real, allocation)
         return new(id, stake, allocation)
     end
 end
 
 struct SubgraphDeployment <: IPFSEntity
-    id::String
-    ipfshash::String
-    signal::Float64
+    id::AbstractString
+    ipfshash::AbstractString
+    signal::Real
 
-    SubgraphDeployment(id, ipfshash, signal::String) = new(id, ipfshash, togrt(signal))
-    SubgraphDeployment(id, ipfshash, signal::Float64) = new(id, ipfshash, signal)
+    function SubgraphDeployment(id, ipfshash, signal::AbstractString)
+        return new(id, ipfshash, togrt(signal))
+    end
+    SubgraphDeployment(id, ipfshash, signal::Real) = new(id, ipfshash, signal)
 end
 
 struct Repository
-    indexers::Vector{Indexer}
-    subgraphs::Vector{SubgraphDeployment}
+    indexers::AbstractVector{Indexer}
+    subgraphs::AbstractVector{SubgraphDeployment}
 end
 
 struct GraphNetworkParameters <: GraphEntity
-    id::String
-    principle_supply::Float64
-    issuance_rate_per_block::Float64
-    block_per_epoch::Int
-    total_tokens_signalled::Float64
-    current_epoch::Int
+    id::AbstractString
+    principle_supply::Real
+    issuance_rate_per_block::Real
+    block_per_epoch::Integer
+    total_tokens_signalled::Real
+    current_epoch::Integer
 
     function GraphNetworkParameters(
         id,
-        principle_supply::String,
-        issuance_rate_per_block::String,
-        block_per_epoch::Int,
-        total_tokens_signalled::String,
-        current_epoch::Int,
+        principle_supply::AbstractString,
+        issuance_rate_per_block::AbstractString,
+        block_per_epoch::Integer,
+        total_tokens_signalled::AbstractString,
+        current_epoch::Integer,
     )
         return new(
             id,
@@ -84,11 +88,11 @@ struct GraphNetworkParameters <: GraphEntity
     end
     function GraphNetworkParameters(
         id,
-        principle_supply::Float64,
-        issuance_rate_per_block::Float64,
-        block_per_epoch::Int,
-        total_tokens_signalled::Float64,
-        current_epoch::Int,
+        principle_supply::Real,
+        issuance_rate_per_block::Real,
+        block_per_epoch::Integer,
+        total_tokens_signalled::Real,
+        current_epoch::Integer,
     )
         return new(
             id,
