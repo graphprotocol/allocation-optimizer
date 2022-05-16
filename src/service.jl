@@ -14,18 +14,16 @@ function detach_indexer(repo::Repository, id::AbstractString)::Tuple{Indexer,Rep
     return indexer, frepo
 end
 
-signals(r::Repository) = map(x -> x.signal, r.subgraphs)
-
 function stakes(r::Repository)
     # Loop over subgraphs, getting their names
-    subgraphs = map(x -> x.ipfshash, r.subgraphs)
+    subgraphs = ipfshash.(r.subgraphs)
 
     # Match name to indexer allocations
-    allocations = reduce(vcat, map(x -> x.allocations, r.indexers))
+    ω = reduce(vcat, allocation.(r.indexers))
     Ω = []
     for subgraph in subgraphs
-        subgraph_allocations = filter(x -> x.ipfshash == subgraph, allocations)
-        subgraph_amounts = map(x -> x.amount, subgraph_allocations)
+        subgraph_allocations = filter(x -> x.ipfshash == subgraph, ω)
+        subgraph_amounts = allocated_stake.(subgraph_allocations)
 
         # If no match, then set to 0
         if isempty(subgraph_amounts)
@@ -51,7 +49,7 @@ end
 solve_primal(Ω, ψ, v) = max.(0.0, .√(ψ .* Ω / v) - Ω)
 
 function optimize(indexer::Indexer, repo::Repository)
-    ψ = signals(repo)
+    ψ = signal.(repo.subgraphs)
     Ω = stakes(repo)
     σ = indexer.stake
 

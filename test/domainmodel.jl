@@ -1,6 +1,4 @@
-@testset "domain" begin
-    include("../src/domain.jl")
-
+@testset "domainmodel" begin
     @testset "verify_ipfshash" begin
         # Should fail because not long enough
         hash = "Qmaaa"

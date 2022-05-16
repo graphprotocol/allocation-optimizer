@@ -1,9 +1,6 @@
 using GraphQLClient
 
 @testset "query" begin
-    include("../src/domain.jl")
-    include("../src/query.jl")
-
     @testset "verify_ipfshashes" begin
         # Should fail due to bad prefix
         hashes = [

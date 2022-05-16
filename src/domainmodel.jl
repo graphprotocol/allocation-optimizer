@@ -1,9 +1,12 @@
+abstract type GraphEntity end
+abstract type IPFSEntity <: GraphEntity end
+
 struct GQLQuery
     args::Dict{String,Any}
     fields::Vector{String}
 end
 
-struct Allocation
+struct Allocation <: IPFSEntity
     ipfshash::String
     amount::Float64
     created_at_epoch::Int64
@@ -16,7 +19,7 @@ struct Allocation
     end
 end
 
-struct Indexer
+struct Indexer <: GraphEntity
     id::String
     stake::Float64
     allocations::Vector{Allocation}
@@ -40,7 +43,7 @@ struct Indexer
     end
 end
 
-struct SubgraphDeployment
+struct SubgraphDeployment <: IPFSEntity
     id::String
     ipfshash::String
     signal::Float64
@@ -54,7 +57,7 @@ struct Repository
     subgraphs::Vector{SubgraphDeployment}
 end
 
-struct GraphNetworkParameters
+struct GraphNetworkParameters <: GraphEntity
     id::String
     principle_supply::Float64
     issuance_rate_per_block::Float64
@@ -103,3 +106,13 @@ verify_ipfshash(x::AbstractString) = startswith(x, "Qm") && length(x) == 46
 function togrt(x)::Float64
     return parse(Float64, x) / 1e18
 end
+
+signal(s::SubgraphDeployment) = s.signal
+
+ipfshash(x::IPFSEntity) = x.ipfshash
+
+id(x::GraphEntity) = x.id
+
+allocation(i::Indexer) = i.allocations
+
+allocated_stake(a::Allocation) = a.amount

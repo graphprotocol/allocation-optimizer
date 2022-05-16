@@ -3,7 +3,7 @@ module AllocationOpt
 export optimize_indexer
 
 include("exceptions.jl")
-include("domain.jl")
+include("domainmodel.jl")
 include("query.jl")
 include("service.jl")
 

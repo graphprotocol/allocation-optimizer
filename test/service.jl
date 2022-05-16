@@ -1,8 +1,4 @@
 @testset "service" begin
-    include("../src/exceptions.jl")
-    include("../src/domain.jl")
-    include("../src/service.jl")
-
     @testset "detach_indexer" begin
         repo = Repository(
             [
@@ -24,17 +20,36 @@
         @test_throws UnknownIndexerError detach_indexer(repo, id)
     end
 
-    @testset "signals" begin
-        repo = Repository(
-            [
-                Indexer("0x00", 10.0, [Allocation("Qmaaa", 10.0, 0)]),
-                Indexer("0x01", 20.0, [Allocation("Qmaaa", 10.0, 0)]),
-            ],
-            [SubgraphDeployment("1x00", "Qmaaa", 10.0)],
-        )
+    @testset "signal" begin
+        subgraphs = [SubgraphDeployment("1x00", "Qmaaa", 10.0)]
 
         # Should get the signal of the one defined subgraph
-        @test signals(repo) == [10.0]
+        @test signal.(subgraphs) == [10.0]
+    end
+
+    @testset "ipfshash" begin
+        subgraphs = [SubgraphDeployment("1x00", "Qmaaa", 10.0)]
+
+        # Should get the ipfshash of the one defined subgraph
+        @test ipfshash.(subgraphs) == ["Qmaaa"]
+    end
+
+    @testset "allocation" begin
+        indexers = [
+            Indexer("0x00", 10.0, [Allocation("Qmaaa", 10.0, 0)]),
+            Indexer("0x01", 20.0, [Allocation("Qmaaa", 20.0, 0)]),
+        ]
+
+        # Should get the allocations of indexers
+        @test allocation.(indexers) ==
+            [[Allocation("Qmaaa", 10.0, 0)], [Allocation("Qmaaa", 20.0, 0)]]
+    end
+
+    @testset "allocated_stake" begin
+        allocs = [Allocation("Qmaaa", 10.0, 0), Allocation("Qmaaa", 20.0, 0)]
+
+        # Should get the allocations of indexers
+        @test allocated_stake.(allocs) == [10.0, 20.0]
     end
 
     @testset "stakes" begin

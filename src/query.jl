@@ -1,7 +1,7 @@
 using GraphQLClient
 
 function verify_ipfshashes(xs::Vector{T}) where {T<:AbstractString}
-    return all(map(x -> verify_ipfshash(x), xs))
+    return all(verify_ipfshash.(xs))
 end
 
 function ipfshash_in(whitelist::Vector{T}, pinnedlist::Vector{T}) where {T<:AbstractString}
@@ -69,7 +69,7 @@ function query_indexers(client::Client, subgraphs::Vector{SubgraphDeployment})
     allocations_where_query::Dict{String,Union{String,Vector{String}}} = Dict(
         "status" => "Active"
     )
-    subgraph_ids = map(x -> x.id, subgraphs)
+    subgraph_ids = id.(subgraphs)
     allocations_where_query["subgraphDeployment_in"] = subgraph_ids
     allocations_query = GraphQLClient.directly_write_query_args(
         Dict("where" => allocations_where_query)

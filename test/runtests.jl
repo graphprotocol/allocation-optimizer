@@ -2,7 +2,13 @@ using AllocationOpt
 using Test
 
 @testset "AllocationOpt.jl" begin
-    include("domain.jl")
+    include("../src/exceptions.jl")
+    include("../src/domainmodel.jl")
+    include("../src/query.jl")
+    include("../src/service.jl")
+
+    # Tests
+    include("domainmodel.jl")
     include("query.jl")
     include("service.jl")
 
