@@ -1,7 +1,7 @@
 name = "AllocationOpt"
 uuid = "c8d4fa36-652a-4cad-a59b-8b946e6f88a6"
 authors = ["The Graph Foundation"]
-version = "1.3.0"
+version = "1.4.0"
 
 [deps]
 Debugger = "31a5f54b-26ea-5ae9-a837-f05ce5417438"
