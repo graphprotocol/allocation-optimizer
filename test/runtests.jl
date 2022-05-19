@@ -67,4 +67,15 @@ using Test
         # Length of allocations is 2
         @test length(allocs) == 2
     end
+
+    @testset "main" begin
+        # Indexer's total allocation should be roughly its stake
+        client = gql_client()
+        id = query(client, "indexers"; query_args=Dict("where" => Dict("stakedTokens_gte" => "100000000000000000000000")), output_fields="id").data["indexers"][1]["id"]
+        indexer = query(client, "indexers"; query_args=Dict("where" => Dict("id" => id)), output_fields=["delegatedTokens", "stakedTokens"]).data["indexers"][1]
+        stake = togrt(indexer["delegatedTokens"]) + togrt(indexer["stakedTokens"])
+        allocs = main(id, "example.csv", 0.0, 0.0, 1)
+        ω = sum(map(x -> x[2], allocs))
+        @test isapprox(ω, stake; atol=1e-6)
+    end
 end

@@ -1,6 +1,8 @@
 module AllocationOpt
 
-export optimize_indexer
+using CSV
+
+export optimize_indexer, main
 
 include("exceptions.jl")
 include("domainmodel.jl")
@@ -34,10 +36,10 @@ ERROR: AllocationOpt.BadSubgraphIpfsHashError()
 """
 function optimize_indexer(
     id::AbstractString,
-    whitelist::Vector{T},
-    blacklist::Vector{T},
-    pinnedlist::Vector{T},
-    frozenlist::Vector{T},
+    whitelist::AbstractVector{T},
+    blacklist::AbstractVector{T},
+    pinnedlist::AbstractVector{T},
+    frozenlist::AbstractVector{T},
     grtgas::Real,
     minimum_allocation_amount::Real,
     allocation_lifetime::Integer,
@@ -76,8 +78,30 @@ function optimize_indexer(
     ω = optimize(indexer, repo)
     suggested_allocations = map((x, y) -> (x.ipfshash, y), repo.subgraphs, ω)
 
-    # TODO: Push results to action queue
+    return suggested_allocations
+end
 
+function main(
+    id::AbstractString,
+    filepath::AbstractString,
+    grtgas::Real,
+    minimum_allocation_amount::Real,
+    allocation_lifetime::Integer,
+)
+    # Read file
+    path = abspath(filepath)
+    csv = CSV.File(path; header=1, types=String)
+
+    # Filter out missings from csv
+    listtypes = [:whitelist, :blacklist, :pinnedlist, :frozenlist]
+    cols = map(x -> collect(skipmissing(csv[x])), listtypes)
+
+    # Optimise allocations
+    suggested_allocations = optimize_indexer(
+        id, cols..., grtgas, minimum_allocation_amount, allocation_lifetime
+    )
+
+    # TODO: Push results to action queue
     return suggested_allocations
 end
 
