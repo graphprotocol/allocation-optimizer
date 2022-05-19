@@ -1,0 +1,15 @@
+name: Register
+
+on:  
+  push:
+    tags:
+      - '*'
+
+jobs:
+  register:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify JuliaRegistrator of new release
+        uses: peter-evans/commit-comment@v1
+        with:
+          body: '@JuliaRegistrator register branch=main'
