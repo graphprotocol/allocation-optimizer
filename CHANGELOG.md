@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.1](https://github.com/graphprotocol/AllocationOpt.jl/compare/v1.6.0...v1.6.1) (2022-05-19)
+
+
+### Bug Fixes
+
+* Release to JuliaRegistrator ([db61939](https://github.com/graphprotocol/AllocationOpt.jl/commit/db61939eb7ebad428792395c8317c12695c246f2))
+
 # [1.6.0](https://github.com/graphprotocol/AllocationOpt.jl/compare/v1.5.0...v1.6.0) (2022-05-19)
 
 
