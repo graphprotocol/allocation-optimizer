@@ -1,5 +1,12 @@
 # Changelog
 
+# [1.5.0](https://github.com/graphprotocol/AllocationOpt.jl/compare/v1.4.0...v1.5.0) (2022-05-19)
+
+
+### Features
+
+* Standardise optimiser inputs ([57eb484](https://github.com/graphprotocol/AllocationOpt.jl/commit/57eb48463a5c0c2375af0acbeba7ad39592b7198))
+
 # [1.4.0](https://github.com/graphprotocol/AllocationOpt.jl/compare/v1.3.0...v1.4.0) (2022-05-16)
 
 
