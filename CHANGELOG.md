@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.7](https://github.com/graphprotocol/AllocationOpt.jl/compare/v1.6.6...v1.6.7) (2022-05-19)
+
+
+### Bug Fixes
+
+* Register on release ([bbe6ada](https://github.com/graphprotocol/AllocationOpt.jl/commit/bbe6adab631768a93efb8c927385701c35eb2cf2))
+
 ## [1.6.6](https://github.com/graphprotocol/AllocationOpt.jl/compare/v1.6.5...v1.6.6) (2022-05-19)
 
 
