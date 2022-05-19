@@ -1,9 +1,8 @@
 name: Register
 
 on:  
-  push:
-    tags:
-      - '*'
+  release:
+    types: [published]
 
 jobs:
   register:
