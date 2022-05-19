@@ -1,5 +1,12 @@
 # Changelog
 
+# [1.6.0](https://github.com/graphprotocol/AllocationOpt.jl/compare/v1.5.0...v1.6.0) (2022-05-19)
+
+
+### Features
+
+* Read filterlists from a csv file ([f3f3d3a](https://github.com/graphprotocol/AllocationOpt.jl/commit/f3f3d3a7fd1a1e0a11ace746a50028c795a09ea3))
+
 # [1.5.0](https://github.com/graphprotocol/AllocationOpt.jl/compare/v1.4.0...v1.5.0) (2022-05-19)
 
 
