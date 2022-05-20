@@ -1,7 +1,7 @@
 name: Register
 
 on:  
-  release
+  create
 
 jobs:
   register:
