@@ -1,5 +1,12 @@
 # Changelog
 
+# [1.7.0](https://github.com/graphprotocol/AllocationOpt.jl/compare/v1.6.11...v1.7.0) (2022-05-20)
+
+
+### Features
+
+* Script for running from CLI ([1bca613](https://github.com/graphprotocol/AllocationOpt.jl/commit/1bca613495091f1f902bea722759480ead822202))
+
 ## [1.6.11](https://github.com/graphprotocol/AllocationOpt.jl/compare/v1.6.10...v1.6.11) (2022-05-20)
 
 
