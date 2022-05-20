@@ -11,11 +11,14 @@ Optimises an indexer's allocations.
 - `filepath`: A path to the CSV file that contains whitelist, blacklist, pinnedlist, frozenlist as columns.
 - `grtgas`: The maximum amount of GRT that you are willing to spend on each allocation transaction.
 - `minimum_allocation_amount`: The minimum amount of GRT that you are willing to allocate to a subgraph.
-- `allocation_lifetime`: The number of epoches you assume to open each allocations for. Lifetime 1 means you are reallocating every epoch. 
-
+- `allocation_lifetime`: The number of epoches you assume to open each allocations for. Lifetime 1 means an epoch should be closed in its second epoch
+- `management_server_url`: The URL that exposes the indexer managment server, including the port. Example: http://localhost:18000.
 """
 @main function main(id, filepath, grtgas, minimum_allocation_amount, allocation_lifetime)
-    ω = optimize_indexer(id, filepath, parse(Float64, grtgas), parse(Float64, minimum_allocation_amount), parse(Int64, allocation_lifetime))
+    cols = read_filterlists(filepath)
+
+    ω = optimize_indexer(id, cols..., parse(Float64, grtgas), parse(Float64, minimum_allocation_amount), parse(Int64, allocation_lifetime))
     @show ω
     # TODO: Push results to action queue
+    # create_action_queue_entries!(ω)
 end

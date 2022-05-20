@@ -2,7 +2,7 @@ module AllocationOpt
 
 using CSV
 
-export optimize_indexer
+export optimize_indexer, read_filterlists
 
 include("exceptions.jl")
 include("domainmodel.jl")
@@ -82,23 +82,13 @@ function optimize_indexer(
 end
 
 """
-    function optimize_indexer(id, filepath, grtgas, minimum_allocation_amount, allocation_lifetime)
-
+    function read_filterlists(filepath)
+        
 # Arguments
 
-- `id::AbstractString`: The id of the indexer to optimise.
 - `filepath::AbstractString`: A path to the CSV file that contains whitelist, blacklist, pinnedlist, frozenlist as columns.
-- `grtgas::Real`: The maximum amount of GRT that you are willing to spend on each allocation transaction.
-- `minimum_allocation_amount::Real`: The minimum amount of GRT that you are willing to allocate to a subgraph.
-- `allocation_lifetime::Integer`: The number of epoches you assume to open each allocations for. Lifetime 1 means you are reallocating every epoch. 
 """
-function optimize_indexer(
-    id::AbstractString,
-    filepath::AbstractString,
-    grtgas::Real,
-    minimum_allocation_amount::Real,
-    allocation_lifetime::Integer,
-)
+function read_filterlists(filepath::AbstractString)
     # Read file
     path = abspath(filepath)
     csv = CSV.File(path; header=1, types=String)
@@ -107,12 +97,7 @@ function optimize_indexer(
     listtypes = [:whitelist, :blacklist, :pinnedlist, :frozenlist]
     cols = map(x -> collect(skipmissing(csv[x])), listtypes)
 
-    # Optimise allocations
-    suggested_allocations = optimize_indexer(
-        id, cols..., grtgas, minimum_allocation_amount, allocation_lifetime
-    )
-
-    return suggested_allocations
+    return cols
 end
 
 end
