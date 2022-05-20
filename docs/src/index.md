@@ -4,7 +4,7 @@ CurrentModule = AllocationOpt
 
 # AllocationOpt
 
-Documentation for [AllocationOpt](https://github.com/anirudh2/AllocationOpt.jl).
+Documentation for [AllocationOpt](https://github.com/graphprotocol/AllocationOpt.jl).
 
 ```@index
 ```
