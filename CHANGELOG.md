@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.11](https://github.com/graphprotocol/AllocationOpt.jl/compare/v1.6.10...v1.6.11) (2022-05-20)
+
+
+### Bug Fixes
+
+* Removing registrator action ([df41897](https://github.com/graphprotocol/AllocationOpt.jl/commit/df41897047699ca422f2416c107389e9a5dc3bc4))
+
 ## [1.6.10](https://github.com/graphprotocol/AllocationOpt.jl/compare/v1.6.9...v1.6.10) (2022-05-20)
 
 
