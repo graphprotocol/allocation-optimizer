@@ -20,5 +20,5 @@ Optimises an indexer's allocations.
     ω = optimize_indexer(id, cols..., parse(Float64, grtgas), parse(Float64, minimum_allocation_amount), parse(Int64, allocation_lifetime))
     @show ω
     # TODO: Push results to action queue
-    # create_action_queue_entries!(ω)
+    # push_allocations!(management_server_url, ω, cols...)
 end
