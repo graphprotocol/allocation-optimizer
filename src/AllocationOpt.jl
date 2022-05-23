@@ -9,7 +9,7 @@ include("exceptions.jl")
 include("domainmodel.jl")
 include("query.jl")
 include("service.jl")
-include("actionqueue.jl")
+include("ActionQueue.jl")
 
 """
     function optimize_indexer(id, whitelist, blacklist, pinnedlist, frozenlist, grtgas, minimum_allocation_amount, allocation_lifetime)
@@ -104,16 +104,16 @@ end
 
 function push_allocations!(
     management_server_url::AbstractString,
-    allocations::AbstractVector{Tuple{AbstractString, Real}},
+    allocations::AbstractVector{Tuple{AbstractString,Real}},
     whitelist::AbstractVector{T},
     blacklist::AbstractVector{T},
     pinnedlist::AbstractVector{T},
     frozenlist::AbstractVector{T},
-    )
+) where {T<:AbstractString}
     # Get the indexer being optimised
     # Connect to database
     client = Client(management_server_url)
-    
+
     # For each allocation
     # If allocation on subgraph exists
     # If new allocation on subgraph to open - reallocate
@@ -123,45 +123,15 @@ function push_allocations!(
     # Open all remaining allocations
     actions = []
     for alloc in allocations
-      action = structtodict(AllocateActionInput(queued, allocate, string.(alloc)...))
-      push!(actions, action)
+        action = structtodict(
+            ActionQueue.AllocateActionInput(
+                ActionQueue.queued, ActionQueue.allocate, string.(alloc)...
+            ),
+        )
+        push!(actions, action)
     end
     # send to database
-    mutate(client, "queueActions", Dict("actions" => actions))
+    return mutate(client, "queueActions", Dict("actions" => actions))
 end
 
-
-```
-const result = await client
-    .mutation(
-      gql`
-        mutation queueActions($actions: [ActionInput!]!) {
-          queueActions(actions: $actions) {
-            id
-            type
-            deploymentID
-            allocationID
-            amount
-            poi
-            force
-            source
-            reason
-            priority
-            status
-          }
-        }
-      `,
-      { actions: actionToGraphQL(actions) },
-    )
-    .toPromise()
-  return actionFromGraphQL(result.data.queueActions)
-
-  ////// 
-  input ActionInput {
-    status: queued (but an enum)
-    type: [allocate, unallocate, reallocate]
-    deploymentID: String (IPFS)
-    amount: String 
-}
-```
 end
