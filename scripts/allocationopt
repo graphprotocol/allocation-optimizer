@@ -14,11 +14,12 @@ Optimises an indexer's allocations.
 - `allocation_lifetime`: The number of epoches you assume to open each allocations for. Lifetime 1 means an epoch should be closed in its second epoch
 - `management_server_url`: The URL that exposes the indexer managment server, including the port. Example: http://localhost:18000.
 """
-@main function main(id, filepath, grtgas, minimum_allocation_amount, allocation_lifetime)
+@main function main(id, filepath, grtgas, minimum_allocation_amount, allocation_lifetime, management_server_url)
     cols = read_filterlists(filepath)
 
     ω = optimize_indexer(id, cols..., parse(Float64, grtgas), parse(Float64, minimum_allocation_amount), parse(Int64, allocation_lifetime))
     @show ω
-    # TODO: Push results to action queue
-    # push_allocations!(management_server_url, ω, cols...)
+    
+    # Push results to action queue
+    push_allocations!(id, management_server_url, ω, cols...)
 end

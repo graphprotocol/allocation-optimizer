@@ -65,6 +65,21 @@ function query_subgraphs(
     return subgraphs
 end
 
+function query_indexer_allocations(client::Client, indexer_id::AbstractString)
+    indexer_query = GQLQuery(
+        Dict(
+            "first" => 1000,
+            "where" => Dict("stakedTokens_gte" => "100000000000000000000000", "id" => indexer_id),
+        ),
+        [
+            "allocations{id,subgraphDeployment{ipfsHash}}",
+        ],
+    )
+    indexer_data = query(client, "indexers"; query_args=indexer_query.args, output_fields=indexer_query.fields).data["indexers"]
+    indexer = Indexer(indexer_data[1]["allocations"])
+    return indexer.allocations
+end
+
 function query_indexers(client::Client, subgraphs::AbstractVector{SubgraphDeployment})
     subgraph_ids = id.(subgraphs)
     allocations_where_query = Dict(

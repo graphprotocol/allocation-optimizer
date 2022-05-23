@@ -78,7 +78,8 @@ function optimize_indexer(
 
     # Optimise
     ω = optimize(indexer, repo)
-    suggested_allocations = map((x, y) -> (x.ipfshash, y), repo.subgraphs, ω)
+    # suggested_allocations = map((x, y) -> (x.ipfshash, y), repo.subgraphs, ω)
+    suggested_allocations = Dict(ipfshash.(repo.subgraphs) .=> ω)
 
     return suggested_allocations
 end
@@ -103,33 +104,47 @@ function read_filterlists(filepath::AbstractString)
 end
 
 function push_allocations!(
+    id::AbstractString,
     management_server_url::AbstractString,
-    allocations::AbstractVector{Tuple{AbstractString,Real}},
+    proposed_allocations::Dict{AbstractString,Real},
     whitelist::AbstractVector{T},
     blacklist::AbstractVector{T},
     pinnedlist::AbstractVector{T},
     frozenlist::AbstractVector{T},
 ) where {T<:AbstractString}
-    # Get the indexer being optimised
-    # Connect to database
-    client = Client(management_server_url)
-
-    # For each allocation
-    # If allocation on subgraph exists
-    # If new allocation on subgraph to open - reallocate
-    # query_args = structtodict(ReallocateActionInput(queued, reallocate, alloc_id))
-    # Else close
-    # query_args = structtodict(UnallocateActionInput(queued, unallocate, alloc_id, string(alloc)))
-    # Open all remaining allocations
     actions = []
-    for alloc in allocations
-        action = structtodict(
-            ActionQueue.AllocateActionInput(
-                ActionQueue.queued, ActionQueue.allocate, string.(alloc)...
-            ),
-        )
+
+    # Query existing allocations
+    existing_allocations = query_indexer_allocations(gql_client(), id)
+    existing_allocs = Dict(ipfshash.(existing_allocations) .=> id.(existing_allocations))
+    existing_ipfs = ipfshash.(exisiting_allocations)
+    proposed_ipfs = collect(keys(proposed_allocations))
+    
+    # Take am over proposed allocation ipfshashs and existing ipfshashes
+    # These are reallocated
+    reallocate_ipfs = existing_ipfs ∩ proposed_ipfs
+    for ipfs in reallocate_ipfs
+      action = structtodict(ActionQueue.ReallocateActionInput(ActionQueue.queued, ActionQueue.reallocate, existing_allocs[ipfs],proposed_allocations[ipfs]))
+      push!(actions, action)
+    end
+
+    # Remainder in proposed are opened
+    open_ipfs = setdiff(proposed_ipfs, reallocate_ipfs)
+    for ipfs in open_ipfs
+      action = structtodict(ActionQueue.OpenActionInput(ActionQueue.queued, ActionQueue.allocate, ipfs,proposed_allocations[ipfs]))
+      push!(actions, action)
+    end
+
+    # Remainder in existing are closed
+    close_ipfs = setdiff(existing_allocations, reallocate_ipfs)
+    for ipfs in close_ipfs
+        action = structtodict(ActionQueue.UnallocateActionInput(ActionQueue.queued, ActionQueue.unallocate, existing_allocs[ipfs]))
         push!(actions, action)
     end
+    
+    # Connect to database
+    client = Client(management_server_url)
+    
     # send to database
     return mutate(client, "queueActions", Dict("actions" => actions))
 end

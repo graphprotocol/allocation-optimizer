@@ -46,7 +46,7 @@ using Test
             id, String[ipfshash], String[], String[], String[], 0.0, 0.0, 1
         )
         # Sum allocation amounts
-        ω = sum(map(x -> x[2], allocs))
+        ω = sum(values(allocs))
         @test isapprox(ω, stake; atol=1e-6)
         # Length of allocations is 1
         @test length(allocs) == 1
@@ -62,7 +62,7 @@ using Test
             1,
         )
         # Sum allocation amounts
-        ω = sum(map(x -> x[2], allocs))
+        ω = sum(values(allocs))
         @test isapprox(ω, stake; atol=1e-6)
         # Length of allocations is 2
         @test length(allocs) == 2
@@ -74,7 +74,7 @@ using Test
         stake = togrt(indexer["delegatedTokens"]) + togrt(indexer["stakedTokens"])
         cols = read_filterlists("example.csv")
         allocs = optimize_indexer(id, cols..., 0.0, 0.0, 1)
-        ω = sum(map(x -> x[2], allocs))
+        ω = sum(values(allocs))
         @test isapprox(ω, stake; atol=1e-6)
     end
 end

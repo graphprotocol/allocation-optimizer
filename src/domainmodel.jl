@@ -7,6 +7,7 @@ struct GQLQuery
 end
 
 struct Allocation <: IPFSEntity
+    id::AbstractString
     ipfshash::AbstractString
     amount::Real
     created_at_epoch::Integer
@@ -14,10 +15,13 @@ struct Allocation <: IPFSEntity
     function Allocation(
         ipfshash::AbstractString, amount::AbstractString, created_at_epoch::Integer
     )
-        return new(ipfshash, togrt(amount), created_at_epoch)
+        return new("", ipfshash, togrt(amount), created_at_epoch)
     end
     function Allocation(ipfshash::AbstractString, amount::Real, created_at_epoch::Integer)
-        return new(ipfshash, amount, created_at_epoch)
+        return new("", ipfshash, amount, created_at_epoch)
+    end
+    function Allocation(id::AbstractString, ipfshash::AbstractString)
+        return new(id, ipfshash, 0.0, 0)
     end
 end
 
@@ -42,6 +46,15 @@ struct Indexer <: GraphEntity
     end
     function Indexer(id, stake::Real, allocation)
         return new(id, stake, allocation)
+    end
+    function Indexer(allocation)
+        return new("", 0.0, map(
+            x -> Allocation(
+                x["id"],
+                x["subgraphDeployment"]["ipfsHash"],
+            ),
+            allocation,
+        ),) 
     end
 end
 
