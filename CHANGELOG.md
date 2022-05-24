@@ -1,5 +1,19 @@
 # Changelog
 
+# [1.8.0](https://github.com/graphprotocol/AllocationOpt.jl/compare/v1.7.1...v1.8.0) (2022-05-24)
+
+
+### Bug Fixes
+
+* ActionQueue file renaming ([8b072d3](https://github.com/graphprotocol/AllocationOpt.jl/commit/8b072d33c49867f809d8eac5131f4af2cccdecf8))
+* ActionQueue to module and fixing typos ([1e06bb7](https://github.com/graphprotocol/AllocationOpt.jl/commit/1e06bb7ecefe18c96c15f82e4fd4a970dbc3f531))
+* remove 0 allocations and filter out frozenlist in close actions ([480c41a](https://github.com/graphprotocol/AllocationOpt.jl/commit/480c41a79322a51d580f1ca5155b445fa11cc38e))
+
+
+### Features
+
+* add reallocate and close actions ([18ee3e5](https://github.com/graphprotocol/AllocationOpt.jl/commit/18ee3e54293d2955558aa6100bcb0a9f0e37f010))
+
 ## [1.7.1](https://github.com/graphprotocol/AllocationOpt.jl/compare/v1.7.0...v1.7.1) (2022-05-20)
 
 
