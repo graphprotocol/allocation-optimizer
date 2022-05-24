@@ -136,7 +136,7 @@ using GraphQLClient
         indexer = indexers[findfirst(i -> length(i.allocations) > 0, indexers)]
         alloc_length = length(indexer.allocations)
         id = indexer.id
-        
+
         # Should return the correct number of allocations
         allocations = query_indexer_allocations(client, id)
         @test length(allocations) == alloc_length

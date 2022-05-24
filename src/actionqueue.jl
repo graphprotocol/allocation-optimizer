@@ -23,12 +23,16 @@ struct AllocateActionInput <: ActionInput
     type::ActionType
     deploymentID::AbstractString
     amount::AbstractString
+    source::AbstractString
+    reason::AbstractString
 end
 
 struct UnallocateActionInput <: ActionInput
     status::ActionStatus
     type::ActionType
     allocationID::AbstractString
+    source::AbstractString
+    reason::AbstractString
 end
 
 struct ReallocateActionInput <: ActionInput
@@ -36,6 +40,8 @@ struct ReallocateActionInput <: ActionInput
     type::ActionType
     allocationID::AbstractString
     amount::AbstractString
+    source::AbstractString
+    reason::AbstractString
 end
 
 structtodict(x::ActionInput) = Dict(string(k) => getfield(x, k) for k in propertynames(x))

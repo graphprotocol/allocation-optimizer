@@ -78,8 +78,9 @@ function optimize_indexer(
 
     # Optimise
     ω = optimize(indexer, repo)
-    # suggested_allocations = map((x, y) -> (x.ipfshash, y), repo.subgraphs, ω)
-    suggested_allocations = Dict(ipfshash.(repo.subgraphs) .=> ω)
+    suggested_allocations = Dict(
+        ipfshash(k) => v for (k, v) in zip(repo.subgraphs, ω) if v > 0.0
+    )
 
     return suggested_allocations
 end
@@ -103,10 +104,23 @@ function read_filterlists(filepath::AbstractString)
     return cols
 end
 
+"""
+    function push_allocations!(indexer_id, management_server_url, proposed_allocations, whitelist, blacklist, pinnedlist, frozenlist)
+
+# Arguments
+
+- `indexer_id::AbstractString`: Indexer id
+- `management_server_url::T`: Indexer management server url, in format similar to http://localhost:18000
+- `proposed_allocations::Dict{T,<:Real}`: The set of allocation to open returned by optimize_indexer
+- `whitelist::AbstractVector{T}`: Unused. Here for completeness.
+- `blacklist::AbstractVector{T}`: Unused. Here for completeness.
+- `pinnedlist::AbstractVector{T}`: Unused. Here for completeness.
+- `frozenlist::AbstractVector{T}`: Make sure to not close these allocations as they are frozen.
+"""
 function push_allocations!(
-    id::AbstractString,
-    management_server_url::AbstractString,
-    proposed_allocations::Dict{AbstractString,Real},
+    indexer_id::AbstractString,
+    management_server_url::T,
+    proposed_allocations::Dict{T,<:Real},
     whitelist::AbstractVector{T},
     blacklist::AbstractVector{T},
     pinnedlist::AbstractVector{T},
@@ -114,39 +128,66 @@ function push_allocations!(
 ) where {T<:AbstractString}
     actions = []
 
-    # Query existing allocations
-    existing_allocations = query_indexer_allocations(gql_client(), id)
+    # Query existing allocations that are not frozen
+    existing_allocations = query_indexer_allocations(gql_client(), indexer_id)
     existing_allocs = Dict(ipfshash.(existing_allocations) .=> id.(existing_allocations))
-    existing_ipfs = ipfshash.(exisiting_allocations)
+    existing_ipfs = ipfshash.(existing_allocations)
     proposed_ipfs = collect(keys(proposed_allocations))
-    
+
     # Take am over proposed allocation ipfshashs and existing ipfshashes
     # These are reallocated
     reallocate_ipfs = existing_ipfs ∩ proposed_ipfs
     for ipfs in reallocate_ipfs
-      action = structtodict(ActionQueue.ReallocateActionInput(ActionQueue.queued, ActionQueue.reallocate, existing_allocs[ipfs],proposed_allocations[ipfs]))
-      push!(actions, action)
+        action = ActionQueue.structtodict(
+            ActionQueue.ReallocateActionInput(
+                ActionQueue.queued,
+                ActionQueue.reallocate,
+                existing_allocs[ipfs],
+                string(proposed_allocations[ipfs]),
+                "AllocationOpt",
+                "AllocationOpt",
+            ),
+        )
+        push!(actions, action)
     end
 
     # Remainder in proposed are opened
     open_ipfs = setdiff(proposed_ipfs, reallocate_ipfs)
     for ipfs in open_ipfs
-      action = structtodict(ActionQueue.OpenActionInput(ActionQueue.queued, ActionQueue.allocate, ipfs,proposed_allocations[ipfs]))
-      push!(actions, action)
+        action = ActionQueue.structtodict(
+            ActionQueue.AllocateActionInput(
+                ActionQueue.queued,
+                ActionQueue.allocate,
+                ipfs,
+                string(proposed_allocations[ipfs]),
+                "AllocationOpt",
+                "AllocationOpt",
+            ),
+        )
+        push!(actions, action)
     end
 
     # Remainder in existing are closed
-    close_ipfs = setdiff(existing_allocations, reallocate_ipfs)
+    close_ipfs = setdiff(setdiff(existing_ipfs, reallocate_ipfs), frozenlist)
     for ipfs in close_ipfs
-        action = structtodict(ActionQueue.UnallocateActionInput(ActionQueue.queued, ActionQueue.unallocate, existing_allocs[ipfs]))
+        action = ActionQueue.structtodict(
+            ActionQueue.UnallocateActionInput(
+                ActionQueue.queued,
+                ActionQueue.unallocate,
+                existing_allocs[ipfs],
+                "AllocationOpt",
+                "AllocationOpt",
+            ),
+        )
         push!(actions, action)
     end
-    
+
     # Connect to database
     client = Client(management_server_url)
-    
     # send to database
-    return mutate(client, "queueActions", Dict("actions" => actions))
+    response = mutate(client, "queueActions", Dict("actions" => actions))
+
+    return response
 end
 
 end

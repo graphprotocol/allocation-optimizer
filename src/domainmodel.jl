@@ -48,13 +48,11 @@ struct Indexer <: GraphEntity
         return new(id, stake, allocation)
     end
     function Indexer(allocation)
-        return new("", 0.0, map(
-            x -> Allocation(
-                x["id"],
-                x["subgraphDeployment"]["ipfsHash"],
-            ),
-            allocation,
-        ),) 
+        return new(
+            "",
+            0.0,
+            map(x -> Allocation(x["id"], x["subgraphDeployment"]["ipfsHash"]), allocation),
+        )
     end
 end
 

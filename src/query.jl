@@ -69,11 +69,10 @@ function query_indexer_allocations(client::Client, indexer_id::AbstractString)
     indexer_query = GQLQuery(
         Dict(
             "first" => 1000,
-            "where" => Dict("stakedTokens_gte" => "100000000000000000000000", "id" => indexer_id),
+            "where" =>
+                Dict("stakedTokens_gte" => "100000000000000000000000", "id" => indexer_id),
         ),
-        [
-            "allocations{id,subgraphDeployment{ipfsHash}}",
-        ],
+        ["allocations{id,subgraphDeployment{ipfsHash}}"],
     )
     indexer_data = query(client, "indexers"; query_args=indexer_query.args, output_fields=indexer_query.fields).data["indexers"]
     indexer = Indexer(indexer_data[1]["allocations"])
@@ -135,7 +134,7 @@ function query_networkparams(client::Client)
 end
 
 function gql_client()
-    url = "https://api.thegraph.com/subgraphs/name/graphprotocol/graph-network-mainnet"
+    url = "https://api.thegraph.com/subgraphs/name/graphprotocol/graph-network-testnet"
     client = Client(url)
     return client
 end
