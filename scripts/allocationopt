@@ -20,7 +20,9 @@ Optimises an indexer's allocations.
     ω = optimize_indexer(id, cols..., parse(Float64, grtgas), parse(Float64, minimum_allocation_amount), parse(Int64, allocation_lifetime))
     
     # Push results to action queue
-    push_allocations!(id, management_server_url, ω, cols...)
+    response = push_allocations!(id, management_server_url, ω, cols...)
+
+    println("Done!")
 
     return ω
 end

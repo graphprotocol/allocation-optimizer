@@ -134,57 +134,20 @@ function push_allocations!(
     existing_ipfs = ipfshash.(existing_allocations)
     proposed_ipfs = collect(keys(proposed_allocations))
 
-    # Take am over proposed allocation ipfshashs and existing ipfshashes
-    # These are reallocated
-    reallocate_ipfs = existing_ipfs ∩ proposed_ipfs
-    for ipfs in reallocate_ipfs
-        action = ActionQueue.structtodict(
-            ActionQueue.ReallocateActionInput(
-                ActionQueue.queued,
-                ActionQueue.reallocate,
-                existing_allocs[ipfs],
-                string(proposed_allocations[ipfs]),
-                "AllocationOpt",
-                "AllocationOpt",
-            ),
-        )
-        push!(actions, action)
-    end
+    # Generate ActionQueue inputs
+    reallocations, reallocate_ipfs = ActionQueue.reallocate_actions(
+        proposed_ipfs, existing_ipfs, proposed_allocations, existing_allocs
+    )
+    open_allocations, open_ipfs = ActionQueue.allocate_actions(
+        proposed_ipfs, reallocate_ipfs, proposed_allocations
+    )
+    close_allocations, close_ipfs = ActionQueue.unallocate_actions(
+        existing_allocs, existing_ipfs, reallocate_ipfs, frozenlist
+    )
+    actions = vcat(reallocations, open_allocations, close_allocations)
 
-    # Remainder in proposed are opened
-    open_ipfs = setdiff(proposed_ipfs, reallocate_ipfs)
-    for ipfs in open_ipfs
-        action = ActionQueue.structtodict(
-            ActionQueue.AllocateActionInput(
-                ActionQueue.queued,
-                ActionQueue.allocate,
-                ipfs,
-                string(proposed_allocations[ipfs]),
-                "AllocationOpt",
-                "AllocationOpt",
-            ),
-        )
-        push!(actions, action)
-    end
-
-    # Remainder in existing are closed
-    close_ipfs = setdiff(setdiff(existing_ipfs, reallocate_ipfs), frozenlist)
-    for ipfs in close_ipfs
-        action = ActionQueue.structtodict(
-            ActionQueue.UnallocateActionInput(
-                ActionQueue.queued,
-                ActionQueue.unallocate,
-                existing_allocs[ipfs],
-                "AllocationOpt",
-                "AllocationOpt",
-            ),
-        )
-        push!(actions, action)
-    end
-
-    # Connect to database
+    # Send ActionQueue inputs to indexer management server
     client = Client(management_server_url)
-    # send to database
     response = mutate(client, "queueActions", Dict("actions" => actions))
 
     return response

@@ -134,7 +134,7 @@ function query_networkparams(client::Client)
 end
 
 function gql_client()
-    url = "https://api.thegraph.com/subgraphs/name/graphprotocol/graph-network-testnet"
+    url = "https://api.thegraph.com/subgraphs/name/graphprotocol/graph-network-mainnet"
     client = Client(url)
     return client
 end

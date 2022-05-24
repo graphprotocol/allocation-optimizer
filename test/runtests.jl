@@ -6,11 +6,13 @@ using Test
     include("../src/domainmodel.jl")
     include("../src/query.jl")
     include("../src/service.jl")
+    include("../src/ActionQueue.jl")
 
     # Tests
     include("domainmodel.jl")
     include("query.jl")
     include("service.jl")
+    include("actionqueue.jl")
 
     @testset "optimize_indexer" begin
         client = gql_client()
@@ -19,7 +21,7 @@ using Test
 
         all_hashes = [
             deployment["ipfsHash"] for deployment in
-            query(client, "subgraphDeployments"; query_args=Dict("first" => 1000, "where" => Dict("signalledTokens_gte" => "1000000000000000000000")), output_fields="ipfsHash").data["subgraphDeployments"]
+            query(client, "subgraphDeployments"; query_args=Dict("first" => 1000, "where" => Dict("signalledTokens_gte" => "100000000000000000000000")), output_fields="ipfsHash").data["subgraphDeployments"]
         ]
         ipfshash = all_hashes[1]
         another_ipfshash = all_hashes[2]
@@ -64,8 +66,8 @@ using Test
         # Sum allocation amounts
         ω = sum(values(allocs))
         @test isapprox(ω, stake; atol=1e-6)
-        # Length of allocations is 2
-        @test length(allocs) == 2
+        # Length of allocations ≤ length of whitelist
+        @test length(allocs) ≤ 2
 
         # Should handle CSV input
         client = gql_client()
