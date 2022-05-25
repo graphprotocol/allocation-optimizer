@@ -107,46 +107,13 @@ function query_indexers(client::Client, subgraphs::AbstractVector{SubgraphDeploy
     return indexers
 end
 
-function query_networkparams(client::Client)
-    # GraphNetworkParameters (network_id 1 is Ethereum mainnet)
-    network_id = 1
-    network_query = GQLQuery(
-        Dict("id" => network_id),
-        [
-            "id",
-            "totalSupply",
-            "networkGRTIssuance",
-            "epochLength",
-            "totalTokensSignalled",
-            "currentEpoch",
-        ],
-    )
-    network_data = query(client, "graphNetwork"; query_args=network_query.args, output_fields=network_query.fields).data["graphNetwork"]
-    network = GraphNetworkParameters(
-        network_data["id"],
-        network_data["totalSupply"],
-        network_data["networkGRTIssuance"],
-        network_data["epochLength"],
-        network_data["totalTokensSignalled"],
-        network_data["currentEpoch"],
-    )
-    return network
-end
-
-function gql_client()
-    url = "https://api.thegraph.com/subgraphs/name/graphprotocol/graph-network-mainnet"
-    client = Client(url)
-    return client
-end
-
 function snapshot(
     client::Client, ipfsin::AbstractVector{T}, ipfs_notin::AbstractVector{T}
 ) where {T<:AbstractString}
     subgraphs = query_subgraphs(client, ipfsin, ipfs_notin)
     indexers = query_indexers(client, subgraphs)
-    network = query_networkparams(client)
 
     # Make repository
     repository = Repository(indexers, subgraphs)
-    return repository, network
+    return repository
 end

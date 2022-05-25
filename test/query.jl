@@ -1,6 +1,8 @@
 using GraphQLClient
 
 @testset "query" begin
+    gateway_url = "https://gateway.thegraph.com/network"
+
     @testset "verify_ipfshashes" begin
         # Should fail due to bad prefix
         hashes = [
@@ -70,54 +72,54 @@ using GraphQLClient
     end
 
     @testset "snapshot ipfs filtering subgraph deployments" begin
-        client = gql_client()
+        client = Client(gateway_url)
         all_hashes = [
             deployment["ipfsHash"] for deployment in
             query(client, "subgraphDeployments"; query_args=Dict("first" => 1000, "where" => Dict("signalledTokens_gte" => "1000000000000000000000")), output_fields="ipfsHash").data["subgraphDeployments"]
         ]
 
         # Should return the one whitelisted subgraph
-        repo, network = snapshot(client, [all_hashes[1]], String[])
+        repo = snapshot(client, [all_hashes[1]], String[])
         @test length(repo.subgraphs) == 1
         @test repo.subgraphs[1].ipfshash == all_hashes[1]
 
         # Should return the one subgraph not blacklisted
-        repo, network = snapshot(client, String[], all_hashes[2:end])
+        repo = snapshot(client, String[], all_hashes[2:end])
         @test length(repo.subgraphs) == 1
         @test repo.subgraphs[1].ipfshash == all_hashes[1]
 
         # Should return all subgraphs
-        repo, network = snapshot(client, String[], String[])
+        repo = snapshot(client, String[], String[])
         @test length(repo.subgraphs) == length(all_hashes)
 
         # Should return subgraphs in whitelist that aren't in blacklist
-        repo, network = snapshot(client, all_hashes, all_hashes[2:end])
+        repo = snapshot(client, all_hashes, all_hashes[2:end])
         @test length(repo.subgraphs) == 1
         @test repo.subgraphs[1].ipfshash == all_hashes[1]
     end
 
     @testset "snapshot ipfs filtering indexer allocations" begin
-        client = gql_client()
+        client = Client(gateway_url)
         all_hashes = [
             deployment["ipfsHash"] for deployment in
             query(client, "subgraphDeployments"; query_args=Dict("first" => 1000, "where" => Dict("signalledTokens_gte" => "1000000000000000000000")), output_fields="ipfsHash").data["subgraphDeployments"]
         ]
 
         # Should have only one possible subgraph to allocate to
-        repo, network = snapshot(client, [all_hashes[1]], String[])
+        repo = snapshot(client, [all_hashes[1]], String[])
         all_allocations = unique([
             a -> a.ipfshash for indexer in repo.indexers for a in indexer.allocations
         ])
         @test length(all_allocations) == 1
 
         # Should have no allocations
-        repo, network = snapshot(client, String[], all_hashes)
+        repo = snapshot(client, String[], all_hashes)
         @test sum(map(x -> length(x.allocations), repo.indexers)) == 0
     end
 
     @testset "frozen stake" begin
         # calculate the stake constraint for indexer
-        client = gql_client()
+        client = Client(gateway_url)
         subgraphs = query_subgraphs(client, String[], String[])
         indexers = query_indexers(client, subgraphs)
         indexer = indexers[findfirst(i -> length(i.allocations) > 0, indexers)]
@@ -130,7 +132,7 @@ using GraphQLClient
     end
 
     @testset "query indexer allocations" begin
-        client = gql_client()
+        client = Client(gateway_url)
         subgraphs = query_subgraphs(client, String[], String[])
         indexers = query_indexers(client, subgraphs)
         indexer = indexers[findfirst(i -> length(i.allocations) > 0, indexers)]

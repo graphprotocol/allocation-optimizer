@@ -5,6 +5,7 @@ version = "1.8.0"
 
 [deps]
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
+Comonicon = "863f3e99-da2a-4334-8734-de3dacbe5542"
 Debugger = "31a5f54b-26ea-5ae9-a837-f05ce5417438"
 GraphQLClient = "09d831e3-9c21-47a9-bfd8-076871817219"
 JuliaFormatter = "98e50ef6-434e-11e9-1051-2b60c6c9e899"

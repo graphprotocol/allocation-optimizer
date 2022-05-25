@@ -72,50 +72,6 @@ struct Repository
     subgraphs::AbstractVector{SubgraphDeployment}
 end
 
-struct GraphNetworkParameters <: GraphEntity
-    id::AbstractString
-    principle_supply::Real
-    issuance_rate_per_block::Real
-    block_per_epoch::Integer
-    total_tokens_signalled::Real
-    current_epoch::Integer
-
-    function GraphNetworkParameters(
-        id,
-        principle_supply::AbstractString,
-        issuance_rate_per_block::AbstractString,
-        block_per_epoch::Integer,
-        total_tokens_signalled::AbstractString,
-        current_epoch::Integer,
-    )
-        return new(
-            id,
-            togrt(principle_supply),
-            togrt(issuance_rate_per_block),
-            block_per_epoch,
-            togrt(total_tokens_signalled),
-            current_epoch,
-        )
-    end
-    function GraphNetworkParameters(
-        id,
-        principle_supply::Real,
-        issuance_rate_per_block::Real,
-        block_per_epoch::Integer,
-        total_tokens_signalled::Real,
-        current_epoch::Integer,
-    )
-        return new(
-            id,
-            principle_supply,
-            issuance_rate_per_block,
-            block_per_epoch,
-            total_tokens_signalled,
-            current_epoch,
-        )
-    end
-end
-
 verify_ipfshash(x::AbstractString) = startswith(x, "Qm") && length(x) == 46
 
 function togrt(x)::Float64

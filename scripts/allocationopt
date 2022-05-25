@@ -13,14 +13,20 @@ Optimises an indexer's allocations.
 - `minimum_allocation_amount`: The minimum amount of GRT that you are willing to allocate to a subgraph.
 - `allocation_lifetime`: The number of epoches you assume to open each allocations for. Lifetime 1 means an epoch should be closed in its second epoch
 - `management_server_url`: The URL that exposes the indexer managment server, including the port. Must begin with http. Example: http://localhost:18000.
+- `indexer_service_network_url`: The URL that exposes the indexer service's network endpoint. Must begin with http. Example: http://localhost:7600/network.
 """
-@main function main(id, filepath, grtgas, minimum_allocation_amount, allocation_lifetime, management_server_url)
+@main function main(id, filepath, minimum_allocation_amount, maximum_new_allocations, management_server_url, indexer_service_network_url)
+    # Read subgraph lists defined in the file
     cols = read_filterlists(filepath)
 
-    ω = optimize_indexer(id, cols..., parse(Float64, grtgas), parse(Float64, minimum_allocation_amount), parse(Int64, allocation_lifetime))
+    # Pull network state from indexer service network endpoint
+    indexer, repo = network_state(id, cols..., indexer_service_network_url)
+
+    # Optimize for the indexer
+    ω = optimize_indexer(repo, indexer, parse(Float64, minimum_allocation_amount), parse(Int64, maximum_new_allocations))
     
     # Push results to action queue
-    response = push_allocations!(id, management_server_url, ω, cols...)
+    response = push_allocations!(id, management_server_url, indexer_service_network_url, ω, cols...)
 
     println("Done!")
 
