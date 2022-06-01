@@ -3,13 +3,14 @@ module AllocationOpt
 using CSV
 using GraphQLClient
 
-export network_state, optimize_indexer, read_filterlists, push_allocations!
+export network_state, optimize_indexer, read_filterlists, push_allocations!, create_rules!
 
 include("exceptions.jl")
 include("domainmodel.jl")
 include("query.jl")
 include("service.jl")
 include("ActionQueue.jl")
+include("CLI.jl")
 
 """
     function network_state(id, whitelist, blacklist, pinnedlist, frozenlist, indexer_service_network_url)
@@ -137,8 +138,10 @@ function push_allocations!(
     existing_allocations = query_indexer_allocations(
         Client(indexer_service_network_url), indexer_id
     )
-    existing_allocs = Dict(ipfshash.(existing_allocations) .=> id.(existing_allocations))
-    existing_ipfs = ipfshash.(existing_allocations)
+    existing_allocs::Dict{String,String} = Dict(
+        ipfshash.(existing_allocations) .=> id.(existing_allocations)
+    )
+    existing_ipfs::Vector{String} = ipfshash.(existing_allocations)
     proposed_ipfs = collect(keys(proposed_allocations))
 
     # Generate ActionQueue inputs
@@ -158,6 +161,41 @@ function push_allocations!(
     response = mutate(client, "queueActions", Dict("actions" => actions))
 
     return response
+end
+
+function create_rules!(
+    indexer_id::AbstractString,
+    indexer_service_network_url::T,
+    proposed_allocations::Dict{T,<:Real},
+    whitelist::AbstractVector{T},
+    blacklist::AbstractVector{T},
+    pinnedlist::AbstractVector{T},
+    frozenlist::AbstractVector{T},
+) where {T<:AbstractString}
+    actions = []
+
+    # Query existing allocations that are not frozen
+    existing_allocations = query_indexer_allocations(
+        Client(indexer_service_network_url), indexer_id
+    )
+    existing_allocs = Dict(ipfshash.(existing_allocations) .=> id.(existing_allocations))
+    existing_ipfs = ipfshash.(existing_allocations)
+    proposed_ipfs = collect(keys(proposed_allocations))
+
+    # Generate CLI commands
+
+    reallocations, reallocate_ipfs = CLI.reallocate_actions(
+        proposed_ipfs, existing_ipfs, proposed_allocations, existing_allocs
+    )
+    existing_ipfs ∩ proposed_ipfs
+    open_allocations, open_ipfs = CLI.allocate_actions(
+        proposed_ipfs, reallocate_ipfs, proposed_allocations
+    )
+    close_allocations, close_ipfs = CLI.unallocate_actions(
+        existing_ipfs, reallocate_ipfs, frozenlist
+    )
+    actions = vcat(reallocations, open_allocations, close_allocations)
+    return actions
 end
 
 end

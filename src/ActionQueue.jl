@@ -1,4 +1,5 @@
 module ActionQueue
+include("action.jl")
 
 @enum ActionStatus begin
     queued
@@ -52,7 +53,7 @@ function reallocate_actions(
     proposed_allocations::Dict{T,<:Real},
     existing_allocations::Dict{T,T},
 ) where {T<:AbstractString}
-    reallocate_ipfs = existing_ipfs ∩ proposed_ipfs
+    ipfses = reallocate_ipfs(existing_ipfs, proposed_ipfs)
     actions = map(
         ipfs -> structtodict(
             ReallocateActionInput(
@@ -64,9 +65,9 @@ function reallocate_actions(
                 "AllocationOpt",
             ),
         ),
-        reallocate_ipfs,
+        ipfses,
     )
-    return actions, reallocate_ipfs
+    return actions, ipfses
 end
 
 function allocate_actions(
@@ -74,7 +75,7 @@ function allocate_actions(
     reallocate_ipfs::Vector{T},
     proposed_allocations::Dict{T,<:Real},
 ) where {T<:AbstractString}
-    open_ipfs = setdiff(proposed_ipfs, reallocate_ipfs)
+    ipfses = open_ipfs(proposed_ipfs, reallocate_ipfs)
     actions = map(
         ipfs -> structtodict(
             AllocateActionInput(
@@ -86,9 +87,9 @@ function allocate_actions(
                 "AllocationOpt",
             ),
         ),
-        open_ipfs,
+        ipfses,
     )
-    return actions, open_ipfs
+    return actions, ipfses
 end
 
 function unallocate_actions(
@@ -97,7 +98,7 @@ function unallocate_actions(
     reallocate_ipfs::Vector{T},
     frozenlist::Vector{T},
 ) where {T<:AbstractString}
-    close_ipfs = setdiff(setdiff(existing_ipfs, reallocate_ipfs), frozenlist)
+    ipfses = close_ipfs(existing_ipfs, reallocate_ipfs, frozenlist)
     actions = map(
         ipfs -> structtodict(
             UnallocateActionInput(
@@ -108,9 +109,9 @@ function unallocate_actions(
                 "AllocationOpt",
             ),
         ),
-        close_ipfs,
+        ipfses,
     )
-    return actions, close_ipfs
+    return actions, ipfses
 end
 
 end

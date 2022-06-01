@@ -20,7 +20,7 @@ pkg> add https://github.com/graphprotocol/AllocationOpt.jl/
 pkg> add Comonicon
 ```
 
-## Public Function
+## Public API
 
 We expose the following functions in our public API.
 
