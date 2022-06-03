@@ -13,7 +13,7 @@ makedocs(;
         canonical="https://graphprotocol.github.io/AllocationOpt.jl",
         assets=String[],
     ),
-    pages=["Home" => "index.md"],
+    pages=["Home" => "index.md", "Usage" => "usage.md"],
 )
 
 deploydocs(; repo="github.com/graphprotocol/AllocationOpt.jl")
