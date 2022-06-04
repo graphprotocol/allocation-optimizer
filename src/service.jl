@@ -59,3 +59,53 @@ function optimize(indexer::Indexer, repo::Repository)
 
     return ω
 end
+
+function optimize(
+    indexer::Indexer,
+    repo::Repository,
+    max_allocations::Integer,
+    min_allocation_amounts::Float64,
+)
+    ψ = signal.(repo.subgraphs)
+    Ω = stakes(repo)
+    σ = indexer.stake
+
+    # Parameters
+    λ = 0
+
+    # Initialise
+    ω = zeros(length(ψ))
+    p = zeros(length(ψ))
+
+    # Stop conditions: added an allocation < minimum allocation amounts, or when nonzero allocations \geq max_allocaitons
+    while !stop_conditions(ω, min_allocation_amounts, max_allocations)
+        z = ω
+        for _ in range(100)
+            ξ = project(z, σ)
+            y = shrink(2ξ - z - λ * (-ψ * ω) / (ω + Ω)^2 - p, α)
+            z = z + y - ξ
+        end
+        ω = ξ
+        p = max(min(p + 1 / μ * (-ψ * ω) / (ω + Ω)^2, 1), -1)
+    end
+end
+
+shrink(z, α) = sign(z) .* map(x -> max(0, x), abs(z) - α)
+
+function project(x, σ)
+    ξ = x / σ
+    ζ = sort(ξ; rev=true)
+    ρ = maximum(
+        map(
+            x -> x[1] + (1 / x[2]) * (1 - sum(ζ[1:x[2]])) > 0 ? x[2] : typemin(Int64),
+            enumerate(ζ),
+        ),
+    )
+    λ = (1 / ρ)(1 - sum(ζ[1:ρ]))
+    z = σ * map(x -> max(0, x + λ), ξ)
+    return z
+end
+
+function stop_conditions(ω, minimum_allocation_amounts, max_allocations)
+    (min(ω) < minimum_allocation_amounts) | sum(map(x -> !iszero(x) ? 1 : 0 , ω)) > max_allocations
+end
