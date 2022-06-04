@@ -107,5 +107,6 @@ function project(x, σ)
 end
 
 function stop_conditions(ω, minimum_allocation_amounts, max_allocations)
-    (min(ω) < minimum_allocation_amounts) | sum(map(x -> !iszero(x) ? 1 : 0 , ω)) > max_allocations
+    return (min(ω) < minimum_allocation_amounts) | sum(map(x -> !iszero(x) ? 1 : 0, ω)) >
+           max_allocations
 end

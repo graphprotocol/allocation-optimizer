@@ -142,7 +142,7 @@ function push_allocations!(
         ipfshash.(existing_allocations) .=> id.(existing_allocations)
     )
     existing_ipfs::Vector{String} = ipfshash.(existing_allocations)
-    proposed_ipfs = collect(keys(proposed_allocations))
+    proposed_ipfs::Vector{String} = collect(keys(proposed_allocations))
 
     # Generate ActionQueue inputs
     reallocations, reallocate_ipfs = ActionQueue.reallocate_actions(
@@ -178,12 +178,11 @@ function create_rules!(
     existing_allocations = query_indexer_allocations(
         Client(indexer_service_network_url), indexer_id
     )
-    existing_allocs = Dict(ipfshash.(existing_allocations) .=> id.(existing_allocations))
-    existing_ipfs = ipfshash.(existing_allocations)
-    proposed_ipfs = collect(keys(proposed_allocations))
+    existing_allocs::Dict{String,String} = Dict(ipfshash.(existing_allocations) .=> id.(existing_allocations))
+    existing_ipfs::Vector{String} = ipfshash.(existing_allocations)
+    proposed_ipfs::Vector{String} = collect(keys(proposed_allocations))
 
     # Generate CLI commands
-
     reallocations, reallocate_ipfs = CLI.reallocate_actions(
         proposed_ipfs, existing_ipfs, proposed_allocations, existing_allocs
     )

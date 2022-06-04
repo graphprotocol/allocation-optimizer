@@ -32,6 +32,7 @@ struct UnallocateActionInput <: ActionInput
     status::ActionStatus
     type::ActionType
     allocationID::AbstractString
+    deploymentID::AbstractString
     source::AbstractString
     reason::AbstractString
 end
@@ -40,6 +41,7 @@ struct ReallocateActionInput <: ActionInput
     status::ActionStatus
     type::ActionType
     allocationID::AbstractString
+    deploymentID::AbstractString
     amount::AbstractString
     source::AbstractString
     reason::AbstractString
@@ -60,6 +62,7 @@ function reallocate_actions(
                 queued,
                 reallocate,
                 existing_allocations[ipfs],
+                ipfs,
                 string(proposed_allocations[ipfs]),
                 "AllocationOpt",
                 "AllocationOpt",
@@ -105,6 +108,7 @@ function unallocate_actions(
                 queued,
                 unallocate,
                 existing_allocations[ipfs],
+                ipfs,
                 "AllocationOpt",
                 "AllocationOpt",
             ),
