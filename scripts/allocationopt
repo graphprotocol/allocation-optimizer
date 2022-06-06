@@ -11,6 +11,7 @@ Optimises an indexer's allocations and pushes them to the action queue.
 - `filepath`: A path to the CSV file that contains whitelist, blacklist, pinnedlist, frozenlist as columns.
 - `grtgas`: The maximum amount of GRT that you are willing to spend on each allocation transaction.
 - `minimum_allocation_amount`: The minimum amount of GRT that you are willing to allocate to a subgraph.
+- `maximum_new_allocations`: The maximum number of new allocations you would like the optimizer to open.
 - `management_server_url`: The URL that exposes the indexer managment server, including the port. Must begin with http. Example: http://localhost:18000.
 - `indexer_service_network_url`: The URL that exposes the indexer service's network endpoint. Must begin with http. Example: http://localhost:7600/network.
 """
@@ -41,6 +42,7 @@ Optimises an indexer's allocations and generates indexer rules to change allocat
 - `filepath`: A path to the CSV file that contains whitelist, blacklist, pinnedlist, frozenlist as columns.
 - `grtgas`: The maximum amount of GRT that you are willing to spend on each allocation transaction.
 - `minimum_allocation_amount`: The minimum amount of GRT that you are willing to allocate to a subgraph.
+- `maximum_new_allocations`: The maximum number of new allocations you would like the optimizer to open.
 - `indexer_service_network_url`: The URL that exposes the indexer service's network endpoint. Must begin with http. Example: http://localhost:7600/network.
 """
 @cast function rules(id, filepath, minimum_allocation_amount, maximum_new_allocations, indexer_service_network_url)

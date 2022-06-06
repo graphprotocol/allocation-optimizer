@@ -80,6 +80,7 @@ function optimize_indexer(
     @warn "minimum_allocation_amount is not currently optimised for."
 
     # Optimise
+    # ω = optimize(indexer, repo, maximum_new_allocations, minimum_allocation_amount)
     ω = optimize(indexer, repo)
 
     # Filter results with deployment IPFS hashes

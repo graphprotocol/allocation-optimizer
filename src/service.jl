@@ -72,41 +72,54 @@ function optimize(
 
     # Parameters
     λ = 0
+    μ = 0.2
 
     # Initialise
-    ω = zeros(length(ψ))
+    ω = randn(length(ψ))
     p = zeros(length(ψ))
 
+    i = 0
     # Stop conditions: added an allocation < minimum allocation amounts, or when nonzero allocations \geq max_allocaitons
     while !stop_conditions(ω, min_allocation_amounts, max_allocations)
+        i = i + 1
+        # @show i
+        nonzero = sum(map(x -> x > 0 ? 1 : 0, ω))
+        @show nonzero
         z = ω
-        for _ in range(100)
+        local ξ
+        for _ in 1:100
             ξ = project(z, σ)
-            y = shrink(2ξ - z - λ * (-ψ * ω) / (ω + Ω)^2 - p, α)
+            numerator = λ * (-ψ .* ω)
+            denominator = (ω + Ω) .^ 2
+            frac = numerator ./ denominator
+            inp = 2ξ - z - λ * frac - p
+            y = shrink(inp, μ * λ)
             z = z + y - ξ
         end
         ω = ξ
-        p = max(min(p + 1 / μ * (-ψ * ω) / (ω + Ω)^2, 1), -1)
+        p = vecmax(vecmin(p + (1 / μ) * (-ψ .* ω) ./ (ω + Ω) .^ 2, 1), -1)
     end
+    return ω
 end
 
-shrink(z, α) = sign(z) .* map(x -> max(0, x), abs(z) - α)
+vecmax(seq, threshold) = map(x -> max(threshold, x), seq)
+vecmin(seq, threshold) = map(x -> min(threshold, x), seq)
 
+shrink(z, α) = sign.(z) .* vecmax(abs.(z) .- α, 0)
+
+# Projection onto σ-simplex
 function project(x, σ)
     ξ = x / σ
     ζ = sort(ξ; rev=true)
     ρ = maximum(
-        map(
-            x -> x[1] + (1 / x[2]) * (1 - sum(ζ[1:x[2]])) > 0 ? x[2] : typemin(Int64),
-            enumerate(ζ),
-        ),
+        map(x -> x[2] + (1 / x[1]) * (1 - sum(ζ[1:x[1]])) > 0 ? x[1] : 1, enumerate(ζ))
     )
-    λ = (1 / ρ)(1 - sum(ζ[1:ρ]))
-    z = σ * map(x -> max(0, x + λ), ξ)
+    λ = (1 / ρ) * (1 - sum(ζ[1:ρ]))
+    z = σ * vecmax(ξ .+ λ, 0)
     return z
 end
 
 function stop_conditions(ω, minimum_allocation_amounts, max_allocations)
-    return (min(ω) < minimum_allocation_amounts) | sum(map(x -> !iszero(x) ? 1 : 0, ω)) >
-           max_allocations
+    return (minimum(ω) < minimum_allocation_amounts) |
+           sum(map(x -> !iszero(x) ? 1 : 0, ω)) > max_allocations
 end
