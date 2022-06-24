@@ -179,7 +179,9 @@ function create_rules!(
     existing_allocations = query_indexer_allocations(
         Client(indexer_service_network_url), indexer_id
     )
-    existing_allocs::Dict{String,String} = Dict(ipfshash.(existing_allocations) .=> id.(existing_allocations))
+    existing_allocs::Dict{String,String} = Dict(
+        ipfshash.(existing_allocations) .=> id.(existing_allocations)
+    )
     existing_ipfs::Vector{String} = ipfshash.(existing_allocations)
     proposed_ipfs::Vector{String} = collect(keys(proposed_allocations))
 

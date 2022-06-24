@@ -99,4 +99,28 @@
         ω = optimize(indexer, repo)
         @test isapprox(ω, [4.2, 0.8], atol=0.1)
     end
+
+    @testset "projectsimplex" begin
+        # Shouldn't project since already on simplex
+        x = [5, 2, 8]
+        z = 15
+        @test projectsimplex(x, z) == x
+
+        # Should set negative value to zero and scale others up
+        # to be on simplex
+        x = [-5, 2, 8]
+        z = 15
+        w = projectsimplex(x, z)
+        @test sum(w) == z
+        @test all(w .≥ 0)
+        @test w[1] < w[2] < w[3]
+
+        # Should scale values down to be on simplex
+        x = [20, 2, 8]
+        z = 15
+        w = projectsimplex(x, z)
+        @test sum(w) == z
+        @test all(w .≥ 0)
+        @test w[2] < w[3] < w[1]
+    end
 end
