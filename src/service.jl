@@ -68,3 +68,14 @@ function projectsimplex(x::AbstractVector{T}, z) where {T<:Real}
     w = max.(x .- θ, zero(T))
     return w
 end
+
+projectrange(low, high, x::T) where {T<:Real} = max(min(x, one(T) * high), one(T) * low)
+
+shrink(z::T, α) where {T<:Real} = sign(z) .* max(abs(z) - α, zero(T))
+
+∇f(ω::T, ψ, Ω, μ, p) where {T<:Real} = -((ψ * Ω) / (ω + Ω + eps(T))^2) - (μ * p)
+
+# removed (ω .+ _) from the numerator to only include Ω, also removed minimum bound of 1: maximum(_, 1)
+compute_λ(ω, ψ, Ω) = minimum(nonzero(((Ω) .^ 3) ./ (2 .* ψ)))
+
+nonzero(v::Vector{<:Real}) = v[findall(v .!= 0.0)]
