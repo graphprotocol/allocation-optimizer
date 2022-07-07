@@ -68,6 +68,7 @@ end
 - `repo::Repository`: Contains the current network state.
 - `minimum_allocation_amount::Real`: The minimum amount of GRT that you are willing to allocate to a subgraph.
 - `maximum_new_allocations::Integer`: The maximum number of new allocations you would like the optimizer to open.
+- `τ`: Interval [0,1]. As τ gets closer to 0, the optimiser selects greedy allocations that maximise your short-term, expected rewards, but network dynamics will affect you more. The opposite occurs as τ approaches 1.
 ```
 """
 function optimize_indexer(
@@ -75,13 +76,21 @@ function optimize_indexer(
     repo::Repository,
     minimum_allocation_amount::Real,
     maximum_new_allocations::Integer,
+    τ::AbstractFloat,
 )
+    if τ > 1 || τ < 0
+        throw(ArgumentError("τ must be between 0 and 1."))
+    end
     @warn "maximum_new_allocations is not currently optimised for."
     @warn "minimum_allocation_amount is not currently optimised for."
 
     # Optimise
     # ω = optimize(indexer, repo, maximum_new_allocations, minimum_allocation_amount)
-    ω = optimize(indexer, repo)
+    Ω = stakes(repo)
+    ψ = signal.(repo.subgraphs)
+    σ = indexer.stake
+    Ωprime = discount(Ω, ψ, σ, τ)
+    ω = optimize(Ωprime, ψ, σ)
 
     # Filter results with deployment IPFS hashes
     suggested_allocations = Dict(

@@ -87,3 +87,9 @@ id(x::GraphEntity) = x.id
 allocation(i::Indexer) = i.allocations
 
 allocated_stake(a::Allocation) = a.amount
+
+stake(i::Indexer) = i.stake
+
+function other_stake(repo::Repository, indexer::Indexer)
+    return sum(stake.(repo.indexers)) - stake(indexer)
+end

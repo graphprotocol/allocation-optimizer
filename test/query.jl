@@ -1,7 +1,8 @@
 using GraphQLClient
 
 @testset "query" begin
-    gateway_url = "https://gateway.thegraph.com/network"
+    # gateway_url = "https://gateway.thegraph.com/network"
+    gateway_url = "https://api.thegraph.com/subgraphs/name/graphprotocol/graph-network-mainnet"
 
     @testset "verify_ipfshashes" begin
         # Should fail due to bad prefix
@@ -142,5 +143,16 @@ using GraphQLClient
         # Should return the correct number of allocations
         allocations = query_indexer_allocations(client, id)
         @test length(allocations) == alloc_length
+    end
+
+    @testset "other stake" begin
+        # calculate the stake constraint for indexer
+        client = Client(gateway_url)
+        subgraphs = query_subgraphs(client, String[], String[])
+        indexers = query_indexers(client, subgraphs)
+        indexer = indexers[findfirst(i -> length(i.allocations) > 0, indexers)]
+        repo = snapshot(client, String[], String[])
+
+        @test other_stake(repo, indexer) + indexer.stake == sum(i -> i.stake, indexers)
     end
 end
