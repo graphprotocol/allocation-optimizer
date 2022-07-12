@@ -74,6 +74,7 @@ end
 function optimize_indexer(
     indexer::Indexer,
     repo::Repository,
+    fullrepo::Repository,
     minimum_allocation_amount::Real,
     maximum_new_allocations::Integer,
     τ::AbstractFloat,
@@ -86,11 +87,17 @@ function optimize_indexer(
 
     # Optimise
     # ω = optimize(indexer, repo, maximum_new_allocations, minimum_allocation_amount)
-    Ω = stakes(repo)
+    Ωfull = stakes(fullrepo)
+    ψfull = signal.(fullrepo.subgraphs)
+    σfull = sum(Ωfull)
+    Ωprime = discount(Ωfull, ψfull, σfull, τ)
+    # 💻 = Ωprime[intersect(id.(fullrepo.subgraphs),id.(repo.subgraphs))]
+    ψids = id.(repo.subgraphs)
+    ψfullids = id.(fullrepo.subgraphs)
+    Ω = Ωprime[findall(x -> x in ψids, ψfullids)]
     ψ = signal.(repo.subgraphs)
     σ = indexer.stake
-    Ωprime = discount(Ω, ψ, σ, τ)
-    ω = optimize(Ωprime, ψ, σ)
+    ω = optimize(Ω, ψ, σ)
 
     # Filter results with deployment IPFS hashes
     suggested_allocations = Dict(

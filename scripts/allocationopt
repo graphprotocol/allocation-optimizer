@@ -23,8 +23,11 @@ Optimises an indexer's allocations and pushes them to the action queue.
     # Pull network state from indexer service network endpoint
     indexer, repo = network_state(id, cols..., indexer_service_network_url)
 
+    # Pull full network state from indexer service network endpoint
+    _, fullrepo = network_state(id, String[], String[], String[], String[], indexer_service_network_url)
+
     # Optimize for the indexer
-    ω = optimize_indexer(repo, indexer, parse(Float64, minimum_allocation_amount), parse(Int64, maximum_new_allocations), parse(Float64, τ))
+    ω = optimize_indexer(indexer, repo, fullrepo, parse(Float64, minimum_allocation_amount), parse(Int64, maximum_new_allocations), parse(Float64, τ))
     
     # Push results to action queue
     _ = push_allocations!(id, management_server_url, indexer_service_network_url, ω, cols...)
@@ -52,10 +55,13 @@ Optimises an indexer's allocations and generates indexer rules to change allocat
     cols = read_filterlists(filepath)
 
     # Pull network state from indexer service network endpoint
-    indexer, repo = network_state(id, cols..., indexer_service_network_url)
+    repo, indexer = network_state(id, cols..., indexer_service_network_url)
+
+    # Pull full network state from indexer service network endpoint
+    fullrepo, _ = network_state(id, String[], String[], String[], String[], indexer_service_network_url)
 
     # Optimize for the indexer
-    ω = optimize_indexer(repo, indexer, parse(Float64, minimum_allocation_amount), parse(Int64, maximum_new_allocations), parse(Float64, τ))
+    ω = optimize_indexer(indexer, repo, fullrepo, parse(Float64, minimum_allocation_amount), parse(Int64, maximum_new_allocations), parse(Float64, τ))
 
     # Create indexer rules
     indexer_rules = create_rules!(id, indexer_service_network_url, ω, cols...)
