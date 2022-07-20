@@ -171,32 +171,12 @@
     end
 
     @testset "∇f" begin
-        # ω and p are 0
+        # ω is 0
         ψ = Float64[5, 2, 8]
         Ω = Float64[2, 1, 1]
         ω = Float64[0, 0, 0]
-        p = Float64[0, 0, 0]
-        μ = 0.1
-        df = ∇f.(ω, ψ, Ω, μ, p)
-        @test_skip df ≈ [-2.5, -2, -8]
-
-        # ω and p are 1
-        ψ = Float64[5, 2, 8]
-        Ω = Float64[2, 1, 1]
-        ω = Float64[1, 1, 1]
-        p = Float64[1, 1, 1]
-        μ = 0.1
-        df = ∇f.(ω, ψ, Ω, μ, p)
-        @test_skip df == [-10 / 9 - 0.1, -0.6, -2.1]
-
-        # various numbers
-        ψ = Float64[4, 5, 8]
-        Ω = Float64[1, 3, 4]
-        ω = Float64[3, 1, 4]
-        p = Float64[0.1, 10, 2]
-        μ = 0.1
-        df = ∇f.(ω, ψ, Ω, μ, p)
-        @test_skip df == [-0.26, -1.9375, -0.7]
+        df = ∇f.(ω, ψ, Ω)
+        @test df ≈ [-2.5, -2, -8]
     end
 
     @testset "compute_λ" begin
@@ -238,5 +218,62 @@
         τ = 0.2
         Ωnew = discount(Ω, ψ, σ, τ)
         @test sum(Ωnew) == σ
+    end
+
+    @testset "gssp" begin
+        # Shouldn't project since already on simplex
+        x = [5, 2, 8, 0, 1]
+        k = 3
+        σ = 15
+        @test gssp(x, k, σ) == [5, 2, 8, 0, 0]
+
+        # Should set negative value to zero and scale others up
+        # to be on simplex
+        x = [-5, 2, 8, -10, -8]
+        k = 3
+        σ = 15
+        @test gssp(x, k, σ) == [0, 4.5, 10.5, 0, 0]
+
+        # Should scale values down to be on simplex
+        x = [20, 2, 8, 1, 7]
+        k = 3
+        σ = 15
+        w = gssp(x, k, σ)
+        @test sum(w) ≈ σ
+        @test all(w .≥ 0)
+        @test w[1] > w[3] > w[5]
+    end
+
+    @testset "pgd_step" begin
+        # ω is 0
+        ψ = Float64[5, 2, 8]
+        Ω = Float64[2, 1, 1]
+        ω = Float64[0, 0, 0]
+        k = 2
+        σ = 15
+        η = 1
+        ω₁ = pgd_step(ω, ψ, Ω, k, σ, η)
+        @test ω₁ ≈ [4.75, 0.0, 10.25]
+
+        # η is 0
+        ψ = Float64[5, 2, 8]
+        Ω = Float64[2, 1, 1]
+        ω = Float64[0, 0, 0]
+        k = 2
+        σ = 15
+        η = 0
+        ω₁ = pgd_step(ω, ψ, Ω, k, σ, η)
+        @test ω₁ ≈ [7.5, 7.5, 0.0]
+    end
+
+    @testset "pgd" begin
+        ψ = Float64[5, 2, 8]
+        Ω = Float64[2, 1, 1]
+        ω = Float64[0, 0, 0]
+        k = 1
+        σ = 15
+        η = 0.5
+        ω₁ = pgd(ω, ψ, Ω, k, σ, η)
+        @test ω₁ == [0.0, 0.0, 15.0]
     end
 end
