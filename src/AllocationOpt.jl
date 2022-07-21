@@ -91,13 +91,13 @@ function optimize_indexer(
     ψfull = signal.(fullrepo.subgraphs)
     σfull = sum(Ωfull)
     Ωprime = discount(Ωfull, ψfull, σfull, τ)
-    # 💻 = Ωprime[intersect(id.(fullrepo.subgraphs),id.(repo.subgraphs))]
     ψids = id.(repo.subgraphs)
     ψfullids = id.(fullrepo.subgraphs)
     Ω = Ωprime[findall(x -> x in ψids, ψfullids)]
     ψ = signal.(repo.subgraphs)
     σ = indexer.stake
     ω = optimize(Ω, ψ, σ)
+    # ω = optimize(Ω, ψ, σ, maximum_new_allocations)
 
     # Filter results with deployment IPFS hashes
     suggested_allocations = Dict(
@@ -212,7 +212,7 @@ function create_rules!(
     close_allocations, close_ipfs = CLI.unallocate_actions(
         existing_ipfs, reallocate_ipfs, frozenlist
     )
-    actions = vcat(reallocations, open_allocations, close_allocations)
+    actions = vcat(close_allocations, reallocations, open_allocations)
     return actions
 end
 

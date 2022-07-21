@@ -1,4 +1,8 @@
 using Roots
+using LinearAlgebra
+using Distributed
+using ProgressMeter
+using SharedArrays
 
 function detach_indexer(repo::Repository, id::AbstractString)::Tuple{Indexer,Repository}
     # Get requested indexer
@@ -49,6 +53,8 @@ end
 solve_primal(Ω, ψ, v) = max.(0.0, .√(ψ .* Ω / v) - Ω)
 
 function optimize(Ω::AbstractVector{T}, ψ::AbstractVector{T}, σ::T) where {T<:Real}
+    # Add 1 to Ω to prevent degenerate cases
+    Ω .+= 1
     # Solve the dual and use that value to solve the primal
     v = solve_dual(Ω, ψ, σ)
     ω = solve_primal(Ω, ψ, v)
@@ -56,29 +62,30 @@ function optimize(Ω::AbstractVector{T}, ψ::AbstractVector{T}, σ::T) where {T<
     return ω
 end
 
-# function optimize(Ω::AbstractVector{T}, ψ::AbstractVector{T}, σ::T) where {T<:Real}
-#     # Add 1 to Ω to prevent degenerate cases
-#     Ω .+= 1
-#     # ω₁ initiliased to 0s
-#     ω₁ = zeros(length(Ω))
-#     # for k ∈ {1, max_allocations}
-#     # do projected gradient descent for projection onto the k-sparse until convergence
-# end
+function optimize(
+    Ω::AbstractVector{T}, ψ::AbstractVector{T}, σ::Real, max_allocations::Int
+) where {T<:Real}
+    max_allocations = min(max_allocations, length(Ω))
+    # Add 1 to Ω to prevent degenerate cases
+    Ω .+= 1
+    η = 1e5
+    ωs = SharedMatrix{T}(max_allocations, length(Ω))
+    # do projected gradient descent for projection onto the k-sparse until convergence
+    @showprogress @distributed for k in 1:max_allocations
+        ωs[k, :] = pgd(ψ, Ω, k, σ, η)
+    end
+    return ωs[max_allocations, :]
+end
 
-function pgd(
-    x::AbstractVector{<:Real},
-    ψ::AbstractVector{<:Real},
-    Ω::AbstractVector{<:Real},
-    k::Int,
-    σ::Real,
-    η::Real,
-)
+function pgd(ψ::AbstractVector{<:Real}, Ω::AbstractVector{<:Real}, k::Int, σ::Real, η::Real)
     @assert minimum(Ω) >= 1
+    xnew = ones(length(Ω))
+    x = zeros(length(Ω))
+
     # Run pgd_step until convergence
-    # Make xnew = x, and x something else
-    x = x .- 1
-    xnew = x .+ 1
-    while !(xnew ≈ x)
+    tol = 1e-3
+    # while norm(x - xnew) > tol
+    while !isapprox(x, xnew; atol=tol)
         # (re)set x to xnew
         x = xnew
         xnew = pgd_step(x, ψ, Ω, k, σ, η)
@@ -141,7 +148,7 @@ nonzero(v::Vector{<:Real}) = v[findall(v .!= 0.0)]
 function discount(
     Ω::AbstractVector{T}, ψ::AbstractVector{T}, σ::T, τ::AbstractFloat
 ) where {T<:Real}
-    Ω0 = ones(length(Ω))
+    Ω0 = zeros(length(Ω))
     Ωstar = optimize(Ω0, ψ, σ)
     Ωprime = projectsimplex(τ * Ωstar + (1 - τ) * Ω, σ)
     return Ωprime

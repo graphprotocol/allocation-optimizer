@@ -1,4 +1,4 @@
-#!/usr/local/bin/julia
+#!/usr/bin/julia
 using Comonicon
 using AllocationOpt
 

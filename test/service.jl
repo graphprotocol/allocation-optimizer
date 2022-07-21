@@ -87,7 +87,7 @@
         repo = Repository(
             [
                 Indexer(
-                    "0x01", 10.0, [Allocation("Qmaaa", 2.0, 0), Allocation("Qmbbb", 8.0, 0)]
+                    "0x01", 10.0, [Allocation("Qmaaa", 1.0, 0), Allocation("Qmbbb", 7.0, 0)]
                 ),
             ],
             [
@@ -206,7 +206,7 @@
         σ = 10.0
         τ = 1.0
         Ωnew = discount(Ω, ψ, σ, τ)
-        Ω0 = ones(length(Ω))
+        Ω0 = zeros(length(Ω))
         @test Ωnew == optimize(Ω0, ψ, σ)
 
         # τ = 0.0
@@ -269,11 +269,36 @@
     @testset "pgd" begin
         ψ = Float64[5, 2, 8]
         Ω = Float64[2, 1, 1]
-        ω = Float64[0, 0, 0]
         k = 1
         σ = 15
         η = 0.5
-        ω₁ = pgd(ω, ψ, Ω, k, σ, η)
+        ω₁ = pgd(ψ, Ω, k, σ, η)
         @test ω₁ == [0.0, 0.0, 15.0]
+    end
+
+    @testset "optimize pgd" begin
+        # # k = 2
+        # ψ = Float64[5, 8]
+        # Ω = Float64[2, 1]
+        # σ = 15.0
+        # ωopt = optimize(Ω, ψ, σ)
+        # ψ = Float64[5, 2, 8]
+        # Ω = Float64[2, 1, 1]
+        # ω = Float64[0, 0, 0]
+        # k = 2
+        # ω₁ = optimize(Ω, ψ, σ, k)
+        # @test isapprox(ωopt, ω₁[findall(ω₁ .!= 0.0)]; atol=1e-5)
+
+        # # k = 3
+        # σ = 15.0
+        # ψ = Float64[5, 2, 8]
+        # Ω = Float64[2, 1, 1]
+        # ω = Float64[0, 0, 0]
+        # k = 3
+        # ωopt = optimize(Ω, ψ, σ)
+        # ω₁ = optimize(Ω, ψ, σ, k)
+        # @show ωopt
+        # @show ω₁
+        # @test isapprox(ωopt[findall(ωopt .!= 0.0)], ω₁[findall(ω₁ .!= 0.0)]; atol=1e-5)
     end
 end
