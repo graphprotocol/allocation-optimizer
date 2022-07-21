@@ -54,7 +54,7 @@ using GraphQLClient
         repo, optindexer = network_state(
             id, String[ipfshash], String[], String[], String[], gateway_url
         )
-        allocs = optimize_indexer(optindexer, repo, repo, 0.0, 10000, τ)
+        allocs = optimize_indexer(optindexer, repo, repo, 0.0, 2, τ)
         # Sum allocation amounts
         ω = sum(values(allocs))
         @test isapprox(ω, stake; atol=1e-6)
@@ -69,22 +69,17 @@ using GraphQLClient
             String[],
             gateway_url,
         )
-        allocs = optimize_indexer(optindexer, repo, repo, 0.0, 10000, τ)
+        allocs = optimize_indexer(optindexer, repo, repo, 0.0, 2, τ)
         # Sum allocation amounts
         ω = sum(values(allocs))
         @test isapprox(ω, stake; atol=1e-6)
         # Length of allocations ≤ length of whitelist
         @test length(allocs) ≤ 2
+    end
 
+    @testset "read_filterlists" begin
         # Should handle CSV input
-        client = Client(gateway_url)
-        id = query(client, "indexers"; query_args=Dict("where" => Dict("stakedTokens_gte" => "100000000000000000000000")), output_fields="id").data["indexers"][1]["id"]
-        indexer = query(client, "indexers"; query_args=Dict("where" => Dict("id" => id)), output_fields=["delegatedTokens", "stakedTokens"]).data["indexers"][1]
-        stake = togrt(indexer["delegatedTokens"]) + togrt(indexer["stakedTokens"])
         cols = read_filterlists("example.csv")
-        repo, optindexer = network_state(id, cols..., gateway_url)
-        allocs = optimize_indexer(optindexer, repo, repo, 0.0, 10000, τ)
-        ω = sum(values(allocs))
-        @test isapprox(ω, stake; atol=1e-6)
+        @test length(cols[1]) == 2
     end
 end

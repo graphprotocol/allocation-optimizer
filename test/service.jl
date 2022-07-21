@@ -127,49 +127,6 @@
         @test w[2] < w[3] < w[1]
     end
 
-    @testset "projectrange" begin
-        low = -1
-        high = 1
-        # Shouldn't project since already within range
-        x = [-0.5, 0.2, 0.8]
-        @test_skip projectrange.(low, high, x) == x
-
-        # Should set out of range to within
-        x = [-5, -0.2, 8]
-        w = projectrange.(low, high, x)
-        @test_skip maximum(w) == high
-        @test_skip minimum(w) == low
-        @test_skip w[2] == x[2]
-        @test_skip w[1] == low
-        @test_skip w[3] == high
-
-        # Should be within the range whatever it is
-        x = rand(Int, 10)
-        w = projectrange.(low, high, x)
-        @test_skip maximum(w) <= high
-        @test_skip minimum(w) >= low
-    end
-
-    @testset "shrink" begin
-        # No need to shrink
-        z = [-5, 0, 2, 8]
-        α = 0
-        y = shrink.(z, α)
-        @test_skip y == z
-
-        # Shrink from positives and negatives
-        z = [-5, 0, 8]
-        α = 1
-        y = shrink.(z, α)
-        @test_skip y == [-4, 0, 7]
-
-        # Shrink and zeros
-        z = [-5, 1, 3, 8]
-        α = 3
-        y = shrink.(z, α)
-        @test_skip y == [-2, 0, 0, 5]
-    end
-
     @testset "∇f" begin
         # ω is 0
         ψ = Float64[5, 2, 8]
@@ -177,26 +134,6 @@
         ω = Float64[0, 0, 0]
         df = ∇f.(ω, ψ, Ω)
         @test df ≈ [-2.5, -2, -8]
-    end
-
-    @testset "compute_λ" begin
-        ψ = [5, 2, 1, 1, 10, 4]
-        Ω = [2, 5, 1, 0, 0.1, 5]
-        ω = [0, 0, 0, 0, 0, 0]
-        λ = compute_λ(ω, ψ, Ω)
-        @test_skip isapprox(λ, 5e-5, atol=0.00001)
-    end
-
-    @testset "nonzero" begin
-        # no zero
-        ψ = Float64[5, 2, 1, 1, 10, 4]
-        @test_skip nonzero(ψ) == ψ
-        # some zero
-        Ω = Float64[2, 5, 1, 0, 0.1, 5]
-        @test_skip nonzero(Ω) == [2, 5, 1, 0.1, 5]
-        # all zero
-        ω = Float64[0, 0, 0, 0, 0, 0]
-        @test_skip isempty(nonzero(ω))
     end
 
     @testset "discount" begin
@@ -272,8 +209,10 @@
         k = 1
         σ = 15
         η = 10000
-        ηdown = 0.5
-        ω₁ = pgd(ψ, Ω, k, σ, η, ηdown)
+        Δη = 1.001
+        patience = 1e4
+        tol = 1e-3
+        ω₁ = pgd(ψ, Ω, k, σ, η, Δη, patience, tol)
         @test ω₁ == [0.0, 0.0, 15.0]
     end
 

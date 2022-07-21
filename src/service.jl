@@ -69,11 +69,13 @@ function optimize(
     # Add 1 to Ω to prevent degenerate cases
     Ω .+= 1
     η = 1e8
-    ηdown = 0.9
+    Δη = 1.001
+    patience = 1e4
+    tol = 1e-3
     ωs = SharedMatrix{T}(max_allocations, length(Ω))
     # do projected gradient descent for projection onto the k-sparse until convergence
     @showprogress @distributed for k in 1:max_allocations
-        ωs[k, :] = pgd(ψ, Ω, k, σ, η, ηdown)
+        ωs[k, :] = pgd(ψ, Ω, k, σ, η, Δη, patience, tol)
     end
     return ωs[max_allocations, :]
 end
@@ -84,29 +86,28 @@ function pgd(
     k::Int,
     σ::Real,
     η::Real,
-    ηdown::Real,
+    Δη::Real,
+    patience::Real,
+    tol::Real,
 )
     xold = -1 .* ones(length(Ω))
     xnew = ones(length(Ω))
     x = zeros(length(Ω))
 
     # Run pgd_step until convergence
-    tol = 1e-3
-    i = 0
     j = 0
-    patience = 1e4
     while !isapprox(x, xnew; atol=tol)
         # (re)set x to xnew
         x = xnew
         xnew = pgd_step(x, ψ, Ω, k, σ, η)
         if norm(xnew - x) ≥ norm(x - xold)
             # Learning rate is too high, so we've diverged.
-            η *= 1 / 1.001
+            η *= 1 / Δη
             j = 0
         else
             j += 1
             if j > patience
-                η *= 1.001
+                η *= Δη
             end
         end
         xold = x
@@ -148,23 +149,7 @@ function projectsimplex(x::AbstractVector{T}, z) where {T<:Real}
     return w
 end
 
-# NOTE: function not used
-projectrange(low, high, x::T) where {T<:Real} = max(min(x, one(T) * high), one(T) * low)
-
-# NOTE: function not used
-shrink(z::T, α) where {T<:Real} = sign(z) .* max(abs(z) - α, zero(T))
-
-# NOTE: function not used
-∇f(ω::T, ψ, Ω, μ, p) where {T<:Real} = -((ψ * Ω) / (ω + Ω + eps(T))^2) - (μ * p)
-
 ∇f(x::T, ψ, Ω) where {T<:Real} = -((ψ * Ω) / (x + Ω)^2)
-
-# NOTE: function not used
-# removed (ω .+ _) from the numerator to only include Ω, also removed minimum bound of 1: maximum(_, 1)
-compute_λ(ω, ψ, Ω) = minimum(nonzero(((Ω) .^ 3) ./ (2 .* ψ)))
-
-# NOTE: function not used
-nonzero(v::Vector{<:Real}) = v[findall(v .!= 0.0)]
 
 function discount(
     Ω::AbstractVector{T}, ψ::AbstractVector{T}, σ::T, τ::AbstractFloat
