@@ -218,6 +218,7 @@
 
     @testset "optimize pgd" begin
         # k = 2
+        filter_fn = (a, b, c) -> a[end, :]
         a = 1e5
         b = 1e7
         ψ = Float64[5, 8] * a
@@ -227,7 +228,7 @@
         ψ = Float64[5, 2, 8] * a
         Ω = Float64[2, 1, 1] * b
         k = 2
-        ω₁ = optimize(Ω, ψ, σ, k)
-        @test isapprox(ωopt, ω₁[findall(ω₁ .!= 0.0)]; rtol=1e-2)
+        ω = optimize(Ω, ψ, σ, k, filter_fn)
+        @test isapprox(ωopt, ω[findall(ω .!= 0.0)]; rtol=1e-2)
     end
 end

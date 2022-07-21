@@ -107,6 +107,30 @@ function query_indexers(client::Client, subgraphs::AbstractVector{SubgraphDeploy
     return indexers
 end
 
+function networkparameters(client::Client, network_id::Integer)
+    network_query = GQLQuery(
+        Dict("id" => network_id),
+        [
+            "id",
+            "totalSupply",
+            "networkGRTIssuance",
+            "epochLength",
+            "totalTokensSignalled",
+            "currentEpoch",
+        ],
+    )
+    network_data = query(client, "graphNetwork"; query_args=network_query.args, output_fields=network_query.fields).data["graphNetwork"]
+    network = GraphNetworkParameters(
+        network_data["id"],
+        network_data["totalSupply"],
+        network_data["networkGRTIssuance"],
+        network_data["epochLength"],
+        network_data["totalTokensSignalled"],
+        network_data["currentEpoch"],
+    )
+    return network
+end
+
 function snapshot(
     client::Client, ipfsin::AbstractVector{T}, ipfs_notin::AbstractVector{T}
 ) where {T<:AbstractString}

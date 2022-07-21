@@ -3,7 +3,8 @@ module AllocationOpt
 using CSV
 using GraphQLClient
 
-export network_state, optimize_indexer, read_filterlists, push_allocations!, create_rules!
+export network_state, optimize_indexer, read_filterlists
+export push_allocations!, create_rules!, apply_preferences
 
 include("exceptions.jl")
 include("domainmodel.jl")
@@ -17,15 +18,16 @@ include("CLI.jl")
     
 # Arguments
 - `id::AbstractString`: The id of the indexer to optimise.
+- `network_id`: The id of the network the indexer want to optimise on.
 - `whitelist::Vector{AbstractString}`: Subgraph deployment IPFS hashes included in this list will be considered for, but not guaranteed allocation.
 - `blacklist::Vector{AbstractString}`: Subgraph deployment IPFS hashes included in this list will not be considered, and will be suggested to close if there's an existing allocation.
 - `pinnedlist::Vector{AbstractString}`: Subgraph deployment IPFS hashes included in this list will be guaranteed allocation. Currently unsupported.
 - `frozenlist::Vector{AbstractString}`: Subgraph deployment IPFS hashes included in this list will not be considered during optimisation. Any allocations you have on these subgraphs deployments will remain.
 - `indexer_service_network_url::AbstractString`: The URL that exposes the indexer service's network endpoint. Must begin with http. Example: http://localhost:7600/network.
-
 """
 function network_state(
-    id::AbstractString,
+    indexer_id::AbstractString,
+    network_id::Int,
     whitelist::AbstractVector{T},
     blacklist::AbstractVector{T},
     pinnedlist::AbstractVector{T},
@@ -49,15 +51,50 @@ function network_state(
 
     # Pull data from mainnet subgraph
     repo = snapshot(client, query_ipfshash_in, query_ipfshash_not_in)
-
+    network = networkparameters(client, network_id)
     # Handle frozenlist
     # Get indexer
-    indexer, repo = detach_indexer(repo, id)
+    indexer, repo = detach_indexer(repo, indexer_id)
 
     # Reduce indexer stake by frozenlist
-    fstake = frozen_stake(client, id, frozenlist)
+    fstake = frozen_stake(client, indexer_id, frozenlist)
     indexer = Indexer(indexer.id, indexer.stake - fstake, indexer.allocations)
-    return repo, indexer
+
+    return repo, indexer, network
+end
+
+"""
+function apply_preferences(network::GraphNetworkParameters, minimum_allocation_amount::Real, gas::Real, allocation_lifetime::Int, ω::Matrix{T}, ψ::AbstractVector{T}, Ω::AbstractVector{T}) where {T <: Real}
+
+# Arguments
+- `network::GraphNetworkParameters`: Contains the current network parameters.
+- `minimum_allocation_amount::Real`: The minimum amount of GRT that you are willing to allocate to a subgraph.
+- `gas::Float64`: The gas in grt that the indexer will spend on the allocation transaction. We use this to
+    calculate profit, but note that the assumption that this will be the price at the end of the allocation
+    lifetime is probably bad. Gas is constantly changing.
+- `allocation_lifetime::Integer`: The number of epochs for which these allocations would be open. An allocation earns indexing rewards upto 28 epochs.
+- `ω::Matrix{Real}`: A matrix of allocations in which the rows have different sparsities.
+- `ψ::Vector{Real}`: A vector of subgraph signals.
+- `Ω::Vector{Real}`: A vector of the allocations of other indexers.
+"""
+function apply_preferences(
+    network::GraphNetworkParameters,
+    minimum_allocation_amount::Real,
+    gas::Real,
+    allocation_lifetime::Int,
+    ω::Matrix{T},
+    ψ::AbstractVector{T},
+    Ω::AbstractVector{T}
+) where {T <: Real}
+    if minimum_allocation_amount > indexer.σ
+        throw(ArgumentError("Minimum allocation amount must be less than your stake."))
+    end
+    min_allocs = minimum(ω; dims=2)  # Minimum over rows
+    filtixs = findall(x -> x > minimum_allocation_amount, min_allocs)
+    ωfilt = ω[filtixs]
+    profits = profit.(network, gas, allocation_lifetime, ωfilt, ψ, Ω)
+    i = argmax(profits)
+    return ωfilt[i, :]
 end
 
 """
@@ -66,27 +103,27 @@ end
 # Arguments
 - `indexer::Indexer`: The indexer being optimised.
 - `repo::Repository`: Contains the current network state.
-- `minimum_allocation_amount::Real`: The minimum amount of GRT that you are willing to allocate to a subgraph.
-- `maximum_new_allocations::Integer`: The maximum number of new allocations you would like the optimizer to open.
-- `τ`: Interval [0,1]. As τ gets closer to 0, the optimiser selects greedy allocations that maximise your short-term, expected rewards, but network dynamics will affect you more. The opposite occurs as τ approaches 1.
+- `maximum_new_allocations::Int`: The maximum number of new allocations you would like the optimizer to open.
+- `τ::AbstractFloat`: Interval [0,1]. As τ gets closer to 0, the optimiser selects greedy allocations that maximise your short-term, expected rewards, but network dynamics will affect you more. The opposite occurs as τ approaches 1.
 ```
 """
 function optimize_indexer(
     indexer::Indexer,
     repo::Repository,
     fullrepo::Repository,
-    minimum_allocation_amount::Real,
     maximum_new_allocations::Integer,
     τ::AbstractFloat,
+    filter_function::Function,
 )
     if τ > 1 || τ < 0
         throw(ArgumentError("τ must be between 0 and 1."))
     end
-    @warn "maximum_new_allocations is not currently optimised for."
-    @warn "minimum_allocation_amount is not currently optimised for."
+    if maximum_new_allocations > length(repo.subgraphs)
+        @warn "Maximum new allocations is more than the number of available subgraph deployments; setting it to the number of subgraphs"
+        maximum_new_allocations = length(repo.subgraphs)
+    end
 
-    # Optimise
-    # ω = optimize(indexer, repo, maximum_new_allocations, minimum_allocation_amount)
+    # Optimise    # ω = optimize(indexer, repo, maximum_new_allocations, minimum_allocation_amount)
     Ωfull = stakes(fullrepo)
     ψfull = signal.(fullrepo.subgraphs)
     σfull = sum(Ωfull)
@@ -96,9 +133,7 @@ function optimize_indexer(
     Ω = Ωprime[findall(x -> x in ψids, ψfullids)]
     ψ = signal.(repo.subgraphs)
     σ = indexer.stake
-    ω = optimize(Ω, ψ, σ)
-    # ω = optimize(Ω, ψ, σ, maximum_new_allocations)
-    # @show ωopt
+    ω = optimize(Ω, ψ, σ, maximum_new_allocations, filter_function)
     # @show ω
 
     # Filter results with deployment IPFS hashes
