@@ -98,6 +98,8 @@ function optimize_indexer(
     σ = indexer.stake
     ω = optimize(Ω, ψ, σ)
     # ω = optimize(Ω, ψ, σ, maximum_new_allocations)
+    # @show ωopt
+    # @show ω
 
     # Filter results with deployment IPFS hashes
     suggested_allocations = Dict(

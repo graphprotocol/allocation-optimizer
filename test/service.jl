@@ -271,34 +271,24 @@
         Ω = Float64[2, 1, 1]
         k = 1
         σ = 15
-        η = 0.5
-        ω₁ = pgd(ψ, Ω, k, σ, η)
+        η = 10000
+        ηdown = 0.5
+        ω₁ = pgd(ψ, Ω, k, σ, η, ηdown)
         @test ω₁ == [0.0, 0.0, 15.0]
     end
 
     @testset "optimize pgd" begin
-        # # k = 2
-        # ψ = Float64[5, 8]
-        # Ω = Float64[2, 1]
-        # σ = 15.0
-        # ωopt = optimize(Ω, ψ, σ)
-        # ψ = Float64[5, 2, 8]
-        # Ω = Float64[2, 1, 1]
-        # ω = Float64[0, 0, 0]
         # k = 2
-        # ω₁ = optimize(Ω, ψ, σ, k)
-        # @test isapprox(ωopt, ω₁[findall(ω₁ .!= 0.0)]; atol=1e-5)
-
-        # # k = 3
-        # σ = 15.0
-        # ψ = Float64[5, 2, 8]
-        # Ω = Float64[2, 1, 1]
-        # ω = Float64[0, 0, 0]
-        # k = 3
-        # ωopt = optimize(Ω, ψ, σ)
-        # ω₁ = optimize(Ω, ψ, σ, k)
-        # @show ωopt
-        # @show ω₁
-        # @test isapprox(ωopt[findall(ωopt .!= 0.0)], ω₁[findall(ω₁ .!= 0.0)]; atol=1e-5)
+        a = 1e5
+        b = 1e7
+        ψ = Float64[5, 8] * a
+        Ω = Float64[2, 1] * b
+        σ = 15.0 * b
+        ωopt = optimize(Ω, ψ, σ)
+        ψ = Float64[5, 2, 8] * a
+        Ω = Float64[2, 1, 1] * b
+        k = 2
+        ω₁ = optimize(Ω, ψ, σ, k)
+        @test isapprox(ωopt, ω₁[findall(ω₁ .!= 0.0)]; rtol=1e-2)
     end
 end

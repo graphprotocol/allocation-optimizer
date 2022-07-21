@@ -68,27 +68,48 @@ function optimize(
     max_allocations = min(max_allocations, length(Ω))
     # Add 1 to Ω to prevent degenerate cases
     Ω .+= 1
-    η = 1e5
+    η = 1e8
+    ηdown = 0.9
     ωs = SharedMatrix{T}(max_allocations, length(Ω))
     # do projected gradient descent for projection onto the k-sparse until convergence
     @showprogress @distributed for k in 1:max_allocations
-        ωs[k, :] = pgd(ψ, Ω, k, σ, η)
+        ωs[k, :] = pgd(ψ, Ω, k, σ, η, ηdown)
     end
     return ωs[max_allocations, :]
 end
 
-function pgd(ψ::AbstractVector{<:Real}, Ω::AbstractVector{<:Real}, k::Int, σ::Real, η::Real)
-    @assert minimum(Ω) >= 1
+function pgd(
+    ψ::AbstractVector{<:Real},
+    Ω::AbstractVector{<:Real},
+    k::Int,
+    σ::Real,
+    η::Real,
+    ηdown::Real,
+)
+    xold = -1 .* ones(length(Ω))
     xnew = ones(length(Ω))
     x = zeros(length(Ω))
 
     # Run pgd_step until convergence
     tol = 1e-3
-    # while norm(x - xnew) > tol
+    i = 0
+    j = 0
+    patience = 1e4
     while !isapprox(x, xnew; atol=tol)
         # (re)set x to xnew
         x = xnew
         xnew = pgd_step(x, ψ, Ω, k, σ, η)
+        if norm(xnew - x) ≥ norm(x - xold)
+            # Learning rate is too high, so we've diverged.
+            η *= 1 / 1.001
+            j = 0
+        else
+            j += 1
+            if j > patience
+                η *= 1.001
+            end
+        end
+        xold = x
     end
     return xnew
 end
