@@ -1,6 +1,10 @@
-#!/usr/bin/julia
+#!/usr/local/bin/julia
 using Comonicon
-using AllocationOpt
+using Distributed
+
+addprocs(Sys.CPU_THREADS; exeflags=`--project=$(Base.active_project())`)  # Multi-process for speed-up
+
+@everywhere using AllocationOpt
 
 """
 Optimises an indexer's allocations and pushes them to the action queue.
@@ -23,15 +27,18 @@ Optimises an indexer's allocations and pushes them to the action queue.
     cols = read_filterlists(filepath)
 
     # Pull network state from indexer service network endpoint
+    println("Reading network state.")
     repo, indexer, network = network_state(id, parse(Int, network_id), cols..., indexer_service_network_url)
 
     # Pull full network state from indexer service network endpoint
     fullrepo, _, _ = network_state(id, parse(Int, network_id), String[], String[], String[], String[], indexer_service_network_url)
 
-    filter_fn = (ω, ψ, Ω) -> apply_preferences(network, parse(Float64, minimum_allocation_amount), parse(Float64, grtgas), ω, ψ, Ω)
+    filter_fn = (ω, ψ, Ω) -> apply_preferences(network, parse(Float64, minimum_allocation_amount), parse(Float64, grtgas), parse(Int, allocation_lifetime), ω, ψ, Ω)
 
     # Optimize for the indexer
+    println("Beginning optimisation.")
     ω = optimize_indexer(indexer, repo, fullrepo, parse(Float64, minimum_allocation_amount), parse(Int64, maximum_new_allocations), parse(Float64, τ), filter_fn)
+    println("Optimisation complete. Sending results to action queue.")
     
     # Push results to action queue
     _ = push_allocations!(id, management_server_url, indexer_service_network_url, ω, cols...)
@@ -56,25 +63,30 @@ Optimises an indexer's allocations and generates indexer rules to change allocat
 - `τ`: Interval [0,1]. As τ gets closer to 0, the optimiser selects greedy allocations that maximise your short-term, expected rewards, but network dynamics will affect you more. The opposite occurs as τ approaches 1.
 - `indexer_service_network_url`: The URL that exposes the indexer service's network endpoint. Must begin with http. Example: http://localhost:7600/network.
 """
-@cast function rules(id, network_id, filepath, minimum_allocation_amount, maximum_new_allocations, τ, indexer_service_network_url)
+@cast function rules(id, network_id, filepath, grtgas, allocation_lifetime, minimum_allocation_amount, maximum_new_allocations, τ, indexer_service_network_url)
     # Read subgraph lists defined in the file
     cols = read_filterlists(filepath)
 
     # Pull network state from indexer service network endpoint
+    println("Reading network state.")
     repo, indexer, network = network_state(id, parse(Int, network_id), cols..., indexer_service_network_url)
 
     # Pull full network state from indexer service network endpoint
     fullrepo, _, _ = network_state(id, parse(Int, network_id), String[], String[], String[], String[], indexer_service_network_url)
  
-    filter_fn = (ω, ψ, Ω) -> apply_preferences(network, parse(Float64, minimum_allocation_amount), parse(Float64, grtgas), ω, ψ, Ω)
+    filter_fn = (ω, ψ, Ω) -> apply_preferences(network, parse(Float64, minimum_allocation_amount), parse(Float64, grtgas), parse(Int, allocation_lifetime), ω, ψ, Ω)
 
     # Optimize for the indexer
+    println("Beginning optimisation.")
     ω = optimize_indexer(indexer, repo, fullrepo, parse(Float64, minimum_allocation_amount), parse(Int64, maximum_new_allocations), parse(Float64, τ), filter_fn)
- 
+    println("Optimisation complete.")
+     
     # Create indexer rules
     indexer_rules = create_rules!(id, indexer_service_network_url, ω, cols...)
     
     println.(indexer_rules)
+
+    println("Done!")
 
     return nothing
 end

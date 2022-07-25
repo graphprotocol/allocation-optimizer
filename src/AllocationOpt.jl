@@ -58,7 +58,10 @@ function network_state(
 
     # Reduce indexer stake by frozenlist
     fstake = frozen_stake(client, indexer_id, frozenlist)
-    indexer = Indexer(indexer.id, indexer.stake - fstake, indexer.allocations)
+    # Also reduce indexer stake by number of pinned subgraph times 0.1 grt
+    pinned_amount = 0.1
+    pstake = pinned_amount * length(pinnedlist)
+    indexer = Indexer(indexer.id, indexer.stake - fstake - pstake, indexer.allocations)
 
     return repo, indexer, network
 end
@@ -82,19 +85,23 @@ function apply_preferences(
     minimum_allocation_amount::Real,
     gas::Real,
     allocation_lifetime::Int,
-    ω::Matrix{T},
+    ω::AbstractMatrix{T},
     ψ::AbstractVector{T},
     Ω::AbstractVector{T}
 ) where {T <: Real}
-    if minimum_allocation_amount > indexer.σ
-        throw(ArgumentError("Minimum allocation amount must be less than your stake."))
+    profits = map(eachcol(ω)) do x
+        if minimum(x[findall(x .!= 0)]) > minimum_allocation_amount
+            p = profit(network, gas, allocation_lifetime, x, ψ, Ω)
+        else
+            p = typemin(T)
+        end
+        return p
     end
-    min_allocs = minimum(ω; dims=2)  # Minimum over rows
-    filtixs = findall(x -> x > minimum_allocation_amount, min_allocs)
-    ωfilt = ω[filtixs]
-    profits = profit.(network, gas, allocation_lifetime, ωfilt, ψ, Ω)
+    if all(profits .== typemin(T))
+        throw(ArgumentError("Minimum allocation is too high. We were unable to find a solution with that constraint."))
+    end
     i = argmax(profits)
-    return ωfilt[i, :]
+    return ω[:, i]
 end
 
 """
@@ -104,6 +111,7 @@ end
 - `indexer::Indexer`: The indexer being optimised.
 - `repo::Repository`: Contains the current network state.
 - `maximum_new_allocations::Int`: The maximum number of new allocations you would like the optimizer to open.
+- `minimum_allocation_amount::Real`: The minimum amount of GRT that you are willing to allocate to a subgraph.
 - `τ::AbstractFloat`: Interval [0,1]. As τ gets closer to 0, the optimiser selects greedy allocations that maximise your short-term, expected rewards, but network dynamics will affect you more. The opposite occurs as τ approaches 1.
 ```
 """
@@ -111,6 +119,7 @@ function optimize_indexer(
     indexer::Indexer,
     repo::Repository,
     fullrepo::Repository,
+    minimum_allocation_amount::Real,
     maximum_new_allocations::Integer,
     τ::AbstractFloat,
     filter_function::Function,
@@ -121,6 +130,9 @@ function optimize_indexer(
     if maximum_new_allocations > length(repo.subgraphs)
         @warn "Maximum new allocations is more than the number of available subgraph deployments; setting it to the number of subgraphs"
         maximum_new_allocations = length(repo.subgraphs)
+    end
+    if minimum_allocation_amount > indexer.stake
+        throw(ArgumentError("Minimum allocation amount must be less than your stake."))
     end
 
     # Optimise    # ω = optimize(indexer, repo, maximum_new_allocations, minimum_allocation_amount)
@@ -134,13 +146,11 @@ function optimize_indexer(
     ψ = signal.(repo.subgraphs)
     σ = indexer.stake
     ω = optimize(Ω, ψ, σ, maximum_new_allocations, filter_function)
-    # @show ω
 
     # Filter results with deployment IPFS hashes
     suggested_allocations = Dict(
         ipfshash(k) => v for (k, v) in zip(repo.subgraphs, ω) if v > 0.0
     )
-
     return suggested_allocations
 end
 
@@ -196,6 +206,9 @@ function push_allocations!(
         ipfshash.(existing_allocations) .=> id.(existing_allocations)
     )
     existing_ipfs::Vector{String} = ipfshash.(existing_allocations)
+    
+    pinned_amount = 0.1
+    proposed_allocations = map((hash, amt) => hash in pinnedlist ? amt + pinned_amount : amt, proposed_allocations)
     proposed_ipfs::Vector{String} = collect(keys(proposed_allocations))
 
     # Generate ActionQueue inputs

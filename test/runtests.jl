@@ -36,7 +36,7 @@ using GraphQLClient
     end
 
     @testset "optimize_indexer" begin
-        filter_fn = (a, b, c) -> a[end, :]
+        filter_fn = (a, b, c) -> a[:, end]
         τ = 0.0
         network_id = 1
         client = Client(gateway_url)
@@ -57,7 +57,7 @@ using GraphQLClient
         repo, optindexer, network = network_state(
             id, network_id, String[ipfshash], String[], String[], String[], gateway_url
         )
-        allocs = optimize_indexer(optindexer, repo, repo, 2, τ, filter_fn)
+        allocs = optimize_indexer(optindexer, repo, repo, 0.0, 2, τ, filter_fn)
         # Sum allocation amounts
         ω = sum(values(allocs))
         @test isapprox(ω, stake; atol=1e-6)
@@ -73,7 +73,7 @@ using GraphQLClient
             String[],
             gateway_url,
         )
-        allocs = optimize_indexer(optindexer, repo, repo, 2, τ, filter_fn)
+        allocs = optimize_indexer(optindexer, repo, repo, 0.0, 2, τ, filter_fn)
         # Sum allocation amounts
         ω = sum(values(allocs))
         @test isapprox(ω, stake; atol=1e-6)
@@ -85,5 +85,36 @@ using GraphQLClient
         # Should handle CSV input
         cols = read_filterlists("example.csv")
         @test length(cols[1]) == 2
+    end
+
+    @testset "apply_preferences" begin
+        network = AllocationOpt.GraphNetworkParameters("1", 100.0, 1.001, 30, 15.0, 0)
+        minimum_allocation_amount = 0.2
+        gas = 0.01        
+        allocation_lifetime = 1
+        ω = Float64[0 3;6 3]
+        ψ = Float64[5, 5]
+        Ω = Float64[1, 1]
+        ωopt = apply_preferences(
+            network,
+            minimum_allocation_amount,
+            gas,
+            allocation_lifetime,
+            ω,
+            ψ,
+            Ω
+        )
+        @test ωopt == Float64[3, 3]
+
+        minimum_allocation_amount = 10.0
+        @test_throws ArgumentError apply_preferences(
+            network,
+            minimum_allocation_amount,
+            gas,
+            allocation_lifetime,
+            ω,
+            ψ,
+            Ω
+        )
     end
 end

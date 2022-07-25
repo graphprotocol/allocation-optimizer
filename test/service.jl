@@ -218,7 +218,7 @@
 
     @testset "optimize pgd" begin
         # k = 2
-        filter_fn = (a, b, c) -> a[end, :]
+        filter_fn = (a, b, c) -> a[:, end]
         a = 1e5
         b = 1e7
         ψ = Float64[5, 8] * a
@@ -230,5 +230,54 @@
         k = 2
         ω = optimize(Ω, ψ, σ, k, filter_fn)
         @test isapprox(ωopt, ω[findall(ω .!= 0.0)]; rtol=1e-2)
+    end
+
+    @testset "tokens_issued_over_lifetime" begin
+        principle = 100.0
+        issurance_per_block = 1.0001
+        block_per_epoch = 30
+        total_token_signalled = 15.0
+        current_epoch = 0
+        network = GraphNetworkParameters("1", principle, issurance_per_block, block_per_epoch, total_token_signalled, current_epoch)
+        # Tokens issued over 1 epoch
+        allocation_lifetime = 1
+        n = tokens_issued_over_lifetime(network, allocation_lifetime)
+        @test isapprox(n, 0.300435; rtol=1e-2)
+        
+        # Tokens issued over 10 epoch
+        allocation_lifetime = 10
+        n = tokens_issued_over_lifetime(network, allocation_lifetime)
+        @test isapprox(n, 3.0453; rtol=1e-2)
+    end
+
+    @testset "f" begin
+        # f(ψ::Vector{T}, Ω::Vector{T}, ω::Vector{T}, Φ::T, Ψ::T)
+        ψ = Float64[2, 4, 1]
+        Ω = Float64[0, 10, 4]
+        ω = Float64[1, 1, 1]
+        Φ = 3.0
+        Ψ = 7.0
+        rewards = f(ψ, Ω, ω, Φ, Ψ)
+        @test isapprox(rewards, 1.0987; rtol=1e-2)
+    end
+
+    @testset "profits" begin
+        principle = 100.0
+        issurance_per_block = 1.001
+        block_per_epoch = 30
+        total_token_signalled = 15.0
+        current_epoch = 0
+        gas = 0.01
+        # Tokens issued over 1 epoch
+        network = GraphNetworkParameters("1", principle, issurance_per_block, block_per_epoch, total_token_signalled, current_epoch)
+        allocation_lifetime = 1
+        
+        ψ = Float64[2, 4, 1]
+        Ω = Float64[0, 10, 4]
+        ω = Float64[1, 1, 1]
+        Φ = tokens_issued_over_lifetime(network, allocation_lifetime)
+        prof = profit(network, gas, allocation_lifetime, ω, ψ, Ω)
+        x = f(ψ, Ω, ω, Φ, total_token_signalled)-gaspersubgraph(gas)*length(ω[findall(ω .!= 0.0)])
+        @test isapprox(prof, x; rtol=1e-2)
     end
 end
