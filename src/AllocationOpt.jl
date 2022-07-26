@@ -87,8 +87,8 @@ function apply_preferences(
     allocation_lifetime::Int,
     ω::AbstractMatrix{T},
     ψ::AbstractVector{T},
-    Ω::AbstractVector{T}
-) where {T <: Real}
+    Ω::AbstractVector{T},
+) where {T<:Real}
     profits = map(eachcol(ω)) do x
         if minimum(x[findall(x .!= 0)]) > minimum_allocation_amount
             p = profit(network, gas, allocation_lifetime, x, ψ, Ω)
@@ -98,7 +98,11 @@ function apply_preferences(
         return p
     end
     if all(profits .== typemin(T))
-        throw(ArgumentError("Minimum allocation is too high. We were unable to find a solution with that constraint."))
+        throw(
+            ArgumentError(
+                "Minimum allocation is too high. We were unable to find a solution with that constraint.",
+            ),
+        )
     end
     i = argmax(profits)
     return ω[:, i]
@@ -206,9 +210,11 @@ function push_allocations!(
         ipfshash.(existing_allocations) .=> id.(existing_allocations)
     )
     existing_ipfs::Vector{String} = ipfshash.(existing_allocations)
-    
+
     pinned_amount = 0.1
-    proposed_allocations = map((hash, amt) => hash in pinnedlist ? amt + pinned_amount : amt, proposed_allocations)
+    proposed_allocations = map(
+        (hash, amt) => hash in pinnedlist ? amt + pinned_amount : amt, proposed_allocations
+    )
     proposed_ipfs::Vector{String} = collect(keys(proposed_allocations))
 
     # Generate ActionQueue inputs

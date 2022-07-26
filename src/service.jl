@@ -74,7 +74,7 @@ function optimize(
     η = 1e5
     Δη = 1.001
     patience = 1e4
-    tol = 5e-9
+    tol = 1e-10
     # do projected gradient descent for projection onto the k-sparse until convergence
     ωs = pmap(1:max_allocations) do k
         println("Optimising for $k allocations.")
@@ -200,7 +200,9 @@ function gaspersubgraph(gas)
     return open_multiplier * gas + close_multiplier * gas
 end
 
-function f(ψ::AbstractVector{T}, Ω::AbstractVector{T}, ω::AbstractVector{T}, Φ::T, Ψ::T) where {T<:Real}
+function f(
+    ψ::AbstractVector{T}, Ω::AbstractVector{T}, ω::AbstractVector{T}, Φ::T, Ψ::T
+) where {T<:Real}
     subgraph_rewards = Φ .* ψ ./ Ψ
     indexing_rewards = sum(subgraph_rewards .* ω ./ (Ω .+ ω))
     return indexing_rewards

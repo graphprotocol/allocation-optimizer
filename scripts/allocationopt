@@ -1,4 +1,4 @@
-#!/usr/local/bin/julia
+#!/usr/bin/local/julia
 using Comonicon
 using Distributed
 

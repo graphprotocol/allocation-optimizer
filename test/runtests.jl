@@ -90,31 +90,19 @@ using GraphQLClient
     @testset "apply_preferences" begin
         network = AllocationOpt.GraphNetworkParameters("1", 100.0, 1.001, 30, 15.0, 0)
         minimum_allocation_amount = 0.2
-        gas = 0.01        
+        gas = 0.01
         allocation_lifetime = 1
-        ω = Float64[0 3;6 3]
+        ω = Float64[0 3; 6 3]
         ψ = Float64[5, 5]
         Ω = Float64[1, 1]
         ωopt = apply_preferences(
-            network,
-            minimum_allocation_amount,
-            gas,
-            allocation_lifetime,
-            ω,
-            ψ,
-            Ω
+            network, minimum_allocation_amount, gas, allocation_lifetime, ω, ψ, Ω
         )
         @test ωopt == Float64[3, 3]
 
         minimum_allocation_amount = 10.0
         @test_throws ArgumentError apply_preferences(
-            network,
-            minimum_allocation_amount,
-            gas,
-            allocation_lifetime,
-            ω,
-            ψ,
-            Ω
+            network, minimum_allocation_amount, gas, allocation_lifetime, ω, ψ, Ω
         )
     end
 end
