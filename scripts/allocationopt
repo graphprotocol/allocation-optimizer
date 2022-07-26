@@ -25,6 +25,7 @@ Optimises an indexer's allocations and pushes them to the action queue.
 @cast function actionqueue(id, network_id, filepath, grtgas, allocation_lifetime, minimum_allocation_amount, maximum_new_allocations, τ, management_server_url, indexer_service_network_url)
     # Read subgraph lists defined in the file
     cols = read_filterlists(filepath)
+    pinnedlist = cols[3]
 
     # Pull network state from indexer service network endpoint
     println("Reading network state.")
@@ -37,7 +38,7 @@ Optimises an indexer's allocations and pushes them to the action queue.
 
     # Optimize for the indexer
     println("Beginning optimisation.")
-    ω = optimize_indexer(indexer, repo, fullrepo, parse(Float64, minimum_allocation_amount), parse(Int64, maximum_new_allocations), parse(Float64, τ), filter_fn)
+    ω = optimize_indexer(indexer, repo, fullrepo, parse(Float64, minimum_allocation_amount), parse(Int64, maximum_new_allocations), parse(Float64, τ), filter_fn, pinnedlist)
     println("Optimisation complete. Sending results to action queue.")
     
     # Push results to action queue
@@ -66,6 +67,7 @@ Optimises an indexer's allocations and generates indexer rules to change allocat
 @cast function rules(id, network_id, filepath, grtgas, allocation_lifetime, minimum_allocation_amount, maximum_new_allocations, τ, indexer_service_network_url)
     # Read subgraph lists defined in the file
     cols = read_filterlists(filepath)
+    pinnedlist = cols[3]
 
     # Pull network state from indexer service network endpoint
     println("Reading network state.")
@@ -78,7 +80,7 @@ Optimises an indexer's allocations and generates indexer rules to change allocat
 
     # Optimize for the indexer
     println("Beginning optimisation.")
-    ω = optimize_indexer(indexer, repo, fullrepo, parse(Float64, minimum_allocation_amount), parse(Int64, maximum_new_allocations), parse(Float64, τ), filter_fn)
+    ω = optimize_indexer(indexer, repo, fullrepo, parse(Float64, minimum_allocation_amount), parse(Int64, maximum_new_allocations), parse(Float64, τ), filter_fn, pinnedlist)
     println("Optimisation complete.")
      
     # Create indexer rules

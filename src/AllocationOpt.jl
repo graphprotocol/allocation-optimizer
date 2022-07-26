@@ -34,9 +34,6 @@ function network_state(
     frozenlist::AbstractVector{T},
     indexer_service_network_url::AbstractString,
 ) where {T<:AbstractString}
-    if !isempty(pinnedlist)
-        @warn "pinnedlist is not currently optimised for."
-    end
     userlists = vcat(whitelist, blacklist, pinnedlist, frozenlist)
     if !verify_ipfshashes(userlists)
         throw(BadSubgraphIpfsHashError())
@@ -109,7 +106,7 @@ function apply_preferences(
 end
 
 """
-    function optimize_indexer(indexer, repo, minimum_allocation_amount, maximum_new_allocations)
+    function optimize_indexer(indexer, repo, minimum_allocation_amount, maximum_new_allocations, pinnedlist)
 
 # Arguments
 - `indexer::Indexer`: The indexer being optimised.
@@ -117,6 +114,8 @@ end
 - `maximum_new_allocations::Int`: The maximum number of new allocations you would like the optimizer to open.
 - `minimum_allocation_amount::Real`: The minimum amount of GRT that you are willing to allocate to a subgraph.
 - `τ::AbstractFloat`: Interval [0,1]. As τ gets closer to 0, the optimiser selects greedy allocations that maximise your short-term, expected rewards, but network dynamics will affect you more. The opposite occurs as τ approaches 1.
+- `filter_function::Function`: A function that filters the optimal results as per indexer preferences.
+- `pinnedlist::Vector{AbstractString}`: Subgraph deployment IPFS hashes included in this list will be guaranteed allocation at 0.1 GRT.
 ```
 """
 function optimize_indexer(
@@ -127,7 +126,8 @@ function optimize_indexer(
     maximum_new_allocations::Integer,
     τ::AbstractFloat,
     filter_function::Function,
-)
+    pinnedlist::AbstractVector{T},
+) where {T<:AbstractString}
     if τ > 1 || τ < 0
         throw(ArgumentError("τ must be between 0 and 1."))
     end
@@ -150,6 +150,9 @@ function optimize_indexer(
     ψ = signal.(repo.subgraphs)
     σ = indexer.stake
     ω = optimize(Ω, ψ, σ, maximum_new_allocations, filter_function)
+    pinnedixs = findall(x -> x in pinnedlist, ipfshash.(repo.subgraphs))
+    pinned_amount = 0.1
+    ω[pinnedixs] .+= pinned_amount
 
     # Filter results with deployment IPFS hashes
     suggested_allocations = Dict(
@@ -210,11 +213,6 @@ function push_allocations!(
         ipfshash.(existing_allocations) .=> id.(existing_allocations)
     )
     existing_ipfs::Vector{String} = ipfshash.(existing_allocations)
-
-    pinned_amount = 0.1
-    proposed_allocations = map(
-        (hash, amt) => hash in pinnedlist ? amt + pinned_amount : amt, proposed_allocations
-    )
     proposed_ipfs::Vector{String} = collect(keys(proposed_allocations))
 
     # Generate ActionQueue inputs

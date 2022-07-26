@@ -57,7 +57,7 @@ using GraphQLClient
         repo, optindexer, network = network_state(
             id, network_id, String[ipfshash], String[], String[], String[], gateway_url
         )
-        allocs = optimize_indexer(optindexer, repo, repo, 0.0, 2, τ, filter_fn)
+        allocs = optimize_indexer(optindexer, repo, repo, 0.0, 2, τ, filter_fn, String[])
         # Sum allocation amounts
         ω = sum(values(allocs))
         @test isapprox(ω, stake; atol=1e-6)
@@ -73,12 +73,48 @@ using GraphQLClient
             String[],
             gateway_url,
         )
-        allocs = optimize_indexer(optindexer, repo, repo, 0.0, 2, τ, filter_fn)
+        allocs = optimize_indexer(optindexer, repo, repo, 0.0, 2, τ, filter_fn, String[])
         # Sum allocation amounts
         ω = sum(values(allocs))
         @test isapprox(ω, stake; atol=1e-6)
         # Length of allocations ≤ length of whitelist
         @test length(allocs) ≤ 2
+
+        # run optimize_indexer with pinnedlist
+        pinnedlist = String[another_ipfshash]
+        repo, optindexer, network = network_state(
+            id,
+            network_id,
+            String[ipfshash],
+            String[],
+            pinnedlist,
+            String[],
+            gateway_url,
+        )
+        pinned_allocs = optimize_indexer(optindexer, repo, repo, 0.0, 2, τ, filter_fn, pinnedlist)
+        # Allocations includes pinnedlist allocatins
+        @test pinned_allocs[another_ipfshash] == 0.1
+        # Sum allocation amounts still satisfy stake constraint
+        ω = sum(values(pinned_allocs))
+        @test isapprox(ω, stake; atol=1e-6)
+
+        # run optimize_indexer with pinnedlist when allocation is optimal
+        pinnedlist = String[ipfshash]
+        repo, optindexer, network = network_state(
+            id,
+            network_id,
+            String[ipfshash, another_ipfshash],
+            String[],
+            pinnedlist,
+            String[],
+            gateway_url,
+        )
+        pinned_allocs = optimize_indexer(optindexer, repo, repo, 0.0, 2, τ, filter_fn, pinnedlist)
+        # Allocations includes pinnedlist allocatins
+        @test isapprox(pinned_allocs[ipfshash], allocs[ipfshash]; atol=1e-9)
+        # Sum allocation amounts still satisfy stake constraint
+        ω = sum(values(pinned_allocs))
+        @test isapprox(ω, stake; atol=1e-6)
     end
 
     @testset "read_filterlists" begin
