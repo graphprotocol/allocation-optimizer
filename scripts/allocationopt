@@ -16,13 +16,12 @@ Optimises an indexer's allocations and pushes them to the action queue.
 - `filepath`: A path to the CSV file that contains whitelist, blacklist, pinnedlist, frozenlist as columns.
 - `grtgas`: The maximum amount of GRT that you are willing to spend on each allocation transaction. 
 - `allocation_lifetime`: The number of epochs for which these allocations would be open. An allocation earns indexing rewards upto 28 epochs.
-- `minimum_allocation_amount`: The minimum amount of GRT that you are willing to allocate to a subgraph.
 - `maximum_new_allocations`: The maximum number of new allocations you would like the optimizer to open.
 - `τ`: Interval [0,1]. As τ gets closer to 0, the optimiser selects greedy allocations that maximise your short-term, expected rewards, but network dynamics will affect you more. The opposite occurs as τ approaches 1. 
 - `management_server_url`: The URL that exposes the indexer managment server, including the port. Must begin with http. Example: http://localhost:18000.
 - `indexer_service_network_url`: The URL that exposes the indexer service's network endpoint. Must begin with http. Example: http://localhost:7600/network.
 """
-@cast function actionqueue(id, network_id, filepath, grtgas, allocation_lifetime, minimum_allocation_amount, maximum_new_allocations, τ, management_server_url, indexer_service_network_url)
+@cast function actionqueue(id, network_id, filepath, grtgas, allocation_lifetime, maximum_new_allocations, τ, management_server_url, indexer_service_network_url)
     # Read subgraph lists defined in the file
     cols = read_filterlists(filepath)
     pinnedlist = cols[3]
@@ -34,11 +33,11 @@ Optimises an indexer's allocations and pushes them to the action queue.
     # Pull full network state from indexer service network endpoint
     fullrepo, _, _ = network_state(id, parse(Int, network_id), String[], String[], String[], String[], indexer_service_network_url)
 
-    filter_fn = (ω, ψ, Ω) -> apply_preferences(network, parse(Float64, minimum_allocation_amount), parse(Float64, grtgas), parse(Int, allocation_lifetime), ω, ψ, Ω)
+    filter_fn = (ω, ψ, Ω) -> apply_preferences(network, parse(Float64, grtgas), parse(Int, allocation_lifetime), ω, ψ, Ω)
 
     # Optimize for the indexer
     println("Beginning optimisation.")
-    ω = optimize_indexer(indexer, repo, fullrepo, parse(Float64, minimum_allocation_amount), parse(Int64, maximum_new_allocations), parse(Float64, τ), filter_fn, pinnedlist)
+    ω = optimize_indexer(indexer, repo, fullrepo, parse(Int64, maximum_new_allocations), parse(Float64, τ), filter_fn, pinnedlist)
     println("Optimisation complete. Sending results to action queue.")
     
     # Push results to action queue
@@ -59,12 +58,11 @@ Optimises an indexer's allocations and generates indexer rules to change allocat
 - `filepath`: A path to the CSV file that contains whitelist, blacklist, pinnedlist, frozenlist as columns.
 - `grtgas`: The maximum amount of GRT that you are willing to spend on each allocation transaction.
 - `allocation_lifetime`: The number of epochs for which these allocations would be open. An allocation earns indexing rewards upto 28 epochs.
-- `minimum_allocation_amount`: The minimum amount of GRT that you are willing to allocate to a subgraph.
 - `maximum_new_allocations`: The maximum number of new allocations you would like the optimizer to open.
 - `τ`: Interval [0,1]. As τ gets closer to 0, the optimiser selects greedy allocations that maximise your short-term, expected rewards, but network dynamics will affect you more. The opposite occurs as τ approaches 1.
 - `indexer_service_network_url`: The URL that exposes the indexer service's network endpoint. Must begin with http. Example: http://localhost:7600/network.
 """
-@cast function rules(id, network_id, filepath, grtgas, allocation_lifetime, minimum_allocation_amount, maximum_new_allocations, τ, indexer_service_network_url)
+@cast function rules(id, network_id, filepath, grtgas, allocation_lifetime, maximum_new_allocations, τ, indexer_service_network_url)
     # Read subgraph lists defined in the file
     cols = read_filterlists(filepath)
     pinnedlist = cols[3]
@@ -76,11 +74,11 @@ Optimises an indexer's allocations and generates indexer rules to change allocat
     # Pull full network state from indexer service network endpoint
     fullrepo, _, _ = network_state(id, parse(Int, network_id), String[], String[], String[], String[], indexer_service_network_url)
  
-    filter_fn = (ω, ψ, Ω) -> apply_preferences(network, parse(Float64, minimum_allocation_amount), parse(Float64, grtgas), parse(Int, allocation_lifetime), ω, ψ, Ω)
+    filter_fn = (ω, ψ, Ω) -> apply_preferences(network, parse(Float64, grtgas), parse(Int, allocation_lifetime), ω, ψ, Ω)
 
     # Optimize for the indexer
     println("Beginning optimisation.")
-    ω = optimize_indexer(indexer, repo, fullrepo, parse(Float64, minimum_allocation_amount), parse(Int64, maximum_new_allocations), parse(Float64, τ), filter_fn, pinnedlist)
+    ω = optimize_indexer(indexer, repo, fullrepo, parse(Int64, maximum_new_allocations), parse(Float64, τ), filter_fn, pinnedlist)
     println("Optimisation complete.")
      
     # Create indexer rules

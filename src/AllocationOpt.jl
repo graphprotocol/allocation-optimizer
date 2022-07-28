@@ -64,11 +64,10 @@ function network_state(
 end
 
 """
-function apply_preferences(network::GraphNetworkParameters, minimum_allocation_amount::Real, gas::Real, allocation_lifetime::Int, ω::Matrix{T}, ψ::AbstractVector{T}, Ω::AbstractVector{T}) where {T <: Real}
+function apply_preferences(network::GraphNetworkParameters, gas::Real, allocation_lifetime::Int, ω::Matrix{T}, ψ::AbstractVector{T}, Ω::AbstractVector{T}) where {T <: Real}
 
 # Arguments
 - `network::GraphNetworkParameters`: Contains the current network parameters.
-- `minimum_allocation_amount::Real`: The minimum amount of GRT that you are willing to allocate to a subgraph.
 - `gas::Float64`: The gas in grt that the indexer will spend on the allocation transaction. We use this to
     calculate profit, but note that the assumption that this will be the price at the end of the allocation
     lifetime is probably bad. Gas is constantly changing.
@@ -79,25 +78,17 @@ function apply_preferences(network::GraphNetworkParameters, minimum_allocation_a
 """
 function apply_preferences(
     network::GraphNetworkParameters,
-    minimum_allocation_amount::Real,
     gas::Real,
     allocation_lifetime::Int,
     ω::AbstractMatrix{T},
     ψ::AbstractVector{T},
     Ω::AbstractVector{T},
 ) where {T<:Real}
-    profits = map(eachcol(ω)) do x
-        if minimum(x[findall(x .!= 0)]) > minimum_allocation_amount
-            p = profit(network, gas, allocation_lifetime, x, ψ, Ω)
-        else
-            p = typemin(T)
-        end
-        return p
-    end
-    if all(profits .== typemin(T))
+    profits = map(x -> profit(network, gas, allocation_lifetime, x, ψ, Ω), eachcol(ω))
+    if all(profits .≤ 0)
         throw(
             ArgumentError(
-                "Minimum allocation is too high. We were unable to find a solution with that constraint.",
+                "Solver was unable to find a solution with positive expected profit."
             ),
         )
     end
@@ -106,13 +97,12 @@ function apply_preferences(
 end
 
 """
-    function optimize_indexer(indexer, repo, minimum_allocation_amount, maximum_new_allocations, pinnedlist)
+    function optimize_indexer(indexer, repo, maximum_new_allocations, pinnedlist)
 
 # Arguments
 - `indexer::Indexer`: The indexer being optimised.
 - `repo::Repository`: Contains the current network state.
 - `maximum_new_allocations::Int`: The maximum number of new allocations you would like the optimizer to open.
-- `minimum_allocation_amount::Real`: The minimum amount of GRT that you are willing to allocate to a subgraph.
 - `τ::AbstractFloat`: Interval [0,1]. As τ gets closer to 0, the optimiser selects greedy allocations that maximise your short-term, expected rewards, but network dynamics will affect you more. The opposite occurs as τ approaches 1.
 - `filter_function::Function`: A function that filters the optimal results as per indexer preferences.
 - `pinnedlist::Vector{AbstractString}`: Subgraph deployment IPFS hashes included in this list will be guaranteed allocation at 0.1 GRT.
@@ -122,7 +112,6 @@ function optimize_indexer(
     indexer::Indexer,
     repo::Repository,
     fullrepo::Repository,
-    minimum_allocation_amount::Real,
     maximum_new_allocations::Integer,
     τ::AbstractFloat,
     filter_function::Function,
@@ -135,11 +124,8 @@ function optimize_indexer(
         @warn "Maximum new allocations is more than the number of available subgraph deployments; setting it to the number of subgraphs"
         maximum_new_allocations = length(repo.subgraphs)
     end
-    if minimum_allocation_amount > indexer.stake
-        throw(ArgumentError("Minimum allocation amount must be less than your stake."))
-    end
 
-    # Optimise    # ω = optimize(indexer, repo, maximum_new_allocations, minimum_allocation_amount)
+    # Optimise    # ω = optimize(indexer, repo, maximum_new_allocations)
     Ωfull = stakes(fullrepo)
     ψfull = signal.(fullrepo.subgraphs)
     σfull = sum(Ωfull)

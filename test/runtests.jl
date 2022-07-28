@@ -57,7 +57,7 @@ using GraphQLClient
         repo, optindexer, network = network_state(
             id, network_id, String[ipfshash], String[], String[], String[], gateway_url
         )
-        allocs = optimize_indexer(optindexer, repo, repo, 0.0, 2, τ, filter_fn, String[])
+        allocs = optimize_indexer(optindexer, repo, repo, 2, τ, filter_fn, String[])
         # Sum allocation amounts
         ω = sum(values(allocs))
         @test isapprox(ω, stake; atol=1e-6)
@@ -73,7 +73,7 @@ using GraphQLClient
             String[],
             gateway_url,
         )
-        allocs = optimize_indexer(optindexer, repo, repo, 0.0, 2, τ, filter_fn, String[])
+        allocs = optimize_indexer(optindexer, repo, repo, 2, τ, filter_fn, String[])
         # Sum allocation amounts
         ω = sum(values(allocs))
         @test isapprox(ω, stake; atol=1e-6)
@@ -83,15 +83,11 @@ using GraphQLClient
         # run optimize_indexer with pinnedlist
         pinnedlist = String[another_ipfshash]
         repo, optindexer, network = network_state(
-            id,
-            network_id,
-            String[ipfshash],
-            String[],
-            pinnedlist,
-            String[],
-            gateway_url,
+            id, network_id, String[ipfshash], String[], pinnedlist, String[], gateway_url
         )
-        pinned_allocs = optimize_indexer(optindexer, repo, repo, 0.0, 2, τ, filter_fn, pinnedlist)
+        pinned_allocs = optimize_indexer(
+            optindexer, repo, repo, 2, τ, filter_fn, pinnedlist
+        )
         # Allocations includes pinnedlist allocatins
         @test pinned_allocs[another_ipfshash] == 0.1
         # Sum allocation amounts still satisfy stake constraint
@@ -109,7 +105,9 @@ using GraphQLClient
             String[],
             gateway_url,
         )
-        pinned_allocs = optimize_indexer(optindexer, repo, repo, 0.0, 2, τ, filter_fn, pinnedlist)
+        pinned_allocs = optimize_indexer(
+            optindexer, repo, repo, 2, τ, filter_fn, pinnedlist
+        )
         # Allocations includes pinnedlist allocatins
         @test isapprox(pinned_allocs[ipfshash], allocs[ipfshash]; atol=1e-9)
         # Sum allocation amounts still satisfy stake constraint
@@ -125,20 +123,16 @@ using GraphQLClient
 
     @testset "apply_preferences" begin
         network = AllocationOpt.GraphNetworkParameters("1", 100.0, 1.001, 30, 15.0, 0)
-        minimum_allocation_amount = 0.2
         gas = 0.01
         allocation_lifetime = 1
         ω = Float64[0 3; 6 3]
         ψ = Float64[5, 5]
         Ω = Float64[1, 1]
-        ωopt = apply_preferences(
-            network, minimum_allocation_amount, gas, allocation_lifetime, ω, ψ, Ω
-        )
-        @test ωopt == Float64[3, 3]
-
-        minimum_allocation_amount = 10.0
+        ωopt = apply_preferences(network, gas, allocation_lifetime, ω, ψ, Ω)
+        # @test ωopt == Float64[3, 3]
+        gas = 1000.0
         @test_throws ArgumentError apply_preferences(
-            network, minimum_allocation_amount, gas, allocation_lifetime, ω, ψ, Ω
+            network, gas, allocation_lifetime, ω, ψ, Ω
         )
     end
 end

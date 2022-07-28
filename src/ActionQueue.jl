@@ -19,6 +19,8 @@ end
 
 abstract type ActionInput end
 
+# TODO: Priority from the optimizer are all hardcoded to 0, in future allow config
+# Since priority is not actively used in actions queue
 struct AllocateActionInput <: ActionInput
     status::ActionStatus
     type::ActionType
@@ -26,6 +28,7 @@ struct AllocateActionInput <: ActionInput
     amount::AbstractString
     source::AbstractString
     reason::AbstractString
+    priority::Int64
 end
 
 struct UnallocateActionInput <: ActionInput
@@ -35,6 +38,7 @@ struct UnallocateActionInput <: ActionInput
     deploymentID::AbstractString
     source::AbstractString
     reason::AbstractString
+    priority::Int64
 end
 
 struct ReallocateActionInput <: ActionInput
@@ -45,6 +49,7 @@ struct ReallocateActionInput <: ActionInput
     amount::AbstractString
     source::AbstractString
     reason::AbstractString
+    priority::Int64
 end
 
 structtodict(x::ActionInput) = Dict(string(k) => getfield(x, k) for k in propertynames(x))
@@ -66,6 +71,7 @@ function reallocate_actions(
                 string(proposed_allocations[ipfs]),
                 "AllocationOpt",
                 "AllocationOpt",
+                0,
             ),
         ),
         ipfses,
@@ -88,6 +94,7 @@ function allocate_actions(
                 string(proposed_allocations[ipfs]),
                 "AllocationOpt",
                 "AllocationOpt",
+                0,
             ),
         ),
         ipfses,
@@ -111,6 +118,7 @@ function unallocate_actions(
                 ipfs,
                 "AllocationOpt",
                 "AllocationOpt",
+                0,
             ),
         ),
         ipfses,
