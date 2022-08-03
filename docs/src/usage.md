@@ -4,7 +4,7 @@
 
 1. Download the [*allocationopt* script](https://raw.githubusercontent.com/graphprotocol/AllocationOpt.jl/main/scripts/allocationopt). For example, using `curl` or `wget`. Make sure you use the raw file!
 
-2. On MacOS, if you have already added Julia path to `usr/local/bin`, you would need to change shebang of downloaded script to `#!/usr/local/bin/julia`.
+2. On MacOS, if you have already added Julia path to `usr/local/bin`, you would need to change shebang of downloaded script to `#!/usr/local/bin/julia` or your specific customized path.
 
 Linux (Default)
 ```bash
@@ -45,10 +45,10 @@ To provide network subgraph to optimiser, set indexer-service flag `--serve-netw
 
 This command requires a URL to indexer management server and a URL to make graph network subgraph queries.
 
-Run the *allocationopt* script with the *actionqueue* option.
+Run the *allocationopt* script with the *actionqueue* option. Check help for detail inputs.
 
 ```bash
-$ ./scripts/allocationopt actionqueue "0x6ac85b9d834b51b14a7b0ed849bb5199e04c05c5" test/example.csv 0.0 10 http://localhost:18000 http://localhost:7600/network
+$ ./scripts/allocationopt actionqueue "0x6ac85b9d834b51b14a7b0ed849bb5199e04c05c5" 1 test/example.csv 50 1 5 0.0 http://localhost:18000 http://localhost:7600/network
 ```
 If this doesn't work, check that the shebang in the allocationopt file points to your julia executable. 
 
@@ -64,7 +64,7 @@ Run the *allocationopt* script with the *rules* option. The URL passed in should
 
 ```bash
 $ ./scripts/allocationopt --help
-$ ./scripts/allocationopt rules "0x6ac85b9d834b51b14a7b0ed849bb5199e04c05c5" test/example.csv 0.0 10 http://localhost:7600/network
+$ ./scripts/allocationopt rules "0x6ac85b9d834b51b14a7b0ed849bb5199e04c05c5" 1 test/example.csv 50 1 5 0.0 http://localhost:7600/network
 ```
 
 If this doesn't work, check that the shebang in the allocationopt file points to your julia executable.
