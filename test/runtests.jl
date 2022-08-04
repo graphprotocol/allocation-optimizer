@@ -50,13 +50,17 @@ using GraphQLClient
 
         # Indexer stake should be equal to the sum of allocations
         # query indexer's stake
-        indexer = query(client, "indexers"; query_args=Dict("where" => Dict("id" => id)), output_fields=["delegatedTokens", "stakedTokens"]).data["indexers"][1]
-        stake = togrt(indexer["delegatedTokens"]) + togrt(indexer["stakedTokens"])
+        indexer = query(client, "indexers"; query_args=Dict("where" => Dict("id" => id)), output_fields=["delegatedTokens", "stakedTokens", "lockedTokens"]).data["indexers"][1]
+        stake =
+            togrt(indexer["delegatedTokens"]) + togrt(indexer["stakedTokens"]) -
+            togrt(indexer["lockedTokens"])
 
         # run optimize_indexer
         repo, optindexer, network = network_state(
             id, network_id, String[ipfshash], String[], String[], String[], gateway_url
         )
+        # Check stake
+        @test isapprox(stake, optindexer.stake; atol=1e-6)
         allocs = optimize_indexer(optindexer, repo, repo, 2, τ, filter_fn, String[])
         # Sum allocation amounts
         ω = sum(values(allocs))
@@ -94,7 +98,7 @@ using GraphQLClient
         ω = sum(values(pinned_allocs))
         @test isapprox(ω, stake; atol=1e-6)
 
-        # run optimize_indexer with pinnedlist when allocation is optimal
+        # run optimize_indexer with pinnedlist when pinned subgraph is optimal
         pinnedlist = String[ipfshash]
         repo, optindexer, network = network_state(
             id,

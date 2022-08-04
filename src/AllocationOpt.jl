@@ -121,7 +121,7 @@ function optimize_indexer(
         throw(ArgumentError("τ must be between 0 and 1."))
     end
     if maximum_new_allocations > length(repo.subgraphs)
-        @warn "Maximum new allocations is more than the number of available subgraph deployments; setting it to the number of subgraphs"
+        @warn "Maximum new allocations is more than the number of available subgraph deployments; setting it to the number of subgraphs: $(length(repo.subgraphs))"
         maximum_new_allocations = length(repo.subgraphs)
     end
 

@@ -96,12 +96,19 @@ function query_indexers(client::Client, subgraphs::AbstractVector{SubgraphDeploy
             "id",
             "delegatedTokens",
             "stakedTokens",
+            "lockedTokens",
             "allocations($allocations_query){allocatedTokens,createdAtEpoch,subgraphDeployment{ipfsHash}}",
         ],
     )
     indexers_data = query(client, "indexers"; query_args=indexer_query.args, output_fields=indexer_query.fields).data["indexers"]
     indexers = map(
-        x -> Indexer(x["id"], x["delegatedTokens"], x["stakedTokens"], x["allocations"]),
+        x -> Indexer(
+            x["id"],
+            x["delegatedTokens"],
+            x["stakedTokens"],
+            x["lockedTokens"],
+            x["allocations"],
+        ),
         indexers_data,
     )
     return indexers

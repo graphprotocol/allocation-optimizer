@@ -30,10 +30,16 @@ struct Indexer <: GraphEntity
     stake::Real
     allocations::AbstractVector{Allocation}
 
-    function Indexer(id, delegation::AbstractString, stake::AbstractString, allocation)
+    function Indexer(
+        id,
+        delegation::AbstractString,
+        stake::AbstractString,
+        locked_tokens::AbstractString,
+        allocation,
+    )
         return new(
             id,
-            togrt(stake) + togrt(delegation),
+            togrt(stake) + togrt(delegation) - togrt(locked_tokens),
             map(
                 x -> Allocation(
                     x["subgraphDeployment"]["ipfsHash"],

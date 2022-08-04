@@ -47,7 +47,7 @@ We recommend making queries to the network subgraph served by your own indexer s
 Alternatively, you can supply an API url to `indexer_service_network_url` from the decentralized gateway or hosted service. 
 To provide the network subgraph to the optimiser, set the indexer-service flag `--serve-network-subgraph` to `true`.
 
-Populate your preferred lists (whitelist, blacklist, pinnedlist, frozenlist) into a CSV and remember its file path
+Populate your preferred lists (whitelist, blacklist, pinnedlist, frozenlist) into a CSV and take note of its file path. If you choose to supply specific deployment preferences through this list, please read list definitions in detail and keep the file updated to your expectations as it changes the problem statement for the optimiser. 
 
 !!! note
     You can access the help for the optimiser by running the script with the `--help` flag.

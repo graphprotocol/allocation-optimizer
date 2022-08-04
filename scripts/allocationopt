@@ -69,7 +69,8 @@ Optimise an indexer's allocations and generates indexer rules to change allocati
     pinnedlist = cols[3]
 
     # Pull network state from indexer service network endpoint
-    println("Reading network state.") repo, indexer, network = network_state(id, parse(Int, network_id), cols..., indexer_service_network_url)
+    println("Reading network state.") 
+    repo, indexer, network = network_state(id, parse(Int, network_id), cols..., indexer_service_network_url)
 
     # Pull full network state from indexer service network endpoint
     fullrepo, _, _ = network_state(id, parse(Int, network_id), String[], String[], String[], String[], indexer_service_network_url)

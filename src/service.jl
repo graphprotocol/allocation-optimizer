@@ -65,7 +65,7 @@ end
 function optimize(
     Ω::AbstractVector{T},
     ψ::AbstractVector{T},
-    σ::Real,
+    σ::T,
     max_allocations::Int,
     filter_fn::Function,
 ) where {T<:Real}
