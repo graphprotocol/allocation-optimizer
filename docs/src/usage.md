@@ -4,28 +4,17 @@
 
 1. Download the [*allocationopt* script](https://raw.githubusercontent.com/graphprotocol/AllocationOpt.jl/main/scripts/allocationopt). For example, using `curl` or `wget`. Make sure you use the raw file!
 
-2. On MacOS, if you have already added Julia path to `usr/local/bin`, you would need to change shebang of downloaded script to `#!/usr/local/bin/julia` or your specific customized path.
-
-Linux (Default)
-```bash
-#!/usr/bin/julia 
-```
-MacOS 
-```bash
-#!/usr/local/bin/julia
-```
-
-3. Make the *allocationopt* script executable. 
+2. Make the *allocationopt* script executable. 
 ```bash
 $ chmod +x allocationopt
 ```
 
-4. A simple check here, make sure you have Comonicon package added to Julia environment. 
+3. A simple check here, make sure you have Comonicon package added to Julia environment. 
 ```bash
 $ ./scripts/allocationopt --help
 ```
 
-5. On Linux, you can further simplify the use of this script by symlinking it to your *.local/bin*
+4. On Linux, you can further simplify the use of this script by symlinking it to your *.local/bin*
 
 ```
 $ mkdir -p ~/.local/bin
@@ -34,11 +23,11 @@ $ ln -s ~/projects/AllocationOpt.jl/scripts/allocationopt .  # Change to the pat
 ```
 You should now be able to run the *allocationopt* script from anywhere! Similarly to how you'd run *ls*.
 
-6. Optimiser queries network subgraph data to optimize. We recommend making queries to network subgraph served by your own indexer service, alternatively you can supply an API url to `indexer_service_network_url` from decentralized gateway or hosted service. 
+5. Optimiser queries network subgraph data to optimize. We recommend making queries to network subgraph served by your own indexer service, alternatively you can supply an API url to `indexer_service_network_url` from decentralized gateway or hosted service. 
 
 To provide network subgraph to optimiser, set indexer-service flag `--serve-network-subgraph` to `true`. We might incorporate bearer Auth token checks in the future. 
 
-7. Populate your preferred lists (whitelist, blacklist, pinnedlist, frozenlist) into a CSV and remember its file path
+6. Populate your preferred lists (whitelist, blacklist, pinnedlist, frozenlist) into a CSV and remember its file path
 
 
 ## ActionQueue
