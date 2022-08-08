@@ -8,8 +8,9 @@ Documentation for [AllocationOpt](https://github.com/graphprotocol/AllocationOpt
 
 AllocationOpt is a library for optimising how an indexer should allocate its stake in [The Graph Protocol](https://thegraph.com/en/).
 
-**Important:** You must run this on a computer that supports 64-bit operations.
-32-bit doesn't have enough precision to solve the optimisation problem.
+!!! warning
+    You must run this on a computer that supports 64-bit operations.
+    32-bit doesn't have enough precision to solve the optimisation problem.
 
 ## Installation
 
@@ -47,9 +48,8 @@ To provide the network subgraph to the optimiser, set the indexer-service flag `
 5. Populate your preferred lists (whitelist, blacklist, pinnedlist, frozenlist) into a CSV and remember its file path
 
 !!! note
-  
-  You can access the help for the optimiser by running the script with the `--help` flag.
-For example `allocationopt --help`.
+    You can access the help for the optimiser by running the script with the `--help` flag.
+    For example `allocationopt --help`.
 
 ### Action Queue
 
@@ -62,9 +62,8 @@ $ ./scripts/allocationopt actionqueue "0x6ac85b9d834b51b14a7b0ed849bb5199e04c05c
 ```
 
 !!! note
-
     You can access the help for the *actionqueue* option of the optimiser by running `allocationopt actionqueue --help` from your terminal.
-The help contains more details about each of the arguments of the optimiser.
+    The help contains more details about each of the arguments of the optimiser.
 
 Requests from our tool are logged, and you can use the indexer CLI `actions` commands to check and approve actions. 
 We do NOT auto-approve actions on your behalf.
@@ -74,10 +73,9 @@ We do NOT auto-approve actions on your behalf.
 If you don't have the action queue set up yet, you can also run the optimiser by telling it to generate indexing rules. 
 
 !!! warning
-
     Under this setup, you must pay attention to the order in which you execute the rules.
-If you do not close existing allocations before opening new ones, you won't have enough capital to open your new
-allocations.
+    If you do not close existing allocations before opening new ones, you won't have enough capital to open your new
+    allocations.
 
 Run the *allocationopt* script with the *rules* option. The URL passed in should be an API URL
 
@@ -86,7 +84,6 @@ $ ./scripts/allocationopt rules "0x6ac85b9d834b51b14a7b0ed849bb5199e04c05c5" 1 t
 ```
 
 !!! note
-
     You can access the help for the *rules* option of the optimiser by running `allocationopt rules --help` from your terminal.
     The help contains more details about each of the arguments of the optimiser.
 
