@@ -46,7 +46,9 @@ To provide the network subgraph to the optimiser, set the indexer-service flag `
 
 5. Populate your preferred lists (whitelist, blacklist, pinnedlist, frozenlist) into a CSV and remember its file path
 
-!!! note You can access the help for the optimiser by running the script with the `--help` flag.
+!!! note
+  
+  You can access the help for the optimiser by running the script with the `--help` flag.
 For example `allocationopt --help`.
 
 ### Action Queue
@@ -59,7 +61,9 @@ Run the *allocationopt* script with the *actionqueue* option.
 $ ./scripts/allocationopt actionqueue "0x6ac85b9d834b51b14a7b0ed849bb5199e04c05c5" 1 test/example.csv 50.0 28 30 0.3 http://localhost:18000 http://localhost:7600/network
 ```
 
-!!! note You can access the help for the *actionqueue* option of the optimiser by running `allocationopt actionqueue --help` from your terminal.
+!!! note
+
+    You can access the help for the *actionqueue* option of the optimiser by running `allocationopt actionqueue --help` from your terminal.
 The help contains more details about each of the arguments of the optimiser.
 
 Requests from our tool are logged, and you can use the indexer CLI `actions` commands to check and approve actions. 
@@ -69,7 +73,9 @@ We do NOT auto-approve actions on your behalf.
 
 If you don't have the action queue set up yet, you can also run the optimiser by telling it to generate indexing rules. 
 
-!!! warning Under this setup, you must pay attention to the order in which you execute the rules.
+!!! warning
+
+    Under this setup, you must pay attention to the order in which you execute the rules.
 If you do not close existing allocations before opening new ones, you won't have enough capital to open your new
 allocations.
 
@@ -79,8 +85,10 @@ Run the *allocationopt* script with the *rules* option. The URL passed in should
 $ ./scripts/allocationopt rules "0x6ac85b9d834b51b14a7b0ed849bb5199e04c05c5" 1 test/example.csv 50.0 28 25 0.3 http://localhost:7600/network
 ```
 
-!!! note You can access the help for the *rules* option of the optimiser by running `allocationopt rules --help` from your terminal.
-The help contains more details about each of the arguments of the optimiser.
+!!! note
+
+    You can access the help for the *rules* option of the optimiser by running `allocationopt rules --help` from your terminal.
+    The help contains more details about each of the arguments of the optimiser.
 
 
 ## Bugs and Feature Requests
