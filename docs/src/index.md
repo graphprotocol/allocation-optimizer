@@ -14,8 +14,8 @@ AllocationOpt is a library for optimising how an indexer should allocate its sta
 
 ## Installation
 
-1. Enter the julia repl. On linux machines, this is as simple as running the `julia` command from your terminal emulator. For MacOS, you'll need to add Julia to your path. See this [StackOverflow post](https://stackoverflow.com/questions/72123620/permission-denied-when-i-am-trying-to-add-julia-to-path-in-macos/72308646#72308646) if you're having issues.
-2. Add this package by adding the github url. First, enter package mode `]`. Then, type `add https://github.com/graphprotocol/AllocationOpt.jl`. You'll also want to add the [Comonicon package](https://github.com/comonicon/Comonicon.jl).
+Enter the julia repl. On linux machines, this is as simple as running the `julia` command from your terminal emulator. For MacOS, you'll need to add Julia to your path. See this [StackOverflow post](https://stackoverflow.com/questions/72123620/permission-denied-when-i-am-trying-to-add-julia-to-path-in-macos/72308646#72308646) if you're having issues.
+Add this package by adding the github url. First, enter package mode `]`. Then, type `add https://github.com/graphprotocol/AllocationOpt.jl`. You'll also want to add the [Comonicon package](https://github.com/comonicon/Comonicon.jl).
 
 ```julia-repl
 pkg> add https://github.com/graphprotocol/AllocationOpt.jl/
@@ -24,13 +24,14 @@ pkg> add Comonicon
 
 ## Usage
 
-1. Download the [*allocationopt* script](https://raw.githubusercontent.com/graphprotocol/AllocationOpt.jl/main/scripts/allocationopt). For example, using `curl` or `wget`. Make sure you use the raw file!
+Download the [*allocationopt* script](https://raw.githubusercontent.com/graphprotocol/AllocationOpt.jl/main/scripts/allocationopt). For example, using `curl` or `wget`. Make sure you use the raw file!
 
-2. Make the *allocationopt* script executable. 
+Make the *allocationopt* script executable. 
 ```bash
 $ chmod +x allocationopt
 ```
-3. You can further simplify the use of this script by symlinking it to your *.local/bin*.
+
+You can further simplify the use of this script by symlinking it to your *.local/bin*.
 For MacOS, symlink instead to */usr/local/bin*.
 
 ```bash
@@ -38,14 +39,15 @@ $ mkdir -p ~/.local/bin
 $ cd ~/.local/bin
 $ ln -s ~/projects/AllocationOpt.jl/scripts/allocationopt .  # Change to the path to the allocationopt script for you
 ```
+
 You should now be able to run the *allocationopt* script from anywhere!
 
-4. The optimiser queries the network subgraph data to optimize.
+The optimiser queries the network subgraph data to optimize.
 We recommend making queries to the network subgraph served by your own indexer service.
 Alternatively, you can supply an API url to `indexer_service_network_url` from the decentralized gateway or hosted service. 
 To provide the network subgraph to the optimiser, set the indexer-service flag `--serve-network-subgraph` to `true`.
 
-5. Populate your preferred lists (whitelist, blacklist, pinnedlist, frozenlist) into a CSV and remember its file path
+Populate your preferred lists (whitelist, blacklist, pinnedlist, frozenlist) into a CSV and remember its file path
 
 !!! note
     You can access the help for the optimiser by running the script with the `--help` flag.
