@@ -1,13 +1,14 @@
-#!/usr/bin/local/julia
+#!/usr/bin/env julia
 using Comonicon
 using Distributed
 
-addprocs(Sys.CPU_THREADS; exeflags=`--project=$(Base.active_project())`)  # Multi-process for speed-up
+# Leave one thread for OS
+addprocs(Sys.CPU_THREADS - 1; exeflags=`--project=$(Base.active_project())`)  # Multi-process for speed-up
 
 @everywhere using AllocationOpt
 
 """
-Optimises an indexer's allocations and pushes them to the action queue.
+Optimise an indexer's allocations and pushes them to the action queue. We will NOT auto-approve actions for you.
 
 # Arguments
 
@@ -49,7 +50,7 @@ Optimises an indexer's allocations and pushes them to the action queue.
 end
 
 """
-Optimises an indexer's allocations and generates indexer rules to change allocations.
+Optimise an indexer's allocations and generates indexer rules to change allocations.
 
 # Arguments
 
@@ -68,8 +69,7 @@ Optimises an indexer's allocations and generates indexer rules to change allocat
     pinnedlist = cols[3]
 
     # Pull network state from indexer service network endpoint
-    println("Reading network state.")
-    repo, indexer, network = network_state(id, parse(Int, network_id), cols..., indexer_service_network_url)
+    println("Reading network state.") repo, indexer, network = network_state(id, parse(Int, network_id), cols..., indexer_service_network_url)
 
     # Pull full network state from indexer service network endpoint
     fullrepo, _, _ = network_state(id, parse(Int, network_id), String[], String[], String[], String[], indexer_service_network_url)
