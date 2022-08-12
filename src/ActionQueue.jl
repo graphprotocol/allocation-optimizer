@@ -1,4 +1,5 @@
 module ActionQueue
+using Formatting
 include("action.jl")
 
 @enum ActionStatus begin
@@ -68,7 +69,7 @@ function reallocate_actions(
                 reallocate,
                 existing_allocations[ipfs],
                 ipfs,
-                string(proposed_allocations[ipfs]),
+                format(proposed_allocations[ipfs]),
                 "AllocationOpt",
                 "AllocationOpt",
                 0,
@@ -91,7 +92,7 @@ function allocate_actions(
                 queued,
                 allocate,
                 ipfs,
-                string(proposed_allocations[ipfs]),
+                format(proposed_allocations[ipfs]),
                 "AllocationOpt",
                 "AllocationOpt",
                 0,
