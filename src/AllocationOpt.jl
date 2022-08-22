@@ -97,6 +97,58 @@ function apply_preferences(
 end
 
 """
+function apply_preferences(network::GraphNetworkParameters, gas::Real, allocation_lifetime::Int, verbose::Bool, ω::Matrix{T}, ψ::AbstractVector{T}, Ω::AbstractVector{T}) where {T <: Real}
+
+# Arguments
+- `network::GraphNetworkParameters`: Contains the current network parameters.
+- `gas::Float64`: The gas in grt that the indexer will spend on the allocation transaction. We use this to
+    calculate profit, but note that the assumption that this will be the price at the end of the allocation
+    lifetime is probably bad. Gas is constantly changing.
+- `allocation_lifetime::Integer`: The number of epochs for which these allocations would be open. An allocation earns indexing rewards upto 28 epochs.
+- `verbose::Bool`: A boolean flag for the verbosity of applying preferences
+- `ω::Matrix{Real}`: A matrix of allocations in which the rows have different sparsities.
+- `ψ::Vector{Real}`: A vector of subgraph signals.
+- `Ω::Vector{Real}`: A vector of the allocations of other indexers.
+"""
+function apply_preferences(
+    network::GraphNetworkParameters,
+    gas::Real,
+    allocation_lifetime::Int,
+    ω::AbstractMatrix{T},
+    ψ::AbstractVector{T},
+    Ω::AbstractVector{T},
+    ipfshashes::Vector{String},
+) where {T<:Real}
+    profit_sums = map(x -> profit(network, gas, allocation_lifetime, x, ψ, Ω), eachcol(ω))
+    principle_stake = sum(ω[:, 1])
+
+    if all(profit_sums .≤ 0)
+        throw(
+            ArgumentError(
+                "Solver was unable to find a solution with positive expected profit."
+            ),
+        )
+    end
+
+    top_three = partialsortperm(profit_sums, 1:min(3, size(ω, 2)); rev=true)
+
+    # APR and profit details for at most 3 top plans of allocations
+    summary = map(
+        (profit, x) -> (
+            profit,
+            annual_percentage_return(profit, principle_stake, allocation_lifetime),
+            apr(network, gas, allocation_lifetime, x, ψ, Ω, ipfshashes),
+        ),
+        profit_sums[top_three],
+        eachcol(ω[:, top_three]),
+    )
+    println("top plans:")
+    println.(summary)
+    i = argmax(profit_sums)
+    return ω[:, i]
+end
+
+"""
     function optimize_indexer(indexer, repo, maximum_new_allocations, pinnedlist)
 
 # Arguments
@@ -126,13 +178,7 @@ function optimize_indexer(
     end
 
     # Optimise    # ω = optimize(indexer, repo, maximum_new_allocations)
-    Ωfull = stakes(fullrepo)
-    ψfull = signal.(fullrepo.subgraphs)
-    σfull = sum(Ωfull)
-    Ωprime = discount(Ωfull, ψfull, σfull, τ)
-    ψids = id.(repo.subgraphs)
-    ψfullids = id.(fullrepo.subgraphs)
-    Ω = Ωprime[findall(x -> x in ψids, ψfullids)]
+    Ω = discountΩ(fullrepo, repo, τ)
     ψ = signal.(repo.subgraphs)
     σ = indexer.stake
     ω = optimize(Ω, ψ, σ, maximum_new_allocations, filter_function)

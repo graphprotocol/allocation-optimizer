@@ -72,7 +72,7 @@ function query_indexer_allocations(client::Client, indexer_id::AbstractString)
             "where" =>
                 Dict("stakedTokens_gte" => "100000000000000000000000", "id" => indexer_id),
         ),
-        ["allocations{id,subgraphDeployment{ipfsHash}}"],
+        ["allocations{id,allocatedTokens,subgraphDeployment{ipfsHash}}"],
     )
     indexer_data = query(client, "indexers"; query_args=indexer_query.args, output_fields=indexer_query.fields).data["indexers"]
     indexer = Indexer(indexer_data[1]["allocations"])

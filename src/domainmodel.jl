@@ -13,6 +13,11 @@ struct Allocation <: IPFSEntity
     created_at_epoch::Integer
 
     function Allocation(
+        id::AbstractString, ipfshash::AbstractString, amount::AbstractString
+    )
+        return new(id, ipfshash, togrt(amount), 0)
+    end
+    function Allocation(
         ipfshash::AbstractString, amount::AbstractString, created_at_epoch::Integer
     )
         return new("", ipfshash, togrt(amount), created_at_epoch)
@@ -57,7 +62,12 @@ struct Indexer <: GraphEntity
         return new(
             "",
             0.0,
-            map(x -> Allocation(x["id"], x["subgraphDeployment"]["ipfsHash"]), allocation),
+            map(
+                x -> Allocation(
+                    x["id"], x["subgraphDeployment"]["ipfsHash"], x["allocatedTokens"]
+                ),
+                allocation,
+            ),
         )
     end
 end

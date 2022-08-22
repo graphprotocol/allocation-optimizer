@@ -50,6 +50,44 @@ Optimise an indexer's allocations and pushes them to the action queue. We will N
 end
 
 """
+Optimise an indexer's allocations, json output, and log profit summary
+
+# Arguments
+
+- `id`: The id of the indexer to optimise.
+- `network_id`: The id of the network the indexer want to optimise on.
+- `filepath`: A path to the CSV file that contains whitelist, blacklist, pinnedlist, frozenlist as columns.
+- `grtgas`: The maximum amount of GRT that you are willing to spend on each allocation transaction. 
+- `allocation_lifetime`: The number of epochs for which these allocations would be open. An allocation earns indexing rewards upto 28 epochs.
+- `maximum_new_allocations`: The maximum number of new allocations you would like the optimizer to open.
+- `τ`: Interval [0,1]. As τ gets closer to 0, the optimiser selects greedy allocations that maximise your short-term, expected rewards, but network dynamics will affect you more. The opposite occurs as τ approaches 1. 
+- `management_server_url`: The URL that exposes the indexer managment server, including the port. Must begin with http. Example: http://localhost:18000.
+- `indexer_service_network_url`: The URL that exposes the indexer service's network endpoint. Must begin with http. Example: http://localhost:7600/network.
+"""
+@cast function optimizesummary(id, network_id, filepath, grtgas, allocation_lifetime, maximum_new_allocations, τ, indexer_service_network_url)
+    # Read subgraph lists defined in the file
+    cols = read_filterlists(filepath)
+    pinnedlist = cols[3]
+
+    # Pull network state from indexer service network endpoint
+    println("Reading network state.")
+    repo, indexer, network = network_state(id, parse(Int, network_id), cols..., indexer_service_network_url)
+
+    # Pull full network state from indexer service network endpoint
+    fullrepo, _, _ = network_state(id, parse(Int, network_id), String[], String[], String[], String[], indexer_service_network_url)
+    
+    filter_fn = (ω, ψ, Ω) -> apply_preferences(network, parse(Float64, grtgas), parse(Int, allocation_lifetime), ω, ψ, Ω, map(s->s.ipfshash,repo.subgraphs))
+    
+    # Optimize for the indexer
+    println("Beginning optimisation.")
+    ω = optimize_indexer(indexer, repo, fullrepo, parse(Int64, maximum_new_allocations), parse(Float64, τ), filter_fn, pinnedlist)
+
+    println("Done! Printed top plans with indexing rewards and APR for the allocation lifetime duration, assuming constant network and gas")
+
+    return nothing
+end
+
+"""
 Optimise an indexer's allocations and generates indexer rules to change allocations.
 
 # Arguments

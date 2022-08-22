@@ -171,6 +171,22 @@ function discount(
     return Ωprime
 end
 
+function discountΩ(fullrepo::Repository, repo::Repository, τ::Real)
+    return discountΩ(fullrepo, repo.subgraphs, τ)
+end
+
+function discountΩ(
+    fullrepo::Repository, subgraphs::AbstractVector{SubgraphDeployment}, τ::Real
+)
+    Ωfull = stakes(fullrepo)
+    ψfull = signal.(fullrepo.subgraphs)
+    σfull = sum(Ωfull)
+    Ωprime = discount(Ωfull, ψfull, σfull, τ)
+    ψids = id.(subgraphs)
+    ψfullids = id.(fullrepo.subgraphs)
+    return Ωprime[findall(x -> x in ψids, ψfullids)]
+end
+
 function tokens_issued_over_lifetime(
     network::GraphNetworkParameters, allocation_lifetime::Integer
 )
@@ -188,12 +204,27 @@ function profit(
     Ω::AbstractVector{T},
 ) where {T<:Real}
     Φ = tokens_issued_over_lifetime(network, allocation_lifetime)
-    gascost = gaspersubgraph(gas) * length(ω[findall(ω .!= 0.0)])
+    gascost = gasperallocation(gas) * length(ω[findall(ω .!= 0.0)])
     indexing_rewards = f(ψ, Ω, ω, Φ, network.total_tokens_signalled)
     return indexing_rewards - gascost
 end
 
-function gaspersubgraph(gas)
+function profitᵢ(
+    network::GraphNetworkParameters,
+    gas::Float64,
+    allocation_lifetime::Integer,
+    ω::AbstractVector{T},
+    ψ::AbstractVector{T},
+    Ω::AbstractVector{T},
+) where {T<:Real}
+    Φ = tokens_issued_over_lifetime(network, allocation_lifetime)
+    gascost = zeros(length(ω))
+    gascost[findall(ω .!= 0.0)] .= gasperallocation(gas)
+    indexing_rewards = fᵢ.(ψ, Ω, ω, Φ, network.total_tokens_signalled)
+    return indexing_rewards .- gascost
+end
+
+function gasperallocation(gas)
     # Assume cost for an allocation's life require open and close
     open_multiplier = 1.0
     close_multiplier = 1.0
@@ -206,4 +237,43 @@ function f(
     subgraph_rewards = Φ .* ψ ./ Ψ
     indexing_rewards = sum(subgraph_rewards .* ω ./ (Ω .+ ω))
     return indexing_rewards
+end
+
+function fᵢ(ψ::T, Ω::T, ω::T, Φ::T, Ψ::T) where {T<:Real}
+    subgraph_rewards = Φ * ψ / Ψ
+    return subgraph_rewards * ω / (Ω + ω)
+end
+
+# Rough estimate with allocated time of 365 epochs in a year 
+function annual_percentage_return(profit, principle, period_duration)
+    return (profit / principle) / period_duration * 365
+end
+
+function aprᵢ(
+    ψ::T, Ω::T, ω::T, Φ::T, Ψ::T, gas::Float64, allocation_lifetime::Integer
+) where {T<:Real}
+    if (iszero(ω))
+        return ω
+    end
+    subgraph_rewards = Φ * ψ / Ψ
+    indexing_rewards = subgraph_rewards * ω / (Ω + ω)
+    profit = indexing_rewards - gasperallocation(gas)
+
+    return annual_percentage_return(profit, ω, allocation_lifetime)
+end
+
+function apr(
+    network::GraphNetworkParameters,
+    gas::Float64,
+    allocation_lifetime::Integer,
+    ω::AbstractVector{T},
+    ψ::AbstractVector{T},
+    Ω::AbstractVector{T},
+    ipfshashes::Vector{String},
+) where {T<:Real}
+    Φ = tokens_issued_over_lifetime(network, allocation_lifetime)
+
+    apr = aprᵢ.(ψ, Ω, ω, Φ, network.total_tokens_signalled, gas, allocation_lifetime)
+    allocation_aprs = Dict(k => (v, a) for (k, v, a) in zip(ipfshashes, ω, apr) if v > 0.0)
+    return allocation_aprs
 end

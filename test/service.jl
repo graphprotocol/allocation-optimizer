@@ -293,7 +293,7 @@
         prof = profit(network, gas, allocation_lifetime, ω, ψ, Ω)
         x =
             f(ψ, Ω, ω, Φ, total_token_signalled) -
-            gaspersubgraph(gas) * length(ω[findall(ω .!= 0.0)])
+            gasperallocation(gas) * length(ω[findall(ω .!= 0.0)])
         @test isapprox(prof, x; rtol=1e-2)
     end
 end
