@@ -82,8 +82,10 @@ Optimise an indexer's allocations, json output, and log profit summary
     println("Beginning optimisation.")
     ω = optimize_indexer(indexer, repo, fullrepo, parse(Int64, maximum_new_allocations), parse(Float64, τ), filter_fn, pinnedlist)
 
-    println("Done! Printed top plans, assuming constant network and gas, currently read key as number of nonzero allocations in the plan, values as (estimated total profit, APR, Allocation[amounts, profit, apr]). 0 is as if we repeat the same allocations")
+    println("Done! The summary for top profitable plans has been saved to the output file, please note that profit and APR caluclations assume constant network and gas. Read primary key as number of nonzero allocations (k-sparse plan), values as (estimated total profit, average APR, Allocation[amounts, profit, apr]). Key 0 is as if we repeat the same allocations")
 
+    println(ω)
+    
     return nothing
 end
 

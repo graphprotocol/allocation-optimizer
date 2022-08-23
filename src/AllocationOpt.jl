@@ -146,14 +146,14 @@ function apply_preferences(
         i => (
             p,
             annual_percentage_return(p, principle_stake, allocation_lifetime),
-            apr(network, gas, allocation_lifetime, v, ψ, Ω, ipfshashes),
+            estimate_allocations(network, gas, allocation_lifetime, v, ψ, Ω, ipfshashes),
         ) for (i, p, v) in zip(top_three, profit_sums[top_three], eachcol(ω[:, top_three]))
     )
     # Current profit and returns at 0 allocations
     summary_dict[0] = (
         profit_curr,
         annual_percentage_return(profit_curr, principle_stake, allocation_lifetime),
-        apr(network, gas, allocation_lifetime, ω_curr, ψ, Ω, ipfshashes),
+        estimate_allocations(network, gas, allocation_lifetime, ω_curr, ψ, Ω, ipfshashes),
     )
     write_results(output_path, summary_dict)
 

@@ -3,6 +3,7 @@ using LinearAlgebra
 using Distributed
 using ProgressMeter
 using SharedArrays
+using Formatting
 
 function detach_indexer(repo::Repository, id::AbstractString)::Tuple{Indexer,Repository}
     # Get requested indexer
@@ -262,7 +263,7 @@ function aprᵢ(
     return annual_percentage_return(profit, ω, allocation_lifetime)
 end
 
-function apr(
+function estimate_allocations(
     network::GraphNetworkParameters,
     gas::Float64,
     allocation_lifetime::Integer,
@@ -275,8 +276,7 @@ function apr(
 
     apr = aprᵢ.(ψ, Ω, ω, Φ, network.total_tokens_signalled, gas, allocation_lifetime)
     profit = profitᵢ(network, gas, allocation_lifetime, ω, ψ, Ω)
-    allocation_aprs = Dict(
-        k => (v, p, a) for (k, v, p, a) in zip(ipfshashes, ω, profit, apr) if v > 0.0
+    return Dict(
+        k => (format(v), p, a) for (k, v, p, a) in zip(ipfshashes, ω, profit, apr) if v > 0.0
     )
-    return allocation_aprs
 end
