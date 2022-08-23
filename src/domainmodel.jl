@@ -154,3 +154,18 @@ stake(i::Indexer) = i.stake
 function other_stake(repo::Repository, indexer::Indexer)
     return sum(stake.(repo.indexers)) - stake(indexer)
 end
+
+function allocated_stake_onto_ipfs(ipfshashes::Vector{String}, allocs::Vector{Allocation})
+    # Dictionary might be cleaner but this shall work for now (strict ordering
+    stakes = zeros(length(ipfshashes))
+    existing_allocs_hashes = ipfshash.(allocs)
+    rearrange_allocs = Allocation[]
+    for hash in ipfshashes
+        if hash in existing_allocs_hashes
+            push!(rearrange_allocs, allocs[findfirst(a -> ipfshash(a) == hash, allocs)])
+        end
+    end
+    existing_ixs = findall(i -> i in existing_allocs_hashes, ipfshashes)
+    stakes[existing_ixs] .= allocated_stake.(rearrange_allocs)
+    return stakes
+end

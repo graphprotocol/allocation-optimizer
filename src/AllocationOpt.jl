@@ -1,9 +1,11 @@
 module AllocationOpt
 
 using CSV
+using JSON
 using GraphQLClient
 
-export network_state, optimize_indexer, read_filterlists
+export network_state,
+    optimize_indexer, read_filterlists, write_results, allocated_stake, ipfshash
 export push_allocations!, create_rules!, apply_preferences
 
 include("exceptions.jl")
@@ -109,6 +111,9 @@ function apply_preferences(network::GraphNetworkParameters, gas::Real, allocatio
 - `ω::Matrix{Real}`: A matrix of allocations in which the rows have different sparsities.
 - `ψ::Vector{Real}`: A vector of subgraph signals.
 - `Ω::Vector{Real}`: A vector of the allocations of other indexers.
+- `ipfshashes::Vector{String}`: A vector of ipfs hashes on the repo
+- `existing_allocations::Vector{Allocation}`: A vector of existing alloactions of the indexer
+- `output_path::String`: filepath to write output results
 """
 function apply_preferences(
     network::GraphNetworkParameters,
@@ -118,11 +123,16 @@ function apply_preferences(
     ψ::AbstractVector{T},
     Ω::AbstractVector{T},
     ipfshashes::Vector{String},
+    existing_allocations::Vector{Allocation},
+    output_path::String,
 ) where {T<:Real}
+    ω_curr = allocated_stake_onto_ipfs(ipfshashes, existing_allocations)
     profit_sums = map(x -> profit(network, gas, allocation_lifetime, x, ψ, Ω), eachcol(ω))
+    profit_curr = profit(network, gas, allocation_lifetime, ω_curr, ψ, Ω)
     principle_stake = sum(ω[:, 1])
+    best_i = argmax(profit_sums)
 
-    if all(profit_sums .≤ 0)
+    if (profit_sums[best_i] ≤ 0)
         throw(
             ArgumentError(
                 "Solver was unable to find a solution with positive expected profit."
@@ -132,20 +142,22 @@ function apply_preferences(
 
     top_three = partialsortperm(profit_sums, 1:min(3, size(ω, 2)); rev=true)
 
-    # APR and profit details for at most 3 top plans of allocations
-    summary = map(
-        (profit, x) -> (
-            profit,
-            annual_percentage_return(profit, principle_stake, allocation_lifetime),
-            apr(network, gas, allocation_lifetime, x, ψ, Ω, ipfshashes),
-        ),
-        profit_sums[top_three],
-        eachcol(ω[:, top_three]),
+    summary_dict = Dict(
+        i => (
+            p,
+            annual_percentage_return(p, principle_stake, allocation_lifetime),
+            apr(network, gas, allocation_lifetime, v, ψ, Ω, ipfshashes),
+        ) for (i, p, v) in zip(top_three, profit_sums[top_three], eachcol(ω[:, top_three]))
     )
-    println("top plans:")
-    println.(summary)
-    i = argmax(profit_sums)
-    return ω[:, i]
+    # Current profit and returns at 0 allocations
+    summary_dict[0] = (
+        profit_curr,
+        annual_percentage_return(profit_curr, principle_stake, allocation_lifetime),
+        apr(network, gas, allocation_lifetime, ω_curr, ψ, Ω, ipfshashes),
+    )
+    write_results(output_path, summary_dict)
+
+    return ω[:, best_i]
 end
 
 """
@@ -210,6 +222,19 @@ function read_filterlists(filepath::AbstractString)
     cols = map(x -> collect(skipmissing(csv[x])), listtypes)
 
     return cols
+end
+
+"""
+    function write_results(filepath)
+        
+# Arguments
+
+- `filepath::AbstractString`: A path to the json file to record optimized results with grossly estimated lifetime profit and APR.
+"""
+function write_results(filepath::AbstractString, results)
+    f = open(abspath(filepath), "w")
+    JSON.print(f, results)
+    flush(f)
 end
 
 """

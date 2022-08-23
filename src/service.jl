@@ -274,6 +274,9 @@ function apr(
     Φ = tokens_issued_over_lifetime(network, allocation_lifetime)
 
     apr = aprᵢ.(ψ, Ω, ω, Φ, network.total_tokens_signalled, gas, allocation_lifetime)
-    allocation_aprs = Dict(k => (v, a) for (k, v, a) in zip(ipfshashes, ω, apr) if v > 0.0)
+    profit = profitᵢ(network, gas, allocation_lifetime, ω, ψ, Ω)
+    allocation_aprs = Dict(
+        k => (v, p, a) for (k, v, p, a) in zip(ipfshashes, ω, profit, apr) if v > 0.0
+    )
     return allocation_aprs
 end

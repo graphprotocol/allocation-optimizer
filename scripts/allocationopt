@@ -61,10 +61,10 @@ Optimise an indexer's allocations, json output, and log profit summary
 - `allocation_lifetime`: The number of epochs for which these allocations would be open. An allocation earns indexing rewards upto 28 epochs.
 - `maximum_new_allocations`: The maximum number of new allocations you would like the optimizer to open.
 - `τ`: Interval [0,1]. As τ gets closer to 0, the optimiser selects greedy allocations that maximise your short-term, expected rewards, but network dynamics will affect you more. The opposite occurs as τ approaches 1. 
-- `management_server_url`: The URL that exposes the indexer managment server, including the port. Must begin with http. Example: http://localhost:18000.
 - `indexer_service_network_url`: The URL that exposes the indexer service's network endpoint. Must begin with http. Example: http://localhost:7600/network.
+- `output_filepath`: A path to write a JSON write that contains optimization results with gross estimation of profit over lifetime and APR. 
 """
-@cast function optimizesummary(id, network_id, filepath, grtgas, allocation_lifetime, maximum_new_allocations, τ, indexer_service_network_url)
+@cast function optimizesummary(id, network_id, filepath, grtgas, allocation_lifetime, maximum_new_allocations, τ, indexer_service_network_url, output_filepath)
     # Read subgraph lists defined in the file
     cols = read_filterlists(filepath)
     pinnedlist = cols[3]
@@ -76,13 +76,13 @@ Optimise an indexer's allocations, json output, and log profit summary
     # Pull full network state from indexer service network endpoint
     fullrepo, _, _ = network_state(id, parse(Int, network_id), String[], String[], String[], String[], indexer_service_network_url)
     
-    filter_fn = (ω, ψ, Ω) -> apply_preferences(network, parse(Float64, grtgas), parse(Int, allocation_lifetime), ω, ψ, Ω, map(s->s.ipfshash,repo.subgraphs))
+    filter_fn = (ω, ψ, Ω) -> apply_preferences(network, parse(Float64, grtgas), parse(Int, allocation_lifetime), ω, ψ, Ω, ipfshash.(repo.subgraphs), indexer.allocations, output_filepath)
     
     # Optimize for the indexer
     println("Beginning optimisation.")
     ω = optimize_indexer(indexer, repo, fullrepo, parse(Int64, maximum_new_allocations), parse(Float64, τ), filter_fn, pinnedlist)
 
-    println("Done! Printed top plans with indexing rewards and APR for the allocation lifetime duration, assuming constant network and gas")
+    println("Done! Printed top plans, assuming constant network and gas, currently read key as number of nonzero allocations in the plan, values as (estimated total profit, APR, Allocation[amounts, profit, apr]). 0 is as if we repeat the same allocations")
 
     return nothing
 end

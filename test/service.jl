@@ -52,6 +52,24 @@
         @test allocated_stake.(allocs) == [10.0, 20.0]
     end
 
+    @testset "allocated_stake_onto_ipfs" begin
+        allocs = [
+            Allocation("1", "Qmaaa", "2000000000000000000"),
+            Allocation("2", "Qmbbb", "4000000000000000000"),
+        ]
+        ipfshashes = ["Qmaaa", "Qmbbb"]
+        # Should get the allocations of indexers
+        @test allocated_stake_onto_ipfs(ipfshashes, allocs) == [2.0, 4.0]
+
+        ipfshashes = ["Qmaaa"]
+        # Should get the allocations of indexers limited to ipfshashes
+        @test allocated_stake_onto_ipfs(ipfshashes, allocs) == [2.0]
+
+        ipfshashes = ["Qmbbb", "Qmccc", "Qmaaa"]
+        # Should get the allocations of indexers expanded to ipfshashes in order
+        @test allocated_stake_onto_ipfs(ipfshashes, allocs) == [4.0, 0.0, 2.0]
+    end
+
     @testset "stakes" begin
         repo = Repository(
             [
