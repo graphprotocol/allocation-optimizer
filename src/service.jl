@@ -72,14 +72,12 @@ function optimize(
 ) where {T<:Real}
     # Add 1 to Ω to prevent degenerate cases
     Ωadj = Ω .+ 1
-    η = 1e5
-    Δη = 1.001
-    patience = 1e4
-    tol = 1e-10
+    η = 2 / lipschitz(ψ, Ωadj)  # step size is defined as 2 / L
+    tol = 1e-32
     # do projected gradient descent for projection onto the k-sparse until convergence
     ωs = pmap(1:max_allocations) do k
         println("Optimising for $k allocations.")
-        ω = pgd(ψ, Ωadj, k, σ, η, Δη, patience, tol)
+        ω = pgd(ψ, Ωadj, k, σ, η, tol)
         println("$k allocations optimised.")
         return ω
     end
@@ -97,8 +95,6 @@ function pgd(
     k::Int,
     σ::Real,
     η::Real,
-    Δη::Real,
-    patience::Real,
     tol::Real,
 )
     xopt = optimize(Ω, ψ, σ)
@@ -107,32 +103,24 @@ function pgd(
     x = ones(length(Ω))
 
     # Run pgd_step until convergence
-    # TODO: Patience so that we don't end up in a while true loop
-    j = 0
     i = 0
     while !isapprox(x, xnew; rtol=tol)
         # (re)set x to xnew
         x = xnew
         xnew = pgd_step(x, ψ, Ω, k, σ, η)
         xnew = halpern(xnew, xopt, i)
-        if norm(xnew - x) ≥ norm(x - xold)
-            # Learning rate is too high, so we've diverged.
-            η *= 1 / Δη
-            j = 0
-        else
-            j += 1
-            if j > patience
-                η *= Δη
-            end
-        end
         xold = x
         i += 1
     end
-    xnew = gssp(xnew, k,σ)
+    xnew = gssp(xnew, k, σ)
     return xnew
 end
 
-halpern(x::AbstractVector{T}, xopt::AbstractVector{T}, i::Integer) where {T<:Real} = 1/(i + 1) * xopt + (1 - 1/(i+1)) * x 
+lipschitz(ψ, Ω) = maximum(2 * ψ ./ Ω .^ 3)
+
+function halpern(x::AbstractVector{T}, xopt::AbstractVector{T}, i::Integer) where {T<:Real}
+    return 1 / (i + 1) * xopt + (1 - 1 / (i + 1)) * x
+end
 
 function pgd_step(
     x::AbstractVector{<:Real},
@@ -284,6 +272,7 @@ function estimate_allocations(
     apr = aprᵢ.(ψ, Ω, ω, Φ, network.total_tokens_signalled, gas, allocation_lifetime)
     profit = profitᵢ(network, gas, allocation_lifetime, ω, ψ, Ω)
     return Dict(
-        k => (format(v), p, a) for (k, v, p, a) in zip(ipfshashes, ω, profit, apr) if v > 0.0
+        k => (format(v), p, a) for
+        (k, v, p, a) in zip(ipfshashes, ω, profit, apr) if v > 0.0
     )
 end

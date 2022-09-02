@@ -147,16 +147,22 @@ using GraphQLClient
             AllocationOpt.Allocation("2", "Qmbbb", "4000000000000000000"),
         ]
         gas = 0.0005
-        ωopt = apply_preferences(network, gas, allocation_lifetime, ω, ψ, Ω, id, ω_curr, filepath)
+        ωopt = apply_preferences(
+            network, gas, allocation_lifetime, ω, ψ, Ω, id, ω_curr, filepath
+        )
         @test ωopt == Float64[3, 3]
 
         gas = 0.001
-        ωopt = apply_preferences(network, gas, allocation_lifetime, ω, ψ, Ω, id, ω_curr, filepath)
+        ωopt = apply_preferences(
+            network, gas, allocation_lifetime, ω, ψ, Ω, id, ω_curr, filepath
+        )
         @test ωopt == Float64[0, 6]
 
         gas = 0.0005
         allocation_lifetime = 15
-        ωopt = apply_preferences(network, gas, allocation_lifetime, ω, ψ, Ω, id, ω_curr, filepath)
+        ωopt = apply_preferences(
+            network, gas, allocation_lifetime, ω, ψ, Ω, id, ω_curr, filepath
+        )
         @test ωopt == Float64[3, 3]
     end
 end

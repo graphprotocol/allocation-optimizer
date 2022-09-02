@@ -129,7 +129,7 @@ function apply_preferences(
     ω_curr = allocated_stake_onto_ipfs(ipfshashes, existing_allocations)
     profit_sums = map(x -> profit(network, gas, allocation_lifetime, x, ψ, Ω), eachcol(ω))
     profit_curr = profit(network, gas, allocation_lifetime, ω_curr, ψ, Ω)
-    principle_stake = sum(ω[:, 1])
+    principal_stake = sum(ω[:, 1])
     best_i = argmax(profit_sums)
 
     if (profit_sums[best_i] ≤ 0)
@@ -145,14 +145,14 @@ function apply_preferences(
     summary_dict = Dict(
         i => (
             p,
-            annual_percentage_return(p, principle_stake, allocation_lifetime),
+            annual_percentage_return(p, principal_stake, allocation_lifetime),
             estimate_allocations(network, gas, allocation_lifetime, v, ψ, Ω, ipfshashes),
         ) for (i, p, v) in zip(top_three, profit_sums[top_three], eachcol(ω[:, top_three]))
     )
     # Current profit and returns at 0 allocations
     summary_dict[0] = (
         profit_curr,
-        annual_percentage_return(profit_curr, principle_stake, allocation_lifetime),
+        annual_percentage_return(profit_curr, principal_stake, allocation_lifetime),
         estimate_allocations(network, gas, allocation_lifetime, ω_curr, ψ, Ω, ipfshashes),
     )
     write_results(output_path, summary_dict)
@@ -234,7 +234,7 @@ end
 function write_results(filepath::AbstractString, results)
     f = open(abspath(filepath), "w")
     JSON.print(f, results)
-    flush(f)
+    return flush(f)
 end
 
 """
