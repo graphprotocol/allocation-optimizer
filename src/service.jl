@@ -101,17 +101,20 @@ function pgd(
     patience::Real,
     tol::Real,
 )
+    xopt = optimize(Ω, ψ, σ)
     xold = -1 .* ones(length(Ω))
-    xnew = ones(length(Ω))
-    x = zeros(length(Ω))
+    xnew = xopt
+    x = ones(length(Ω))
 
     # Run pgd_step until convergence
     # TODO: Patience so that we don't end up in a while true loop
     j = 0
+    i = 0
     while !isapprox(x, xnew; rtol=tol)
         # (re)set x to xnew
         x = xnew
         xnew = pgd_step(x, ψ, Ω, k, σ, η)
+        xnew = halpern(xnew, xopt, i)
         if norm(xnew - x) ≥ norm(x - xold)
             # Learning rate is too high, so we've diverged.
             η *= 1 / Δη
@@ -123,9 +126,13 @@ function pgd(
             end
         end
         xold = x
+        i += 1
     end
+    xnew = gssp(xnew, k,σ)
     return xnew
 end
+
+halpern(x::AbstractVector{T}, xopt::AbstractVector{T}, i::Integer) where {T<:Real} = 1/(i + 1) * xopt + (1 - 1/(i+1)) * x 
 
 function pgd_step(
     x::AbstractVector{<:Real},
