@@ -6,4 +6,4 @@
 [![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)](https://github.com/semantic-release/semantic-release)
 
 AllocationOpt is a library for optimising how an indexer should allocate its stake in [The Graph Protocol](https://thegraph.com/en/).
-For details, visit out [documentation](https://graphprotocol.github.io/AllocationOpt.jl/dev)
+For details, visit our [documentation](https://graphprotocol.github.io/AllocationOpt.jl/dev)
