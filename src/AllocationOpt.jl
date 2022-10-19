@@ -161,7 +161,7 @@ function apply_preferences(
 end
 
 """
-    function optimize_indexer(indexer, repo, maximum_new_allocations, pinnedlist)
+    function optimize_indexer(indexer, repo, maximum_new_allocations,τ, filter_function, pinnedlist)
 
 # Arguments
 - `indexer::Indexer`: The indexer being optimised.
@@ -200,7 +200,7 @@ function optimize_indexer(
 
     # Filter results with deployment IPFS hashes
     suggested_allocations = Dict(
-        ipfshash(k) => v for (k, v) in zip(repo.subgraphs, ω) if v > 0.0
+        ipfshash(k) => round(v; digits=3) for (k, v) in zip(repo.subgraphs, ω) if v > 0.0
     )
     return suggested_allocations
 end

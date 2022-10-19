@@ -60,11 +60,11 @@ using GraphQLClient
             id, network_id, String[ipfshash], String[], String[], String[], gateway_url
         )
         # Check stake
-        @test isapprox(stake, optindexer.stake; atol=1e-6)
+        @test isapprox(stake, optindexer.stake; atol=1e-3)
         allocs = optimize_indexer(optindexer, repo, repo, 2, τ, filter_fn, String[])
         # Sum allocation amounts
         ω = sum(values(allocs))
-        @test isapprox(ω, stake; atol=1e-6)
+        @test isapprox(ω, stake; atol=1e-3)
         # Length of allocations is 1
         @test length(allocs) == 1
         # run optimize_indexer
@@ -80,7 +80,7 @@ using GraphQLClient
         allocs = optimize_indexer(optindexer, repo, repo, 2, τ, filter_fn, String[])
         # Sum allocation amounts
         ω = sum(values(allocs))
-        @test isapprox(ω, stake; atol=1e-6)
+        @test isapprox(ω, stake; atol=1e-3)
         # Length of allocations ≤ length of whitelist
         @test length(allocs) ≤ 2
 
@@ -96,7 +96,7 @@ using GraphQLClient
         @test pinned_allocs[another_ipfshash] == 0.1
         # Sum allocation amounts still satisfy stake constraint
         ω = sum(values(pinned_allocs))
-        @test isapprox(ω, stake; atol=1e-6)
+        @test isapprox(ω, stake; atol=1e-3)
 
         # run optimize_indexer with pinnedlist when pinned subgraph is optimal
         pinnedlist = String[ipfshash]
@@ -116,7 +116,7 @@ using GraphQLClient
         @test isapprox(pinned_allocs[ipfshash], allocs[ipfshash]; atol=1e-9)
         # Sum allocation amounts still satisfy stake constraint
         ω = sum(values(pinned_allocs))
-        @test isapprox(ω, stake; atol=1e-6)
+        @test isapprox(ω, stake; atol=1e-3)
     end
 
     @testset "read_filterlists" begin
