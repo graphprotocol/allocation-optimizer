@@ -46,7 +46,7 @@ using GraphQLClient
             query(client, "subgraphDeployments"; query_args=Dict("first" => 1000, "where" => Dict("signalledTokens_gte" => "100000000000000000000000")), output_fields="ipfsHash").data["subgraphDeployments"]
         ]
         ipfshash = all_hashes[1]
-        another_ipfshash = all_hashes[2]
+        another_ipfshash = all_hashes[end]
 
         # Indexer stake should be equal to the sum of allocations
         # query indexer's stake
