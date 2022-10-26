@@ -12,8 +12,8 @@ include("action.jl")
 end
 
 @enum ActionType begin
-    allocate
     unallocate
+    allocate
     reallocate
     collect
 end
@@ -22,21 +22,22 @@ abstract type ActionInput end
 
 # TODO: Priority from the optimizer are all hardcoded to 0, in future allow config
 # Since priority is not actively used in actions queue
-struct AllocateActionInput <: ActionInput
-    status::ActionStatus
-    type::ActionType
-    deploymentID::AbstractString
-    amount::AbstractString
-    source::AbstractString
-    reason::AbstractString
-    priority::Int64
-end
 
 struct UnallocateActionInput <: ActionInput
     status::ActionStatus
     type::ActionType
     allocationID::AbstractString
     deploymentID::AbstractString
+    source::AbstractString
+    reason::AbstractString
+    priority::Int64
+end
+
+struct AllocateActionInput <: ActionInput
+    status::ActionStatus
+    type::ActionType
+    deploymentID::AbstractString
+    amount::AbstractString
     source::AbstractString
     reason::AbstractString
     priority::Int64
@@ -54,6 +55,30 @@ struct ReallocateActionInput <: ActionInput
 end
 
 structtodict(x::ActionInput) = Dict(string(k) => getfield(x, k) for k in propertynames(x))
+
+function unallocate_actions(
+    existing_allocations::Dict{T,T},
+    existing_ipfs::Vector{T},
+    reallocate_ipfs::Vector{T},
+    frozenlist::Vector{T},
+) where {T<:AbstractString}
+    ipfses = close_ipfs(existing_ipfs, reallocate_ipfs, frozenlist)
+    actions = map(
+        ipfs -> structtodict(
+            UnallocateActionInput(
+                queued,
+                unallocate,
+                existing_allocations[ipfs],
+                ipfs,
+                "AllocationOpt",
+                "AllocationOpt",
+                0,
+            ),
+        ),
+        ipfses,
+    )
+    return actions, ipfses
+end
 
 function reallocate_actions(
     proposed_ipfs::Vector{T},
@@ -93,30 +118,6 @@ function allocate_actions(
                 allocate,
                 ipfs,
                 format(proposed_allocations[ipfs]),
-                "AllocationOpt",
-                "AllocationOpt",
-                0,
-            ),
-        ),
-        ipfses,
-    )
-    return actions, ipfses
-end
-
-function unallocate_actions(
-    existing_allocations::Dict{T,T},
-    existing_ipfs::Vector{T},
-    reallocate_ipfs::Vector{T},
-    frozenlist::Vector{T},
-) where {T<:AbstractString}
-    ipfses = close_ipfs(existing_ipfs, reallocate_ipfs, frozenlist)
-    actions = map(
-        ipfs -> structtodict(
-            UnallocateActionInput(
-                queued,
-                unallocate,
-                existing_allocations[ipfs],
-                ipfs,
                 "AllocationOpt",
                 "AllocationOpt",
                 0,
