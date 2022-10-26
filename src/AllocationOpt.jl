@@ -313,15 +313,15 @@ function create_rules!(
     proposed_ipfs::Vector{String} = collect(keys(proposed_allocations))
 
     # Generate CLI commands
+    close_allocations, close_ipfs = CLI.unallocate_actions(
+        existing_ipfs, reallocate_ipfs, frozenlist
+    )
     reallocations, reallocate_ipfs = CLI.reallocate_actions(
         proposed_ipfs, existing_ipfs, proposed_allocations, existing_allocs
     )
     existing_ipfs ∩ proposed_ipfs
     open_allocations, open_ipfs = CLI.allocate_actions(
         proposed_ipfs, reallocate_ipfs, proposed_allocations
-    )
-    close_allocations, close_ipfs = CLI.unallocate_actions(
-        existing_ipfs, reallocate_ipfs, frozenlist
     )
     actions = vcat(close_allocations, reallocations, open_allocations)
     return actions
