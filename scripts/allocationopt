@@ -132,4 +132,44 @@ Optimise an indexer's allocations and generates indexer rules to change allocati
     return nothing
 end
 
+"""
+Optimise a hypothetical amount of stake without attached to an indexer, provide json output, and log profit summary
+
+# Arguments
+
+- `stake`: The amount of stake to optimize over.
+- `filepath`: A path to the CSV file that contains whitelist, blacklist, pinnedlist, frozenlist as columns.
+- `grtgas`: The maximum amount of GRT that you are willing to spend on each allocation transaction. 
+- `allocation_lifetime`: The number of epochs for which these allocations would be open. An allocation earns indexing rewards upto 28 epochs.
+- `maximum_new_allocations`: The maximum number of new allocations you would like the optimizer to open.
+- `τ`: Interval [0,1]. As τ gets closer to 0, the optimiser selects greedy allocations that maximise your short-term, expected rewards, but network dynamics will affect you more. The opposite occurs as τ approaches 1. 
+- `indexer_service_network_url`: The URL that exposes the indexer service's network endpoint. Must begin with http. Example: http://localhost:7600/network.
+- `output_filepath`: A path to write a JSON write that contains optimization results with gross estimation of profit over lifetime and APR. 
+"""
+@cast function hypotheticalstake(stake, filepath, grtgas, allocation_lifetime, maximum_new_allocations, τ, indexer_service_network_url, output_filepath)
+    # Read subgraph lists defined in the file
+    cols = read_filterlists(filepath)
+    pinnedlist = cols[3]
+    network_id = 1
+
+    # Pull network state from indexer service network endpoint
+    println("Reading network state.")
+    repo, indexer, network = network_state(parse(Float64, stake), network_id, cols[1:3]..., indexer_service_network_url)
+
+    # Pull full network state from indexer service network endpoint
+    fullrepo, _, _ = network_state(parse(Float64, stake), network_id, String[], String[], String[], indexer_service_network_url)
+    
+    filter_fn = (ω, ψ, Ω) -> apply_preferences(network, parse(Float64, grtgas), parse(Int, allocation_lifetime), ω, ψ, Ω, ipfshash.(repo.subgraphs), indexer.allocations, output_filepath)
+    
+    # Optimize for the indexer
+    println("Beginning optimisation.")
+    ω = optimize_indexer(indexer, repo, fullrepo, parse(Int64, maximum_new_allocations), parse(Float64, τ), filter_fn, pinnedlist)
+
+    println("Done! The summary for top profitable plans has been saved to the output file, please note that profit and APR caluclations assume constant network and gas. Read primary key as number of nonzero allocations (k-sparse plan), values as (estimated total profit, average APR, Allocation[amounts, profit, apr]). Key 0 indexes scenario to do nothing")
+
+    println(ω)
+    
+    return nothing
+end
+
 @main

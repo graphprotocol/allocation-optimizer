@@ -66,6 +66,48 @@ function network_state(
 end
 
 """
+    function network_state(whitelist, blacklist, pinnedlist, frozenlist, indexer_service_network_url)
+    
+# Arguments
+- `network_id`: The id of the network the indexer want to optimise on.
+- `whitelist::Vector{AbstractString}`: Subgraph deployment IPFS hashes included in this list will be considered for, but not guaranteed allocation.
+- `blacklist::Vector{AbstractString}`: Subgraph deployment IPFS hashes included in this list will not be considered, and will be suggested to close if there's an existing allocation.
+- `pinnedlist::Vector{AbstractString}`: Subgraph deployment IPFS hashes included in this list will be guaranteed allocation. Currently unsupported.
+- `indexer_service_network_url::AbstractString`: The URL that exposes the indexer service's network endpoint. Must begin with http. Example: http://localhost:7600/network.
+"""
+function network_state(
+    stake::Real,
+    network_id::Int,
+    whitelist::AbstractVector{T},
+    blacklist::AbstractVector{T},
+    pinnedlist::AbstractVector{T},
+    indexer_service_network_url::AbstractString,
+) where {T<:AbstractString}
+    userlists = vcat(whitelist, blacklist, pinnedlist)
+    if !verify_ipfshashes(userlists)
+        throw(BadSubgraphIpfsHashError())
+    end
+
+    # Construct whitelist and blacklist
+    query_ipfshash_in = ipfshash_in(whitelist, pinnedlist)
+
+    # Get client
+    client = Client(indexer_service_network_url)
+
+    # Pull data from mainnet subgraph
+    repo = snapshot(client, query_ipfshash_in, blacklist)
+    network = networkparameters(client, network_id)
+
+    # Also reduce indexer stake by number of pinned subgraph times 0.1 grt
+    pinned_amount = 0.1
+    pstake = pinned_amount * length(pinnedlist)
+    # Make a fake indexer with assumed stake and no active allocations
+    indexer = Indexer("hypotheticalstake", stake - pstake, Allocation[])
+
+    return repo, indexer, network
+end
+
+"""
 function apply_preferences(network::GraphNetworkParameters, gas::Real, allocation_lifetime::Int, ω::Matrix{T}, ψ::AbstractVector{T}, Ω::AbstractVector{T}) where {T <: Real}
 
 # Arguments
@@ -213,15 +255,19 @@ end
 - `filepath::AbstractString`: A path to the CSV file that contains whitelist, blacklist, pinnedlist, frozenlist as columns.
 """
 function read_filterlists(filepath::AbstractString)
-    # Read file
-    path = abspath(filepath)
-    csv = CSV.File(path; header=1, types=String)
+    try
+        # Read file
+        path = abspath(filepath)
+        csv = CSV.File(path; header=1, types=String)
 
-    # Filter out missings from csv
-    listtypes = [:whitelist, :blacklist, :pinnedlist, :frozenlist]
-    cols = map(x -> collect(skipmissing(csv[x])), listtypes)
-
-    return cols
+        # Filter out missings from csv
+        listtypes = [:whitelist, :blacklist, :pinnedlist, :frozenlist]
+        map(x -> collect(skipmissing(csv[x])), listtypes)
+    catch e
+        println("No valid filterlist CSV provided, pretend empty: ", e)
+        v = Vector{Vector{String}}(undef, 4)
+        fill!(v, [])
+    end
 end
 
 """
