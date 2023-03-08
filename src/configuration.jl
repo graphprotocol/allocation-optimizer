@@ -41,7 +41,7 @@ Set default values for the config dictionary if the value was not specified in t
 
 ```julia
 julia> using AllocationOpt
-julia> config = Dict()
+julia> config = Dict{String, Any}()
 julia> config = AllocationOpt.configuredefaults!(config)
 [...]
 julia> isnothing(config["readdir"])
