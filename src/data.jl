@@ -35,7 +35,7 @@ For use with the TheGraphData.jl package.
 
 ```julia
 julia> using AllocationOpt
-julia> value, args, fields = AllocationOpt.squery()
+julia> value, args, fields = AllocationOpt.iquery()
 
 # Extended Help
 You can find TheGraphData.jl at https://github.com/semiotic-ai/TheGraphData.jl
