@@ -57,9 +57,6 @@ Return the components of a GraphQL query for allocations.
 
 For use with the TheGraphData.jl package.
 
-!!! note
-    This currently only gets the first 1000 indexers with staked tokens ≥ 100k GRT
-
 ```julia
 julia> using AllocationOpt
 julia> value, args, fields = AllocationOpt.aquery()
