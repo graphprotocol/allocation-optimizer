@@ -69,3 +69,18 @@ function configuredefaults!(config::AbstractDict)
     setdefault!(config, "verbose", false)
     return config
 end
+
+"""
+    readconfig(p::AbstractString)
+
+Read the config file from path `p`. The config file must be specifed as a TOML.
+
+See [`configuredefaults!`](@ref) to see which fields you should specify in the config.
+
+```julia
+julia> using AllocationOpt
+julia> path = "myconfig.TOML"
+julia> config = AllocationOpt.readconfig(path)
+```
+"""
+readconfig(p::AbstractString) = p |> TOML.parsefile

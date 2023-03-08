@@ -24,4 +24,15 @@
         @test config["gas"] == 0
         @test !config["verbose"]
     end
+
+    @testset "readconfig" begin
+        # Test roughly equivalent from test of TOML.jl parsefile
+        dict = Dict{String,Any}("a" => 1)
+        info = "a = 1"
+        path, io = mktemp()
+        write(io, info)
+        close(io)
+        val = AllocationOpt.readconfig(path)
+        @test val == dict
+    end
 end

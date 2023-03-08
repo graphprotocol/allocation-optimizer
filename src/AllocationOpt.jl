@@ -3,6 +3,7 @@
 
 module AllocationOpt
 
+using TOML
 using TheGraphData
 
 include("configuration.jl")
