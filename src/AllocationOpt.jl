@@ -7,5 +7,6 @@ using TOML
 using TheGraphData
 
 include("configuration.jl")
+include("data.jl")
 
 end
