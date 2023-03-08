@@ -49,3 +49,30 @@ function iquery()
     f = ["id", "delegatedTokens", "stakedTokens", "lockedTokens"]
     return v, a, f
 end
+
+"""
+    aquery()
+
+Return the components of a GraphQL query for allocations.
+
+For use with the TheGraphData.jl package.
+
+!!! note
+    This currently only gets the first 1000 indexers with staked tokens ≥ 100k GRT
+
+```julia
+julia> using AllocationOpt
+julia> value, args, fields = AllocationOpt.aquery()
+```
+
+# Extended Help
+You can find TheGraphData.jl at https://github.com/semiotic-ai/TheGraphData.jl
+"""
+function aquery()
+    v = "allocations"
+    a = Dict{String,Union{Dict{String,String},String}}(
+        "where" => Dict("status" => "Active")
+    )
+    f = ["allocatedTokens", "subgraphDeployment{ipfsHash}", "indexer{id}"]
+    return v, a, f
+end

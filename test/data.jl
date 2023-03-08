@@ -18,4 +18,13 @@
             "where" => Dict("stakedTokens_gte" => "100000000000000000000000"),
         )
     end
+
+    @testset "aquery" begin
+        v, a, f = AllocationOpt.aquery()
+        @test v == "allocations"
+        @test f == ["allocatedTokens", "subgraphDeployment{ipfsHash}", "indexer{id}"]
+        @test a == Dict{String,Union{Dict{String,String},String}}(
+            "where" => Dict("status" => "Active")
+        )
+    end
 end
