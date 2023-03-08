@@ -41,4 +41,18 @@
         ]
         @test a == Dict("id" => 1)
     end
+
+    @testset "savenames" begin
+        paths = (
+            "mypath/indexer.csv",
+            "mypath/allocation.csv",
+            "mypath/subgraph.csv",
+            "mypath/network.csv",
+        )
+        path = "mypath"
+        vals = AllocationOpt.savenames(path)
+        for (v, p) in zip(vals, paths)
+            @test v == p
+        end
+    end
 end

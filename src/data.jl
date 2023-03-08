@@ -102,3 +102,22 @@ function nquery()
     ]
     return v, a, f
 end
+
+"""
+    savenames(p::AbstractString)
+
+Return a generator of the generic names of the CSV files containing the data with the
+path specified by `p`.
+
+```julia
+julia> using AllocationOpt
+julia> path = "mypath"
+julia> paths = AllocationOpt.path(path)
+```
+"""
+function savenames(p::AbstractString)
+    return Base.Generator(
+        x -> joinpath(p, x),
+        ("indexer.csv", "allocation.csv", "subgraph.csv", "network.csv"),
+    )
+end
