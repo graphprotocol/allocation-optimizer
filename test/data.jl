@@ -55,4 +55,14 @@
             @test v == p
         end
     end
+
+    @testset "data" begin
+        @testset "from files" begin
+            config = Dict("verbose" => true)
+            apply(read_csv_success_patch) do
+                i, a, s, n = AllocationOpt.data("", config)
+                @test i.X == ["b", "c", "a", "c"]
+            end
+        end
+    end
 end

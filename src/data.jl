@@ -121,3 +121,23 @@ function savenames(p::AbstractString)
         ("indexer.csv", "allocation.csv", "subgraph.csv", "network.csv"),
     )
 end
+
+"""
+    data(f::AbstractString, config::AbstractDict)
+
+Read the CSV files from `f` and return the tables from those files.
+
+```julia
+julia> using AllocationOpt
+julia> i, a, s, n = AllocationOpt.data("myreaddir", config("verbose" => true))
+```
+"""
+function data(f::AbstractString, config::AbstractDict)
+    d = FlexTable[]
+    for p in savenames(f)
+        config["verbose"] && @info "Reading data from $p"
+        push!(d, flextable(@mock(TheGraphData.read(p))))
+    end
+    i, a, s, n = d
+    return i, a, s, n
+end

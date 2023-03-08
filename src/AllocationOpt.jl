@@ -3,7 +3,9 @@
 
 module AllocationOpt
 
+using Mocking
 using TOML
+using TypedTables
 using TheGraphData
 
 include("configuration.jl")

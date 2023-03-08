@@ -4,6 +4,7 @@ authors = ["The Graph Foundation"]
 version = "0.1.0"
 
 [deps]
+CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 Mocking = "78c3b35d-d492-501b-9361-3d52fe80e533"
 Roots = "f2b01f46-fcfa-551c-844a-d8ac1e96c665"
