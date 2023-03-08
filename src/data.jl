@@ -73,3 +73,32 @@ function aquery()
     f = ["allocatedTokens", "subgraphDeployment{ipfsHash}", "indexer{id}"]
     return v, a, f
 end
+
+"""
+    nquery()
+
+Return the components of a GraphQL query for network parameters.
+
+For use with the TheGraphData.jl package.
+
+```julia
+julia> using AllocationOpt
+julia> value, args, fields = AllocationOpt.nquery()
+```
+
+# Extended Help
+You can find TheGraphData.jl at https://github.com/semiotic-ai/TheGraphData.jl
+"""
+function nquery()
+    v = "graphNetwork"
+    a = Dict("id" => 1)
+    f = [
+        "id",
+        "totalSupply",
+        "networkGRTIssuance",
+        "epochLength",
+        "totalTokensSignalled",
+        "currentEpoch",
+    ]
+    return v, a, f
+end

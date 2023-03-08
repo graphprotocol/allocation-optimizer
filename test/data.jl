@@ -27,4 +27,18 @@
             "where" => Dict("status" => "Active")
         )
     end
+
+    @testset "nquery" begin
+        v, a, f = AllocationOpt.nquery()
+        @test v == "graphNetwork"
+        @test f == [
+            "id",
+            "totalSupply",
+            "networkGRTIssuance",
+            "epochLength",
+            "totalTokensSignalled",
+            "currentEpoch",
+        ]
+        @test a == Dict("id" => 1)
+    end
 end
