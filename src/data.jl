@@ -321,3 +321,52 @@ function correcttypes!(::Val{:network}, n::FlexTable)
     n.networkGRTIssuance = n.networkGRTIssuance .|> togrt
     return n
 end
+
+"""
+    correcttypes!(i::FlexTable, a::FlexTable, s::FlexTable, n::FlexTable)
+
+Convert all tables to be in GRT.
+
+```julia
+julia> using AllocationOpt
+julia> i = flextable([
+    Dict(
+        "stakedTokens" => "1",
+        "delegatedTokens" => "0",
+        "id" => "0xa",
+        "lockedTokens" => "0",
+    ),
+])
+julia> s = flextable([
+    Dict(
+        "stakedTokens" => "1",
+        "signalledTokens" => "0",
+        "ipfsHash" => "Qma",
+    ),
+])
+julia> a = flextable([
+    Dict(
+        "allocatedTokens" => "1",
+        "subgraphDeployment.ipfsHash" => "Qma",
+    ),
+])
+julia> n = flextable([
+    Dict(
+        "id" => 1,
+        "totalSupply" => "1",
+        "networkGRTIssuance" => "1",
+        "epochLength" => 28,
+        "totalTokensSignalled" => "2",
+        "currentEpoch" => 1,
+    )
+])
+julia> i, a, s, n = AllocationOpt.correcttypes!(i, a, s, n)
+```
+"""
+function correcttypes!(i::FlexTable, a::FlexTable, s::FlexTable, n::FlexTable)
+    i = correcttypes!(Val(:indexer), i)
+    a = correcttypes!(Val(:allocation), a)
+    s = correcttypes!(Val(:subgraph), s)
+    n = correcttypes!(Val(:network), n)
+    return i, a, s, n
+end
