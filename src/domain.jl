@@ -27,7 +27,6 @@ Get the ipfs hash of `x` when `x` is part of the allocation table.
 julia> using AllocationOpt
 julia> x = flextable([
     Dict(
-        "allocatedTokens" => 1,
         "subgraphDeployment.ipfsHash" => "Qma",
     ),
 ])
