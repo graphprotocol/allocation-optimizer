@@ -23,7 +23,15 @@ togrt(x::AbstractString) = parse(Float64, x) / ethtogrt
 
 Get the ipfs hash of `x` when `x` is part of the allocation table.
 
-
+```julia
+julia> using AllocationOpt
+julia> x = flextable([
+    Dict(
+        "allocatedTokens" => 1,
+        "subgraphDeployment.ipfsHash" => "Qma",
+    ),
+])
+julia> AllocationOpt.ipfshash(Val(:allocation), x)
+```
 """
-ipfshash(::Val{:allocation}, x) = getproperty(x, "subgraphDeployment.ipfsHash")
-ipfshash(::Val{:allocation}, x) = getproperty(x, "subgraphDeployment.ipfsHash")
+ipfshash(::Val{:allocation}, x) = getproperty(x, Symbol("subgraphDeployment.ipfsHash"))
