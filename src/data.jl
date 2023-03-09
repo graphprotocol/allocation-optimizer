@@ -225,3 +225,40 @@ function write(i::FlexTable, a::FlexTable, s::FlexTable, n::FlexTable, config::A
     end
     return ps
 end
+
+"""
+    correcttypes!(::Val{:indexer}, i::FlexTable)
+
+Converts the string currency fields in the indexer table to be in GRT.
+
+```julia
+julia> using AllocationOpt
+julia> i = flextable([
+    Dict(
+        "stakedTokens" => "1",
+        "delegatedTokens" => "0",
+        "id" => "0xa",
+        "lockedTokens" => "0",
+    ),
+    Dict(
+        "stakedTokens" => "1",
+        "delegatedTokens" => "0",
+        "id" => "0xb",
+        "lockedTokens" => "0",
+    ),
+    Dict(
+        "stakedTokens" => "1",
+        "delegatedTokens" => "0",
+        "id" => "0xc",
+        "lockedTokens" => "0",
+    ),
+])
+julia> AllocationOpt.correcttypes!(Val(:indexer), i)
+```
+"""
+function correcttypes!(::Val{:indexer}, i::FlexTable)
+    i.stakedTokens = i.stakedTokens .|> togrt
+    i.delegatedTokens = i.delegatedTokens .|> togrt
+    i.lockedTokens = i.lockedTokens .|> togrt
+    return i
+end

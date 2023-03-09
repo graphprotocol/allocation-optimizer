@@ -97,4 +97,34 @@
             ]
         end
     end
+
+    @testset "correcttypes!" begin
+        @testset "indexer" begin
+            i = flextable([
+                Dict(
+                    "stakedTokens" => "1",
+                    "delegatedTokens" => "0",
+                    "id" => "0xa",
+                    "lockedTokens" => "0",
+                ),
+                Dict(
+                    "stakedTokens" => "1",
+                    "delegatedTokens" => "0",
+                    "id" => "0xb",
+                    "lockedTokens" => "0",
+                ),
+                Dict(
+                    "stakedTokens" => "1",
+                    "delegatedTokens" => "0",
+                    "id" => "0xc",
+                    "lockedTokens" => "0",
+                ),
+            ])
+            AllocationOpt.correcttypes!(Val(:indexer), i)
+            @test i.stakedTokens == [1e-18, 1e-18, 1e-18]
+            @test i.delegatedTokens == [0, 0, 0]
+            @test i.id == ["0xa", "0xb", "0xc"]
+            @test i.lockedTokens == [0, 0, 0]
+        end
+    end
 end
