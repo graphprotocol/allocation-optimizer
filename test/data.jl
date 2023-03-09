@@ -234,4 +234,18 @@
             ]
         end
     end
+
+    @testset "subtractindexer!" begin
+        s = flextable([
+            Dict("ipfsHash" => "Qmb", "stakedTokens" => 20),
+            Dict("ipfsHash" => "Qma", "stakedTokens" => 10),
+            Dict("ipfsHash" => "Qmc", "stakedTokens" => 5),
+        ])
+        a = flextable([
+            Dict("subgraphDeployment.ipfsHash" => "Qma", "allocatedTokens" => 5),
+            Dict("subgraphDeployment.ipfsHash" => "Qmb", "allocatedTokens" => 10),
+        ])
+        a, s = AllocationOpt.subtractindexer!(a, s)
+        @test s.stakedTokens == [5, 10, 5]
+    end
 end

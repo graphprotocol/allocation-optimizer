@@ -377,3 +377,46 @@ function correcttypes!(i::FlexTable, a::FlexTable, s::FlexTable, n::FlexTable)
     n = correcttypes!(Val(:network), n)
     return i, a, s, n
 end
+
+"""
+    subtractindexer!(a::FlexTable, s::FlexTable)
+
+Subtract the indexer's allocated tokens from the total allocated tokens on each subgraph.
+
+
+"""
+function subtractindexer!(a::FlexTable, s::FlexTable)
+    # O(N) algorithm rather than using joins, which would be O(MN)
+
+    # Sort both tables by ipfshash
+    s = sort(s; by=getproperty(:ipfsHash))
+    a = sort(a; by=getproperty(Symbol("subgraphDeployment.ipfsHash")))
+
+    na = length(a)
+
+    # Preallocate vector of staked tokens on subgraphs
+    ts = s.stakedTokens
+
+    # Loop over subgraphs
+    # If the subgraph ipfs == the allocation hash:
+    # Update the staked tokens
+    # If we've gone through all the allocations, break
+    # Else, update the allocation table index and get the new allocation subgraph hash
+    ix = 1
+    aix = ipfshash(Val(:allocation), a)[ix]
+    for (i, rs) in enumerate(s)
+        if ipfshash(Val(:subgraph), rs) == aix
+            ts[i] = rs.stakedTokens - a[ix].allocatedTokens
+            if ix == na
+                break
+            end
+            ix += 1
+            aix = ipfshash(Val(:allocation), a)[ix]
+        end
+    end
+
+    # Update the staked tokens
+    s.stakedTokens = ts
+
+    return a, s
+end
