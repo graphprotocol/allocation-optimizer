@@ -131,21 +131,9 @@
         end
         @testset "subgraph" begin
             s = flextable([
-                Dict(
-                    "stakedTokens" => "1",
-                    "signalledTokens" => "0",
-                    "ipfsHash" => "Qma",
-                ),
-                Dict(
-                    "stakedTokens" => "2",
-                    "signalledTokens" => "0",
-                    "ipfsHash" => "Qmb",
-                ),
-                Dict(
-                    "stakedTokens" => "3",
-                    "signalledTokens" => "0",
-                    "ipfsHash" => "Qmc",
-                ),
+                Dict("stakedTokens" => "1", "signalledTokens" => "0", "ipfsHash" => "Qma"),
+                Dict("stakedTokens" => "2", "signalledTokens" => "0", "ipfsHash" => "Qmb"),
+                Dict("stakedTokens" => "3", "signalledTokens" => "0", "ipfsHash" => "Qmc"),
             ])
             AllocationOpt.correcttypes!(Val(:subgraph), s)
             @test s.stakedTokens == [1e-18, 2e-18, 3e-18]
@@ -154,22 +142,33 @@
         end
         @testset "allocation" begin
             a = flextable([
-                Dict(
-                    "allocatedTokens" => "1",
-                    "subgraphDeployment.ipfsHash" => "Qma",
-                ),
-                Dict(
-                    "allocatedTokens" => "2",
-                    "subgraphDeployment.ipfsHash" => "Qmb",
-                ),
-                Dict(
-                    "allocatedTokens" => "3",
-                    "subgraphDeployment.ipfsHash" => "Qmc",
-                ),
+                Dict("allocatedTokens" => "1", "subgraphDeployment.ipfsHash" => "Qma"),
+                Dict("allocatedTokens" => "2", "subgraphDeployment.ipfsHash" => "Qmb"),
+                Dict("allocatedTokens" => "3", "subgraphDeployment.ipfsHash" => "Qmc"),
             ])
             AllocationOpt.correcttypes!(Val(:allocation), a)
             @test a.allocatedTokens == [1e-18, 2e-18, 3e-18]
-            @test getproperty(a, Symbol("subgraphDeployment.ipfsHash"))== ["Qma", "Qmb", "Qmc"]
+            @test getproperty(a, Symbol("subgraphDeployment.ipfsHash")) ==
+                ["Qma", "Qmb", "Qmc"]
+        end
+        @testset "network" begin
+            n = flextable([
+                Dict(
+                    "totalTokensSignalled" => "100",
+                    "currentEpoch" => 1,
+                    "totalSupply" => "100",
+                    "id" => "1",
+                    "networkGRTIssuance" => "100",
+                    "epochLength" => 1,
+                ),
+            ])
+            AllocationOpt.correcttypes!(Val(:network), n)
+            @test n.totalTokensSignalled == [1e-16]
+            @test n.currentEpoch == [1]
+            @test n.totalSupply == [1e-16]
+            @test n.id == ["1"]
+            @test n.networkGRTIssuance == [1e-16]
+            @test n.epochLength == [1]
         end
     end
 end

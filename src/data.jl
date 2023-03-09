@@ -294,3 +294,30 @@ function correcttypes!(::Val{:allocation}, a::FlexTable)
     a.allocatedTokens = a.allocatedTokens .|> togrt
     return a
 end
+
+"""
+    correcttypes!(::Val{:network}, n::FlexTable)
+
+Convert the string currency fields in the network table to be in GRT.
+
+```julia
+julia> using AllocationOpt
+julia> n = flextable([
+    Dict(
+        "id" => 1,
+        "totalSupply" => "1",
+        "networkGRTIssuance" => "1",
+        "epochLength" => 28,
+        "totalTokensSignalled" => "2",
+        "currentEpoch" => 1,
+    )
+])
+julia> AllocationOpt.correcttypes!(Val(:network), n)
+```
+"""
+function correcttypes!(::Val{:network}, n::FlexTable)
+    n.totalSupply = n.totalSupply .|> togrt
+    n.totalTokensSignalled = n.totalTokensSignalled .|> togrt
+    n.networkGRTIssuance = n.networkGRTIssuance .|> togrt
+    return n
+end
