@@ -3,7 +3,10 @@
 
 @testset "configuration" begin
     @testset "configuredefaults!" begin
-        config = Dict()
+        config = Dict{String,Any}()
+        @test_throws AssertionError AllocationOpt.configuredefaults!(config)
+
+        config = Dict{String,Any}("id" => "a")
         config = AllocationOpt.configuredefaults!(config)
         @test isnothing(config["readdir"])
         @test config["writedir"] == "."
@@ -19,7 +22,7 @@
         @test config["max_allocations"] == 10
         @test !config["verbose"]
 
-        config = Dict{String,Any}("gas" => 0)
+        config = Dict{String,Any}("id" => "a", "gas" => 0)
         config = AllocationOpt.configuredefaults!(config)
         @test config["gas"] == 0
         @test !config["verbose"]

@@ -7,6 +7,7 @@
 Set default values for the config dictionary if the value was not specified in the config file.
 
 # Config Specification
+- `id::String`: The ID of the indexer for whom we're optimising. No default value.
 - `network_subgraph_endpoint::String`: The network subgraph endpoint to query.
     By default, `"https://api.thegraph.com/subgraphs/name/graphprotocol/graph-network-mainnet"`
 - `writedir::String`: The directory to which to write the results of optimisation.
@@ -51,6 +52,7 @@ true
 ```
 """
 function configuredefaults!(config::AbstractDict)
+    @assert haskey(config, "id")
     setdefault!(
         config,
         "network_subgraph_endpoint",
