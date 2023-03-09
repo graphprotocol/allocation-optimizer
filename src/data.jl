@@ -273,3 +273,24 @@ function correcttypes!(::Val{:subgraph}, s::FlexTable)
     s.signalledTokens = s.signalledTokens .|> togrt
     return s
 end
+
+"""
+    correcttypes!(::Val{:allocation}, a::FlexTable)
+
+Converts the string currency fields in the allocation table to be in GRT.
+
+```julia
+julia> using AllocationOpt
+julia> a = flextable([
+    Dict(
+        "allocatedTokens" => "1",
+        "subgraphDeployment.ipfsHash" => "Qma",
+    ),
+])
+julia> AllocationOpt.correcttypes!(Val(:allocation), a)
+```
+"""
+function correcttypes!(::Val{:allocation}, a::FlexTable)
+    a.allocatedTokens = a.allocatedTokens .|> togrt
+    return a
+end

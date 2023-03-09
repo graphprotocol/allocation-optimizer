@@ -152,5 +152,24 @@
             @test s.signalledTokens == [0, 0, 0]
             @test s.ipfsHash == ["Qma", "Qmb", "Qmc"]
         end
+        @testset "allocation" begin
+            a = flextable([
+                Dict(
+                    "allocatedTokens" => "1",
+                    "subgraphDeployment.ipfsHash" => "Qma",
+                ),
+                Dict(
+                    "allocatedTokens" => "2",
+                    "subgraphDeployment.ipfsHash" => "Qmb",
+                ),
+                Dict(
+                    "allocatedTokens" => "3",
+                    "subgraphDeployment.ipfsHash" => "Qmc",
+                ),
+            ])
+            AllocationOpt.correcttypes!(Val(:allocation), a)
+            @test a.allocatedTokens == [1e-18, 2e-18, 3e-18]
+            @test getproperty(a, Symbol("subgraphDeployment.ipfsHash"))== ["Qma", "Qmb", "Qmc"]
+        end
     end
 end
