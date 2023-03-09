@@ -229,7 +229,7 @@ end
 """
     correcttypes!(::Val{:indexer}, i::FlexTable)
 
-Converts the string currency fields in the indexer table to be in GRT.
+Convert the string currency fields in the indexer table to be in GRT.
 
 ```julia
 julia> using AllocationOpt
@@ -254,7 +254,7 @@ end
 """
     correcttypes!(::Val{:subgraph}, s::FlexTable)
 
-Converts the string currency fields in the subgraph table to be in GRT.
+Convert the string currency fields in the subgraph table to be in GRT.
 
 ```julia
 julia> using AllocationOpt
@@ -277,7 +277,7 @@ end
 """
     correcttypes!(::Val{:allocation}, a::FlexTable)
 
-Converts the string currency fields in the allocation table to be in GRT.
+Convert the string currency fields in the allocation table to be in GRT.
 
 ```julia
 julia> using AllocationOpt
