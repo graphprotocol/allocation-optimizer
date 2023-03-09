@@ -120,16 +120,16 @@ function savenames(p::AbstractString)
 end
 
 """
-    data(f::AbstractString, config::AbstractDict)
+    read(f::AbstractString, config::AbstractDict)
 
 Read the CSV files from `f` and return the tables from those files.
 
 ```julia
 julia> using AllocationOpt
-julia> i, a, s, n = AllocationOpt.data("myreaddir", config("verbose" => true))
+julia> i, a, s, n = AllocationOpt.read("myreaddir", config("verbose" => true))
 ```
 """
-function data(f::AbstractString, config::AbstractDict)
+function read(f::AbstractString, config::AbstractDict)
     d = FlexTable[]
     for p in savenames(f)
         config["verbose"] && @info "Reading data from $p"
@@ -140,7 +140,7 @@ function data(f::AbstractString, config::AbstractDict)
 end
 
 """
-    data(::Nothing, config::AbstractDict)
+    read(::Nothing, config::AbstractDict)
 
 Query the required data from the provided endpoint in the `config`.
 
@@ -150,10 +150,10 @@ julia> config = Dict(
             "verbose" => true,
             "network_subgraph_endpoint" => "https://api.thegraph.com/subgraphs/name/graphprotocol/graph-network-mainnet",
         )
-julia> i, a, s, n = AllocationOpt.data(nothing, config)
+julia> i, a, s, n = AllocationOpt.read(nothing, config)
 ```
 """
-function data(::Nothing, config::AbstractDict{String,Any})
+function read(::Nothing, config::AbstractDict{String,Any})
     url = config["network_subgraph_endpoint"]
     client!(url)
     config["verbose"] && @info "Querying data from $url"
@@ -166,7 +166,7 @@ function data(::Nothing, config::AbstractDict{String,Any})
 end
 
 """
-    data(config::AbstractDict)
+    read(config::AbstractDict)
 
 Given a `config`, read the data in as flextables.
 
@@ -176,7 +176,7 @@ directory. Otherwise, this will query the specified `"network_subgraph_endpoint"
 ```julia
 julia> using AllocationOpt
 julia> config = Dict("verbose" => false, "readdir" => "mydatadir")
-julia> i, a, s, n = AllocationOpt.data(config)  # Read data from CSVs
+julia> i, a, s, n = AllocationOpt.read(config)  # Read data from CSVs
 ```
 
 ```julia
@@ -186,11 +186,11 @@ julia> config = Dict(
     "network_subgraph_endpoint" => "https://api.thegraph.com/subgraphs/name/graphprotocol/graph-network-mainnet",
     "readdir" => nothing,
 )
-julia> i, a, s, n = AllocationOpt.data(config)  # Query GQL endpoint
+julia> i, a, s, n = AllocationOpt.read(config)  # Query GQL endpoint
 ```
 """
-function data(config::AbstractDict{String,Any})
+function read(config::AbstractDict{String,Any})
     readdir::Union{String,Nothing} = config["readdir"]
-    i, a, s, n = data(readdir, config)
+    i, a, s, n = read(readdir, config)
     return i, a, s, n
 end

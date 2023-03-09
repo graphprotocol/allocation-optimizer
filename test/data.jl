@@ -56,11 +56,11 @@
         end
     end
 
-    @testset "data" begin
+    @testset "read" begin
         @testset "from files" begin
             config = Dict("verbose" => false, "readdir" => "")
             apply(read_csv_success_patch) do
-                i, a, s, n = AllocationOpt.data(config)
+                i, a, s, n = AllocationOpt.read(config)
                 @test i.X == ["b", "c", "a", "c"]
             end
         end
@@ -73,7 +73,7 @@
             )
             apply(paginated_query_success_patch) do
                 apply(query_success_patch) do
-                    i, a, s, n = AllocationOpt.data(config)
+                    i, a, s, n = AllocationOpt.read(config)
                     @test i.stakedTokens == ["10", "20"]
                     @test s.signalledTokens == ["1", "2"]
                     @test a.allocatedTokens == ["1", "2"]
