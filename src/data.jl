@@ -240,18 +240,6 @@ julia> i = flextable([
         "id" => "0xa",
         "lockedTokens" => "0",
     ),
-    Dict(
-        "stakedTokens" => "1",
-        "delegatedTokens" => "0",
-        "id" => "0xb",
-        "lockedTokens" => "0",
-    ),
-    Dict(
-        "stakedTokens" => "1",
-        "delegatedTokens" => "0",
-        "id" => "0xc",
-        "lockedTokens" => "0",
-    ),
 ])
 julia> AllocationOpt.correcttypes!(Val(:indexer), i)
 ```
