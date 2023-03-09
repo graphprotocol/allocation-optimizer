@@ -129,5 +129,28 @@
             @test i.id == ["0xa", "0xb", "0xc"]
             @test i.lockedTokens == [0, 0, 0]
         end
+        @testset "subgraph" begin
+            s = flextable([
+                Dict(
+                    "stakedTokens" => "1",
+                    "signalledTokens" => "0",
+                    "ipfsHash" => "Qma",
+                ),
+                Dict(
+                    "stakedTokens" => "2",
+                    "signalledTokens" => "0",
+                    "ipfsHash" => "Qmb",
+                ),
+                Dict(
+                    "stakedTokens" => "3",
+                    "signalledTokens" => "0",
+                    "ipfsHash" => "Qmc",
+                ),
+            ])
+            AllocationOpt.correcttypes!(Val(:subgraph), s)
+            @test s.stakedTokens == [1e-18, 2e-18, 3e-18]
+            @test s.signalledTokens == [0, 0, 0]
+            @test s.ipfsHash == ["Qma", "Qmb", "Qmc"]
+        end
     end
 end
