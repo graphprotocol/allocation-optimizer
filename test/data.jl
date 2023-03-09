@@ -57,50 +57,6 @@
         end
     end
 
-    @testset "read" begin
-        @testset "from files" begin
-            config = Dict("verbose" => false, "readdir" => "")
-            apply(read_csv_success_patch) do
-                i, a, s, n = AllocationOpt.read(config)
-                @test i.X == ["b", "c", "a", "c"]
-            end
-        end
-
-        @testset "from network subgraph" begin
-            config = Dict(
-                "id" => "0xa",
-                "verbose" => false,
-                "network_subgraph_endpoint" => "https://api.thegraph.com/subgraphs/name/graphprotocol/graph-network-mainnet",
-                "readdir" => nothing,
-            )
-            apply(paginated_query_success_patch) do
-                apply(query_success_patch) do
-                    i, a, s, n = AllocationOpt.read(config)
-                    @test i.stakedTokens == ["10", "20"]
-                    @test s.signalledTokens == ["1", "2"]
-                    @test s.stakedTokens == ["1", "2"]
-                    @test a.allocatedTokens == ["1"]
-                    @test n.totalTokensSignalled == ["100"]
-                end
-            end
-        end
-    end
-
-    @testset "write" begin
-        config = Dict("verbose" => false, "writedir" => "tmp")
-        t = flextable([Dict("foo" => 1, "bar" => 2)])
-        i, a, s, n = repeat([t], 4)
-        apply(write_success_patch) do
-            ps = AllocationOpt.write(i, a, s, n, config)
-            @test ps == [
-                "tmp/indexer.csv",
-                "tmp/allocation.csv",
-                "tmp/subgraph.csv",
-                "tmp/network.csv",
-            ]
-        end
-    end
-
     @testset "correcttypes!" begin
         @testset "indexer" begin
             i = flextable([
@@ -232,6 +188,50 @@
             @test n.id == ["1"]
             @test n.networkGRTIssuance == [1e-16]
             @test n.epochLength == [1]
+        end
+    end
+
+    @testset "read" begin
+        @testset "from files" begin
+            config = Dict("verbose" => false, "readdir" => "")
+            apply(read_csv_success_patch) do
+                i, a, s, n = AllocationOpt.read(config)
+                @test i.X == ["b", "c", "a", "c"]
+            end
+        end
+
+        @testset "from network subgraph" begin
+            config = Dict(
+                "id" => "0xa",
+                "verbose" => false,
+                "network_subgraph_endpoint" => "https://api.thegraph.com/subgraphs/name/graphprotocol/graph-network-mainnet",
+                "readdir" => nothing,
+            )
+            apply(paginated_query_success_patch) do
+                apply(query_success_patch) do
+                    i, a, s, n = AllocationOpt.read(config)
+                    @test i.stakedTokens == [1e-17, 2e-17]
+                    @test s.signalledTokens == [1e-18, 2e-18]
+                    @test s.stakedTokens == [1e-18, 2e-18]
+                    @test a.allocatedTokens == [1e-18]
+                    @test n.totalTokensSignalled == [1e-16]
+                end
+            end
+        end
+    end
+
+    @testset "write" begin
+        config = Dict("verbose" => false, "writedir" => "tmp")
+        t = flextable([Dict("foo" => 1, "bar" => 2)])
+        i, a, s, n = repeat([t], 4)
+        apply(write_success_patch) do
+            ps = AllocationOpt.write(i, a, s, n, config)
+            @test ps == [
+                "tmp/indexer.csv",
+                "tmp/allocation.csv",
+                "tmp/subgraph.csv",
+                "tmp/network.csv",
+            ]
         end
     end
 end

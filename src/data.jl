@@ -165,6 +165,8 @@ function read(::Nothing, config::AbstractDict{String,Any})
     s = flextable(@mock(paginated_query(squery()...)))
     n = flextable(@mock(query(nquery()...)))
 
+    i, a, s, n = correcttypes!(i, a, s, n)
+
     return i, a, s, n
 end
 
