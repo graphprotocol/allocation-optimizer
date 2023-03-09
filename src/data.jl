@@ -30,6 +30,9 @@ Return the components of a GraphQL query for indexers.
 
 For use with the TheGraphData.jl package.
 
+!!! note
+    We filter out indexers with stake less than 100k GRT.
+
 ```julia
 julia> using AllocationOpt
 julia> value, args, fields = AllocationOpt.iquery()
