@@ -58,10 +58,26 @@
 
     @testset "data" begin
         @testset "from files" begin
-            config = Dict("verbose" => true)
+            config = Dict("verbose" => false)
             apply(read_csv_success_patch) do
                 i, a, s, n = AllocationOpt.data("", config)
                 @test i.X == ["b", "c", "a", "c"]
+            end
+        end
+
+        @testset "from network subgraph" begin
+            config = Dict(
+                "verbose" => false,
+                "network_subgraph_endpoint" => "https://api.thegraph.com/subgraphs/name/graphprotocol/graph-network-mainnet",
+            )
+            apply(paginated_query_success_patch) do
+                apply(query_success_patch) do
+                    i, a, s, n = AllocationOpt.data(nothing, config)
+                    @test i.stakedTokens == ["10", "20"]
+                    @test s.signalledTokens == ["1", "2"]
+                    @test a.allocatedTokens == ["1", "2"]
+                    @test n.totalTokensSignalled == ["100"]
+                end
             end
         end
     end

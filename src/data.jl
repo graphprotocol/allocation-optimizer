@@ -138,3 +138,29 @@ function data(f::AbstractString, config::AbstractDict)
     i, a, s, n = d
     return i, a, s, n
 end
+
+"""
+    data(::Nothing, config::AbstractDict)
+
+Query the required data from the provided endpoint in the `config`.
+
+```julia
+julia> using AllocationOpt
+julia> config = Dict(
+            "verbose" => true,
+            "network_subgraph_endpoint" => "https://api.thegraph.com/subgraphs/name/graphprotocol/graph-network-mainnet",
+        )
+julia> i, a, s, n = AllocationOpt.data(nothing, config)
+```
+"""
+function data(::Nothing, config::AbstractDict{String,Any})
+    url = config["network_subgraph_endpoint"]
+    client!(url)
+    config["verbose"] && @info "Querying data from $url"
+    i = flextable(@mock(paginated_query(iquery()...)))
+    a = flextable(flatten.(@mock(paginated_query(aquery()...))))
+    s = flextable(@mock(paginated_query(squery()...)))
+    n = flextable(@mock(query(nquery()...)))
+
+    return i, a, s, n
+end
