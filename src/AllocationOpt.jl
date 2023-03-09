@@ -10,5 +10,6 @@ using TheGraphData
 
 include("configuration.jl")
 include("data.jl")
+include("domain.jl")
 
 end
