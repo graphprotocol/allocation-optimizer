@@ -19,7 +19,7 @@ You can find TheGraphData.jl at https://github.com/semiotic-ai/TheGraphData.jl
 function squery()
     v = "subgraphDeployments"
     a = Dict{String,Union{Dict{String,String},String}}()
-    f = ["ipfsHash", "signalledTokens"]
+    f = ["ipfsHash", "signalledTokens", "stakedTokens"]
     return v, a, f
 end
 
@@ -53,24 +53,24 @@ end
 """
     aquery()
 
-Return the components of a GraphQL query for allocations.
+Return the components of a GraphQL query for active allocations of a certain indexer.
 
 For use with the TheGraphData.jl package.
 
 ```julia
 julia> using AllocationOpt
-julia> value, args, fields = AllocationOpt.aquery()
+julia> value, args, fields = AllocationOpt.aquery(id)
 ```
 
 # Extended Help
 You can find TheGraphData.jl at https://github.com/semiotic-ai/TheGraphData.jl
 """
-function aquery()
+function aquery(id)
     v = "allocations"
     a = Dict{String,Union{Dict{String,String},String}}(
-        "where" => Dict("status" => "Active")
+        "where" => Dict("status" => "Active", "indexer" => id)
     )
-    f = ["allocatedTokens", "subgraphDeployment{ipfsHash}", "indexer{id}"]
+    f = ["allocatedTokens", "subgraphDeployment{ipfsHash}"]
     return v, a, f
 end
 
@@ -161,7 +161,7 @@ function read(::Nothing, config::AbstractDict{String,Any})
     client!(url)
     config["verbose"] && @info "Querying data from $url"
     i = flextable(@mock(paginated_query(iquery()...)))
-    a = flextable(flatten.(@mock(paginated_query(aquery()...))))
+    a = flextable(flatten.(@mock(paginated_query(aquery(config["id"])...))))
     s = flextable(@mock(paginated_query(squery()...)))
     n = flextable(@mock(query(nquery()...)))
 

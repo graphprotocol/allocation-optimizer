@@ -5,7 +5,7 @@
     @testset "squery" begin
         v, a, f = AllocationOpt.squery()
         @test v == "subgraphDeployments"
-        @test f == ["ipfsHash", "signalledTokens"]
+        @test f == ["ipfsHash", "signalledTokens", "stakedTokens"]
         @test a == Dict{String,Union{Dict{String,String},String}}()
     end
 
@@ -20,11 +20,12 @@
     end
 
     @testset "aquery" begin
-        v, a, f = AllocationOpt.aquery()
+        config = Dict("id" => "0xa")
+        v, a, f = AllocationOpt.aquery(config["id"])
         @test v == "allocations"
-        @test f == ["allocatedTokens", "subgraphDeployment{ipfsHash}", "indexer{id}"]
+        @test f == ["allocatedTokens", "subgraphDeployment{ipfsHash}"]
         @test a == Dict{String,Union{Dict{String,String},String}}(
-            "where" => Dict("status" => "Active")
+            "where" => Dict("status" => "Active", "indexer" => config["id"])
         )
     end
 
@@ -67,6 +68,7 @@
 
         @testset "from network subgraph" begin
             config = Dict(
+                "id" => "0xa",
                 "verbose" => false,
                 "network_subgraph_endpoint" => "https://api.thegraph.com/subgraphs/name/graphprotocol/graph-network-mainnet",
                 "readdir" => nothing,
@@ -76,7 +78,8 @@
                     i, a, s, n = AllocationOpt.read(config)
                     @test i.stakedTokens == ["10", "20"]
                     @test s.signalledTokens == ["1", "2"]
-                    @test a.allocatedTokens == ["1", "2"]
+                    @test s.stakedTokens == ["1", "2"]
+                    @test a.allocatedTokens == ["1"]
                     @test n.totalTokensSignalled == ["100"]
                 end
             end
