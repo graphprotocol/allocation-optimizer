@@ -164,3 +164,33 @@ function data(::Nothing, config::AbstractDict{String,Any})
 
     return i, a, s, n
 end
+
+"""
+    data(config::AbstractDict)
+
+Given a `config`, read the data in as flextables.
+
+If you have specified a "readdir" in the config, this will read from CSV files in that
+directory. Otherwise, this will query the specified `"network_subgraph_endpoint"`
+
+```julia
+julia> using AllocationOpt
+julia> config = Dict("verbose" => false, "readdir" => "mydatadir")
+julia> i, a, s, n = AllocationOpt.data(config)  # Read data from CSVs
+```
+
+```julia
+julia> using AllocationOpt
+julia> config = Dict(
+    "verbose" => false,
+    "network_subgraph_endpoint" => "https://api.thegraph.com/subgraphs/name/graphprotocol/graph-network-mainnet",
+    "readdir" => nothing,
+)
+julia> i, a, s, n = AllocationOpt.data(config)  # Query GQL endpoint
+```
+"""
+function data(config::AbstractDict{String,Any})
+    readdir::Union{String,Nothing} = config["readdir"]
+    i, a, s, n = data(readdir, config)
+    return i, a, s, n
+end
