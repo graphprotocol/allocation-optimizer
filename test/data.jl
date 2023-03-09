@@ -82,4 +82,19 @@
             end
         end
     end
+
+    @testset "write" begin
+        config = Dict("verbose" => false, "writedir" => "tmp")
+        t = flextable([Dict("foo" => 1, "bar" => 2)])
+        i, a, s, n = repeat([t], 4)
+        apply(write_success_patch) do
+            ps = AllocationOpt.write(i, a, s, n, config)
+            @test ps == [
+                "tmp/indexer.csv",
+                "tmp/allocation.csv",
+                "tmp/subgraph.csv",
+                "tmp/network.csv",
+            ]
+        end
+    end
 end

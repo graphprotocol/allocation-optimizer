@@ -5,14 +5,14 @@ end
 
 paginated_query_success_patch = @patch function paginated_query(v, a, f)
     if v == "subgraphDeployments"
-        @info "query stub ==> simulating subgraphs"
+        @info "paginated query stub ==> simulating subgraphs"
         return [
             Dict("ipfsHash" => "Qma", "signalledTokens" => "1"),
             Dict("ipfsHash" => "Qmb", "signalledTokens" => "2"),
         ]
     end
     if v == "indexers"
-        @info "query stub ==> simulating indexers"
+        @info "paginated query stub ==> simulating indexers"
         return [
             Dict(
                 "id" => "0xa",
@@ -29,7 +29,7 @@ paginated_query_success_patch = @patch function paginated_query(v, a, f)
         ]
     end
     if v == "allocations"
-        @info "query stub ==> simulating allocations"
+        @info "paginated query stub ==> simulating allocations"
         return [
             Dict(
                 "indexer" => Dict("id" => "0xa"),
@@ -57,4 +57,9 @@ query_success_patch = @patch function query(v, a, f)
             "epochLength" => 1,
         ),
     ]
+end
+
+write_success_patch = @patch function TheGraphData.write(p, d)
+    println("TheGraphData.write stub => simulating success")
+    return p
 end

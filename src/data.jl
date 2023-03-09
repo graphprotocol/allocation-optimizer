@@ -194,3 +194,31 @@ function read(config::AbstractDict{String,Any})
     i, a, s, n = read(readdir, config)
     return i, a, s, n
 end
+
+"""
+    write(i::FlexTable, a::FlexTable, s::FlexTable, n::FlexTable, config::AbstractDict)
+
+Write the tables to the `writedir` specified in the `config`.
+
+
+```julia
+julia> using AllocationOpt
+julia> using TheGraphData
+julia> config = Dict("verbose" => true, "writedir" => "datadir")
+julia> t = flextable([
+            Dict("ipfsHash" => "Qma", "signalledTokens" => "1"),
+            Dict("ipfsHash" => "Qmb", "signalledTokens" => "2"),
+        ])
+julia> i, a, s, n = repeat([t,], 4)
+juila> AllocationOpt.write(i, a, s, n, config)
+```
+"""
+function write(i::FlexTable, a::FlexTable, s::FlexTable, n::FlexTable, config::AbstractDict)
+    writedir = config["writedir"]
+    ps = String[]
+    for (d, p) in zip((i, a, s, n), savenames(writedir))
+        config["verbose"] && @info "Writing table to $p"
+        push!(ps, @mock(TheGraphData.write(p, d)))
+    end
+    return ps
+end
