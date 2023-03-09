@@ -235,6 +235,7 @@ Convert the string currency fields in the indexer table to be in GRT.
 
 ```julia
 julia> using AllocationOpt
+julia> using TheGraphData
 julia> i = flextable([
     Dict(
         "stakedTokens" => "1",
@@ -260,6 +261,7 @@ Convert the string currency fields in the subgraph table to be in GRT.
 
 ```julia
 julia> using AllocationOpt
+julia> using TheGraphData
 julia> s = flextable([
     Dict(
         "stakedTokens" => "1",
@@ -283,6 +285,7 @@ Convert the string currency fields in the allocation table to be in GRT.
 
 ```julia
 julia> using AllocationOpt
+julia> using TheGraphData
 julia> a = flextable([
     Dict(
         "allocatedTokens" => "1",
@@ -304,6 +307,7 @@ Convert the string currency fields in the network table to be in GRT.
 
 ```julia
 julia> using AllocationOpt
+julia> using TheGraphData
 julia> n = flextable([
     Dict(
         "id" => 1,
@@ -331,6 +335,7 @@ Convert all tables to be in GRT.
 
 ```julia
 julia> using AllocationOpt
+julia> using TheGraphData
 julia> i = flextable([
     Dict(
         "stakedTokens" => "1",
