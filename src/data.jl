@@ -383,7 +383,20 @@ end
 
 Subtract the indexer's allocated tokens from the total allocated tokens on each subgraph.
 
-
+```julia
+julia> using AllocationOpt
+julia> using TheGraphData
+julia> s = flextable([
+            Dict("ipfsHash" => "Qmb", "stakedTokens" => 20),
+            Dict("ipfsHash" => "Qma", "stakedTokens" => 10),
+            Dict("ipfsHash" => "Qmc", "stakedTokens" => 5),
+        ])
+julia> a = flextable([
+            Dict("subgraphDeployment.ipfsHash" => "Qma", "allocatedTokens" => 5),
+            Dict("subgraphDeployment.ipfsHash" => "Qmb", "allocatedTokens" => 10),
+        ])
+julia> a, s = AllocationOpt.subtractindexer!(a, s)
+```
 """
 function subtractindexer!(a::FlexTable, s::FlexTable)
     # O(N) algorithm rather than using joins, which would be O(MN)
