@@ -27,6 +27,7 @@
             x = flextable([Dict("stakedTokens" => 10, "delegatedTokens" => 5, "lockedTokens" => 1)])
             @test AllocationOpt.stake(Val(:indexer), x) == 10
             @test AllocationOpt.delegation(Val(:indexer), x) == 5
+            @test AllocationOpt.locked(Val(:indexer), x) == 1
         end
 
     end
