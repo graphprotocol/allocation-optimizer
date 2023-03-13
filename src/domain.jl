@@ -37,7 +37,7 @@ julia> AllocationOpt.ipfshash(Val(:allocation), x)
 ipfshash(::Val{:allocation}, x) = getproperty(x, Symbol("subgraphDeployment.ipfsHash"))
 
 """
-    allocation(::Val{:allocation}, x)
+    stake(::Val{:allocation}, x)
 
 Get the allocated tokens for each allocation in `x`.
 
@@ -50,10 +50,10 @@ julia> x = flextable([
         "allocatedTokens" => 1,
     ),
 ])
-julia> AllocationOpt.allocation(Val(:allocation), x)
+julia> AllocationOpt.stake(Val(:allocation), x)
 ```
 """
-allocation(::Val{:allocation}, x) = x.allocatedTokens
+stake(::Val{:allocation}, x) = x.allocatedTokens
 
 """
     ipfshash(::Val{:subgraph}, x)
