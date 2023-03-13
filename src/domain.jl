@@ -124,3 +124,21 @@ julia> AllocationOpt.stake(Val(:indexer), x)
 ```
 """
 stake(::Val{:indexer}, x) = x.stakedTokens |> only
+
+"""
+    delegation(::Val{:indexer}, x)
+
+The tokens delegated by the indexer in table `x`.
+
+```julia
+julia> using AllocationOpt
+julia> using TheGraphData
+julia> x = flextable([
+    Dict(
+        "delegatedTokens" => 10,
+    ),
+])
+julia> AllocationOpt.delegation(Val(:indexer), x)
+```
+"""
+delegation(::Val{:indexer}, x) = x.delegatedTokens |> only
