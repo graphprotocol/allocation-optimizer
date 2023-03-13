@@ -51,7 +51,7 @@ function iquery()
 end
 
 """
-    aquery()
+    aquery(id::AbstractString)
 
 Return the components of a GraphQL query for active allocations of a certain indexer.
 
@@ -65,7 +65,7 @@ julia> value, args, fields = AllocationOpt.aquery(id)
 # Extended Help
 You can find TheGraphData.jl at https://github.com/semiotic-ai/TheGraphData.jl
 """
-function aquery(id)
+function aquery(id::AbstractString)
     v = "allocations"
     a = Dict{String,Union{Dict{String,String},String}}(
         "where" => Dict("status" => "Active", "indexer" => id)
