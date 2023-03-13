@@ -53,3 +53,21 @@ julia> AllocationOpt.ipfshash(Val(:allocation), x)
 ```
 """
 ipfshash(::Val{:subgraph}, x) = x.ipfsHash
+
+"""
+    stakedtokens(::Val{:indexer}, x)
+
+The tokens staked by the indexer in table `x`.
+
+```julia
+julia> using AllocationOpt
+julia> using TheGraphData
+julia> x = flextable([
+    Dict(
+        "stakedTokens" => 10,
+    ),
+])
+julia> AllocationOpt.stakedtokens(Val(:indexer), x)
+```
+"""
+stakedtokens(::Val{:indexer}, x) = x.stakedTokens |> only
