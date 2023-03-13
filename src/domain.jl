@@ -180,7 +180,7 @@ julia> AllocationOpt.frozen(a, config)
 """
 function frozen(a::FlexTable, config::AbstractDict)
     frozenallocs = SAC.filterview(r -> ipfshash(Val(:allocation), r) ∈ config["frozenlist"], a)
-    return stake(Val(:allocation), frozenallocs) |> sum
+    return reduce(+, stake(Val(:allocation), frozenallocs); init=0.0)
 end
 
 """
