@@ -71,3 +71,20 @@ julia> AllocationOpt.stakedtokens(Val(:indexer), x)
 ```
 """
 stakedtokens(::Val{:indexer}, x) = x.stakedTokens |> only
+
+"""
+    stakedtokens(::Val{:subgraph}, x)
+
+The tokens staked on the subgraphs in table `x`.
+
+```julia
+julia> using AllocationOpt
+julia> using TheGraphData
+julia> x = flextable([
+    Dict("stakedTokens" => 10,),
+    Dict("stakedTokens" => 5,),
+])
+julia> AllocationOpt.stakedtokens(Val(:subgraph), x)
+```
+"""
+stakedtokens(::Val{:subgraph}, x) = x.stakedTokens
