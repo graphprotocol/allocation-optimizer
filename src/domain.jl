@@ -88,3 +88,20 @@ julia> AllocationOpt.stake(Val(:subgraph), x)
 ```
 """
 stake(::Val{:subgraph}, x) = x.stakedTokens
+
+"""
+    signal(::Val{:subgraph}, x)
+
+The tokens signalled on the subgraphs in table `x`.
+
+```julia
+julia> using AllocationOpt
+julia> using TheGraphData
+julia> x = flextable([
+    Dict("signalledTokens" => 10,),
+    Dict("signalledTokens" => 5,),
+])
+julia> AllocationOpt.signal(Val(:subgraph), x)
+```
+"""
+signal(::Val{:subgraph}, x) = x.signalledTokens

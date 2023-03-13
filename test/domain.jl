@@ -19,6 +19,7 @@
             x = flextable([Dict("stakedTokens" => 1, "ipfsHash" => "Qma", "signalledTokens" => 2)])
             @test AllocationOpt.ipfshash(Val(:subgraph), x) == ["Qma"]
             @test AllocationOpt.stake(Val(:subgraph), x) == [1]
+            @test AllocationOpt.signal(Val(:subgraph), x) == [2]
         end
 
         @testset "indexer" begin
