@@ -11,23 +11,6 @@ paginated_query_success_patch = @patch function paginated_query(v, a, f)
             Dict("ipfsHash" => "Qmb", "signalledTokens" => "2", "stakedTokens" => "2"),
         ]
     end
-    if v == "indexers"
-        @info "paginated query stub ==> simulating indexers"
-        return [
-            Dict(
-                "id" => "0xa",
-                "delegatedTokens" => "1",
-                "stakedTokens" => "10",
-                "lockedTokens" => "100",
-            ),
-            Dict(
-                "id" => "0xb",
-                "delegatedTokens" => "2",
-                "stakedTokens" => "20",
-                "lockedTokens" => "200",
-            ),
-        ]
-    end
     if v == "allocations"
         @info "paginated query stub ==> simulating allocations"
         return [
@@ -39,17 +22,25 @@ paginated_query_success_patch = @patch function paginated_query(v, a, f)
 end
 
 query_success_patch = @patch function query(v, a, f)
-    @info "query stub ==> network parameters"
-    return [
-        Dict(
-            "totalTokensSignalled" => "100",
-            "currentEpoch" => 1,
-            "totalSupply" => "100",
-            "id" => "1",
-            "networkGRTIssuance" => "100",
-            "epochLength" => 1,
-        ),
-    ]
+    if v == "indexer"
+        @info "query stub ==> simulating indexers"
+        return [
+            Dict("delegatedTokens" => "1", "stakedTokens" => "10", "lockedTokens" => "100")
+        ]
+    end
+    if v == "graphNetwork"
+        @info "query stub ==> network parameters"
+        return [
+            Dict(
+                "totalTokensSignalled" => "100",
+                "currentEpoch" => 1,
+                "totalSupply" => "100",
+                "id" => "1",
+                "networkGRTIssuance" => "100",
+                "epochLength" => 1,
+            ),
+        ]
+    end
 end
 
 write_success_patch = @patch function TheGraphData.write(p, d)

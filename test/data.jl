@@ -10,13 +10,11 @@
     end
 
     @testset "iquery" begin
-        v, a, f = AllocationOpt.iquery()
-        @test v == "indexers"
-        @test f == ["id", "delegatedTokens", "stakedTokens", "lockedTokens"]
-        @test a == Dict{String,Union{Dict{String,String},String,Int64}}(
-            "first" => 1000,
-            "where" => Dict("stakedTokens_gte" => "100000000000000000000000"),
-        )
+        id = "0xa"
+        v, a, f = AllocationOpt.iquery(id)
+        @test v == "indexer"
+        @test f == ["delegatedTokens", "stakedTokens", "lockedTokens"]
+        @test a == Dict{String,Union{Dict{String,String},String,Int64}}("id" => id)
     end
 
     @testset "aquery" begin
@@ -205,7 +203,7 @@
             apply(paginated_query_success_patch) do
                 apply(query_success_patch) do
                     i, s, n = AllocationOpt.read(config)
-                    @test i.stakedTokens == [1e-17, 2e-17]
+                    @test i.stakedTokens == [1e-17]
                     @test s.signalledTokens == [1e-18, 2e-18]
                     @test s.stakedTokens == [0.0, 2e-18]
                     @test n.totalTokensSignalled == [1e-16]

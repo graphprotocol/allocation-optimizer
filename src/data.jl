@@ -24,29 +24,25 @@ function squery()
 end
 
 """
-    iquery()
+    iquery(id::AbstractString)
 
-Return the components of a GraphQL query for indexers.
+Return the components of a GraphQL query for the stake of indexer `id`.
 
 For use with the TheGraphData.jl package.
 
-!!! note
-    We filter out indexers with stake less than 100k GRT.
-
 ```julia
 julia> using AllocationOpt
+julia> id = "0xa"
 julia> value, args, fields = AllocationOpt.iquery()
 ```
 
 # Extended Help
 You can find TheGraphData.jl at https://github.com/semiotic-ai/TheGraphData.jl
 """
-function iquery()
-    v = "indexers"
-    a = Dict{String,Union{Dict{String,String},String,Int64}}(
-        "first" => 1000, "where" => Dict("stakedTokens_gte" => "100000000000000000000000")
-    )
-    f = ["id", "delegatedTokens", "stakedTokens", "lockedTokens"]
+function iquery(id::AbstractString)
+    v = "indexer"
+    a = Dict{String,Union{Dict{String,String},String,Int64}}("id" => id)
+    f = ["delegatedTokens", "stakedTokens", "lockedTokens"]
     return v, a, f
 end
 
@@ -160,7 +156,7 @@ function read(::Nothing, config::AbstractDict{String,Any})
     url = config["network_subgraph_endpoint"]
     client!(url)
     config["verbose"] && @info "Querying data from $url"
-    i = flextable(@mock(paginated_query(iquery()...)))
+    i = flextable(@mock(query(iquery(config["id"])...)))
     a = flextable(flatten.(@mock(paginated_query(aquery(config["id"])...))))
     s = flextable(@mock(paginated_query(squery()...)))
     n = flextable(@mock(query(nquery()...)))
