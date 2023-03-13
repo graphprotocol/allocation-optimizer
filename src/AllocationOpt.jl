@@ -41,6 +41,10 @@ function main(config::Dict)
     # types and write the data out to CSVs
     isnothing(config["readdir"]) && write(i, a, s, n, config)
 
+    # Get the indexer stake
+    σpinned = pinned(config)
+    σ = stake(Val(:indexer), i) - frozen(a, config) - σpinned
+
     return nothing
 end
 
