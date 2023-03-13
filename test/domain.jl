@@ -13,6 +13,7 @@
                 Dict("allocatedTokens" => 1, "subgraphDeployment.ipfsHash" => "Qma")
             ])
             @test AllocationOpt.ipfshash(Val(:allocation), x) == ["Qma"]
+            @test AllocationOpt.allocation(Val(:allocation), x) == [1]
         end
 
         @testset "subgraph" begin
