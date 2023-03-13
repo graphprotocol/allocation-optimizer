@@ -44,11 +44,7 @@
     end
 
     @testset "savenames" begin
-        paths = (
-            "mypath/indexer.csv",
-            "mypath/subgraph.csv",
-            "mypath/network.csv",
-        )
+        paths = ("mypath/indexer.csv", "mypath/subgraph.csv", "mypath/network.csv")
         path = "mypath"
         vals = AllocationOpt.savenames(path)
         for (v, p) in zip(vals, paths)
@@ -211,7 +207,7 @@
                     i, s, n = AllocationOpt.read(config)
                     @test i.stakedTokens == [1e-17, 2e-17]
                     @test s.signalledTokens == [1e-18, 2e-18]
-                    @test s.stakedTokens == [0, 2e-18]
+                    @test s.stakedTokens == [0.0, 2e-18]
                     @test n.totalTokensSignalled == [1e-16]
                 end
             end
@@ -224,11 +220,7 @@
         i, s, n = repeat([t], 3)
         apply(write_success_patch) do
             ps = AllocationOpt.write(i, s, n, config)
-            @test ps == [
-                "tmp/indexer.csv",
-                "tmp/subgraph.csv",
-                "tmp/network.csv",
-            ]
+            @test ps == ["tmp/indexer.csv", "tmp/subgraph.csv", "tmp/network.csv"]
         end
     end
 

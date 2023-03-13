@@ -32,8 +32,7 @@ paginated_query_success_patch = @patch function paginated_query(v, a, f)
         @info "paginated query stub ==> simulating allocations"
         return [
             Dict(
-                "subgraphDeployment" => Dict("ipfsHash" => "Qma"),
-                "allocatedTokens" => "1",
+                "subgraphDeployment" => Dict("ipfsHash" => "Qma"), "allocatedTokens" => "1"
             ),
         ]
     end
