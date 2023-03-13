@@ -114,7 +114,8 @@ julia> paths = AllocationOpt.path(path)
 """
 function savenames(p::AbstractString)
     return Base.Generator(
-        x -> joinpath(p, x), ("indexer.csv", "subgraph.csv", "network.csv")
+        x -> joinpath(p, x),
+        ("indexer.csv", "allocation.csv", "subgraph.csv", "network.csv"),
     )
 end
 
@@ -125,7 +126,7 @@ Read the CSV files from `f` and return the tables from those files.
 
 ```julia
 julia> using AllocationOpt
-julia> i, s, n = AllocationOpt.read("myreaddir", config("verbose" => true))
+julia> i, a, s, n = AllocationOpt.read("myreaddir", config("verbose" => true))
 ```
 """
 function read(f::AbstractString, config::AbstractDict)
@@ -134,8 +135,8 @@ function read(f::AbstractString, config::AbstractDict)
         config["verbose"] && @info "Reading data from $p"
         push!(d, flextable(@mock(TheGraphData.read(p))))
     end
-    i, s, n = d
-    return i, s, n
+    i, a, s, n = d
+    return i, a, s, n
 end
 
 """
@@ -149,7 +150,7 @@ julia> config = Dict(
             "verbose" => true,
             "network_subgraph_endpoint" => "https://api.thegraph.com/subgraphs/name/graphprotocol/graph-network-mainnet",
         )
-julia> i, s, n = AllocationOpt.read(nothing, config)
+julia> i, a, s, n = AllocationOpt.read(nothing, config)
 ```
 """
 function read(::Nothing, config::AbstractDict{String,Any})
@@ -167,7 +168,7 @@ function read(::Nothing, config::AbstractDict{String,Any})
     # Subtract indexer allocations from total allocation on subgraph
     a, s = subtractindexer!(a, s)
 
-    return i, s, n
+    return i, a, s, n
 end
 
 """
@@ -181,7 +182,7 @@ directory. Otherwise, this will query the specified `"network_subgraph_endpoint"
 ```julia
 julia> using AllocationOpt
 julia> config = Dict("verbose" => false, "readdir" => "mydatadir")
-julia> i, s, n = AllocationOpt.read(config)  # Read data from CSVs
+julia> i, a, s, n = AllocationOpt.read(config)  # Read data from CSVs
 ```
 
 ```julia
@@ -191,13 +192,13 @@ julia> config = Dict(
     "network_subgraph_endpoint" => "https://api.thegraph.com/subgraphs/name/graphprotocol/graph-network-mainnet",
     "readdir" => nothing,
 )
-julia> i, s, n = AllocationOpt.read(config)  # Query GQL endpoint
+julia> i, a, s, n = AllocationOpt.read(config)  # Query GQL endpoint
 ```
 """
 function read(config::AbstractDict{String,Any})
     readdir::Union{String,Nothing} = config["readdir"]
-    i, s, n = read(readdir, config)
-    return i, s, n
+    i, a, s, n = read(readdir, config)
+    return i, a, s, n
 end
 
 """
@@ -214,14 +215,14 @@ julia> t = flextable([
             Dict("ipfsHash" => "Qma", "signalledTokens" => "1"),
             Dict("ipfsHash" => "Qmb", "signalledTokens" => "2"),
         ])
-julia> i, s, n = repeat([t,], 4)
-juila> AllocationOpt.write(i, s, n, config)
+julia> i, a, s, n = repeat([t,], 4)
+juila> AllocationOpt.write(i, a, s, n, config)
 ```
 """
-function write(i::FlexTable, s::FlexTable, n::FlexTable, config::AbstractDict)
+function write(i::FlexTable, a::FlexTable, s::FlexTable, n::FlexTable, config::AbstractDict)
     writedir = config["writedir"]
     ps = String[]
-    for (d, p) in zip((i, s, n), savenames(writedir))
+    for (d, p) in zip((i, a, s, n), savenames(writedir))
         config["verbose"] && @info "Writing table to $p"
         push!(ps, @mock(TheGraphData.write(p, d)))
     end

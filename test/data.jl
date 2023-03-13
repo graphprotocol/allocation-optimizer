@@ -42,7 +42,12 @@
     end
 
     @testset "savenames" begin
-        paths = ("mypath/indexer.csv", "mypath/subgraph.csv", "mypath/network.csv")
+        paths = (
+            "mypath/indexer.csv",
+            "mypath/allocation.csv",
+            "mypath/subgraph.csv",
+            "mypath/network.csv",
+        )
         path = "mypath"
         vals = AllocationOpt.savenames(path)
         for (v, p) in zip(vals, paths)
@@ -188,7 +193,7 @@
         @testset "from files" begin
             config = Dict("verbose" => false, "readdir" => "")
             apply(read_csv_success_patch) do
-                i, s, n = AllocationOpt.read(config)
+                i, a, s, n = AllocationOpt.read(config)
                 @test i.X == ["b", "c", "a", "c"]
             end
         end
@@ -202,7 +207,7 @@
             )
             apply(paginated_query_success_patch) do
                 apply(query_success_patch) do
-                    i, s, n = AllocationOpt.read(config)
+                    i, a, s, n = AllocationOpt.read(config)
                     @test i.stakedTokens == [1e-17]
                     @test s.signalledTokens == [1e-18, 2e-18]
                     @test s.stakedTokens == [0.0, 2e-18]
@@ -215,10 +220,15 @@
     @testset "write" begin
         config = Dict("verbose" => false, "writedir" => "tmp")
         t = flextable([Dict("foo" => 1, "bar" => 2)])
-        i, s, n = repeat([t], 3)
+        i, a, s, n = repeat([t], 4)
         apply(write_success_patch) do
-            ps = AllocationOpt.write(i, s, n, config)
-            @test ps == ["tmp/indexer.csv", "tmp/subgraph.csv", "tmp/network.csv"]
+            ps = AllocationOpt.write(i, a, s, n, config)
+            @test ps == [
+                "tmp/indexer.csv",
+                "tmp/allocation.csv",
+                "tmp/subgraph.csv",
+                "tmp/network.csv",
+            ]
         end
     end
 
