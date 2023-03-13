@@ -32,4 +32,15 @@
 
     end
 
+    @testset "frozen" begin
+        a = flextable([
+            Dict("subgraphDeployment.ipfsHash" => "Qma", "allocatedTokens" => 5),
+            Dict("subgraphDeployment.ipfsHash" => "Qmb", "allocatedTokens" => 10),
+        ])
+        config = Dict("frozenlist" => ["Qma", "Qmb"])
+        @test AllocationOpt.frozen(a, config) == 15
+        config = Dict("frozenlist" => ["Qmb"])
+        @test AllocationOpt.frozen(a, config) == 10
+    end
+
 end

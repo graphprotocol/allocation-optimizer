@@ -160,3 +160,24 @@ julia> AllocationOpt.locked(Val(:indexer), x)
 ```
 """
 locked(::Val{:indexer}, x) = x.lockedTokens |> only
+
+"""
+    frozen(a::FlexTable, config::AbstractDict)
+
+The frozen stake of the indexer with allocations `a`.
+
+```julia
+julia> using AllocationOpt
+julia> using TheGraphData
+julia> a = flextable([
+            Dict("subgraphDeployment.ipfsHash" => "Qma", "allocatedTokens" => 5),
+            Dict("subgraphDeployment.ipfsHash" => "Qmb", "allocatedTokens" => 10),
+       ])
+julia> config = Dict("frozenlist" => ["Qma", "Qmb"])
+julia> AllocationOpt.frozen(a, config)
+```
+"""
+function frozen(a::FlexTable, config::AbstractDict)
+    frozenallocs = SAC.filterview(r -> ipfshash(Val(:allocation), r) ∈ config["frozenlist"], a)
+    return stake(Val(:allocation), frozenallocs) |> sum
+end
