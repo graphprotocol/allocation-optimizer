@@ -1,5 +1,5 @@
 # Copyright 2022-, The Graph Foundation
-# SPDX-License-Identifier: MIT
+# SPDX-Licen se-Identifier: MIT
 
 """
     squery()
@@ -409,7 +409,7 @@ function subtractindexer!(a::FlexTable, s::FlexTable)
     na = length(a)
 
     # Preallocate vector of staked tokens on subgraphs
-    ts = s.stakedTokens
+    ts = stake(Val(:subgraph), s)
 
     # Loop over subgraphs
     # If the subgraph ipfs == the allocation hash:
@@ -420,7 +420,7 @@ function subtractindexer!(a::FlexTable, s::FlexTable)
     aix = ipfshash(Val(:allocation), a)[ix]
     for (i, rs) in enumerate(s)
         if ipfshash(Val(:subgraph), rs) == aix
-            ts[i] = rs.stakedTokens - a[ix].allocatedTokens
+            ts[i] = stake(Val(:subgraph), rs) - stake(Val(:allocation), a[ix])
             if ix == na
                 break
             end
