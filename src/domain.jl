@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: MIT
 
 const ethtogrt = 1e18
+const pinnedamount = 0.1
 
 """
     togrt(x::AbstractString)
@@ -181,3 +182,16 @@ function frozen(a::FlexTable, config::AbstractDict)
     frozenallocs = SAC.filterview(r -> ipfshash(Val(:allocation), r) ∈ config["frozenlist"], a)
     return stake(Val(:allocation), frozenallocs) |> sum
 end
+
+"""
+    pinned(config::AbstractDict)
+
+The pinned stake of the indexer.
+
+```julia
+julia> using AllocationOpt
+julia> config = Dict("pinnedlist" => ["Qma", "Qmb"])
+julia> AllocationOpt.pinned(config)
+```
+"""
+pinned(config::AbstractDict) = pinnedamount * length(config["pinnedlist"])

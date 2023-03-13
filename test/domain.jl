@@ -43,4 +43,13 @@
         @test AllocationOpt.frozen(a, config) == 10
     end
 
+    @testset "pinned" begin
+        config = Dict("pinnedlist" => ["Qma", "Qmb"])
+        @test AllocationOpt.pinned(config) == 0.2
+        config = Dict("pinnedlist" => ["Qmb"])
+        @test AllocationOpt.pinned(config) == 0.1
+        config = Dict("pinnedlist" => [])
+        @test AllocationOpt.pinned(config) == 0.0
+    end
+
 end
