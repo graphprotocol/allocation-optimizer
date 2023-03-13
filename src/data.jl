@@ -53,12 +53,13 @@ end
 """
     aquery(id::AbstractString)
 
-Return the components of a GraphQL query for active allocations of a certain indexer.
+Return the components of a GraphQL query for active allocations of indexer `id`.
 
 For use with the TheGraphData.jl package.
 
 ```julia
 julia> using AllocationOpt
+julia> id = "0xa"
 julia> value, args, fields = AllocationOpt.aquery(id)
 ```
 
