@@ -4,15 +4,18 @@
 module AllocationOpt
 
 using Mocking
+using Roots
+using SemioticOpt
+using TheGraphData
 using TOML
 using TypedTables
-using TheGraphData
 
 import SplitApplyCombine as SAC
 
 include("configuration.jl")
 include("data.jl")
 include("domain.jl")
+include("opt.jl")
 
 const fudgefactor = 1.0  # prevents divide by zero
 
