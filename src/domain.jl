@@ -19,6 +19,117 @@ julia> AllocationOpt.togrt("1")
 """
 togrt(x::AbstractString) = parse(Float64, x) / ethtogrt
 
+
+"""
+    totalsupply(::Val{:network}, x)
+
+The total GRT supply.
+
+```julia
+julia> using AllocationOpt
+julia> using TheGraphData
+julia> n = flextable([
+    Dict(
+        "id" => 1,
+        "totalSupply" => 1,
+        "networkGRTIssuance" => 1,
+        "epochLength" => 28,
+        "totalTokensSignalled" => 2,
+        "currentEpoch" => 1,
+    )
+])
+julia> AllocationOpt.totalsupply(Val(:network), n)
+"""
+totalsupply(::Val{:network}, x) = x.totalSupply |> only
+
+"""
+    blockissuance(::Val{:network}, x)
+
+The tokens issued per block.
+
+```julia
+julia> using AllocationOpt
+julia> using TheGraphData
+julia> n = flextable([
+    Dict(
+        "id" => 1,
+        "totalSupply" => 1,
+        "networkGRTIssuance" => 1,
+        "epochLength" => 28,
+        "totalTokensSignalled" => 2,
+        "currentEpoch" => 1,
+    )
+])
+julia> AllocationOpt.blockissuance(Val(:network), n)
+"""
+blockissuance(::Val{:network}, x) = x.networkGRTIssuance |> only
+
+"""
+    blocksperepoch(::Val{:network}, x)
+
+The number of blocks in each epoch.
+
+```julia
+julia> using AllocationOpt
+julia> using TheGraphData
+julia> n = flextable([
+    Dict(
+        "id" => 1,
+        "totalSupply" => 1,
+        "networkGRTIssuance" => 1,
+        "epochLength" => 28,
+        "totalTokensSignalled" => 2,
+        "currentEpoch" => 1,
+    )
+])
+julia> AllocationOpt.blocksperepoch(Val(:network), n)
+"""
+blocksperepoch(::Val{:network}, x) = x.epochLength |> only
+
+"""
+    totalsignal(::Val{:network}, x)
+
+The total signal in the network
+
+```julia
+julia> using AllocationOpt
+julia> using TheGraphData
+julia> n = flextable([
+    Dict(
+        "id" => 1,
+        "totalSupply" => 1,
+        "networkGRTIssuance" => 1,
+        "epochLength" => 28,
+        "totalTokensSignalled" => 2,
+        "currentEpoch" => 1,
+    )
+])
+julia> AllocationOpt.totalsignal(Val(:network), n)
+"""
+totalsignal(::Val{:network}, x) = x.totalTokensSignalled |> only
+
+"""
+    currentepoch(::Val{:network}, x)
+
+The current epoch.
+
+```julia
+julia> using AllocationOpt
+julia> using TheGraphData
+julia> n = flextable([
+    Dict(
+        "id" => 1,
+        "totalSupply" => 1,
+        "networkGRTIssuance" => 1,
+        "epochLength" => 28,
+        "totalTokensSignalled" => 2,
+        "currentEpoch" => 1,
+    )
+])
+julia> AllocationOpt.currentepoch.(Val(:network), n)
+"""
+currentepoch(::Val{:network}, x) = x.currentEpoch |> only
+
 """
     ipfshash(::Val{:allocation}, x)
 
