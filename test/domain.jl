@@ -22,7 +22,7 @@
             @test AllocationOpt.totalsupply(Val(:network), n) == 1
             @test AllocationOpt.blockissuance(Val(:network), n) == 1
             @test AllocationOpt.blocksperepoch(Val(:network), n) == 28
-            @test AllocationOpt.totalsignal(Val(:network), n) == 2
+            @test AllocationOpt.signal(Val(:network), n) == 2
             @test AllocationOpt.currentepoch(Val(:network), n) == 1
         end
 

@@ -87,7 +87,7 @@ julia> AllocationOpt.blocksperepoch(Val(:network), n)
 blocksperepoch(::Val{:network}, x) = x.epochLength |> only
 
 """
-    totalsignal(::Val{:network}, x)
+    signal(::Val{:network}, x)
 
 The total signal in the network
 
@@ -104,9 +104,9 @@ julia> n = flextable([
         "currentEpoch" => 1,
     )
 ])
-julia> AllocationOpt.totalsignal(Val(:network), n)
+julia> AllocationOpt.signal(Val(:network), n)
 """
-totalsignal(::Val{:network}, x) = x.totalTokensSignalled |> only
+signal(::Val{:network}, x) = x.totalTokensSignalled |> only
 
 """
     currentepoch(::Val{:network}, x)
