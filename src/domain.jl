@@ -383,6 +383,7 @@ The indexing rewards for the allocation vector `x` given signals `ψ`, the exist
 allocations on subgraphs `Ω`, token issuance `Φ`, and total signal `Ψ`.
 
 ```julia
+julia> using AllocationOpt
 julia> ψ = [0.0, 1.0]
 julia> Ω = [0.0, 0.0]
 julia> Φ = 1.0
@@ -400,5 +401,13 @@ end
     profit(r::Real, g::Real, n::Integer)
 
 Compute the profit for reward `r`, gas cost `g`, and number of new allocations `n`.
+
+```julia
+julia> using AllocationOpt
+julia> r = 10
+julia> g = 1
+julia> n = 10
+julia> AllocationOpt.profit(r, g, n)
+```
 """
 profit(r::Real, g::Real, n::Integer) = r - g * n
