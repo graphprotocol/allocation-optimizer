@@ -14,6 +14,8 @@ include("configuration.jl")
 include("data.jl")
 include("domain.jl")
 
+const fudgefactor = 1.0  # prevents divide by zero
+
 function julia_main()::Cint
     try
         main(ARGS)
@@ -47,6 +49,13 @@ function main(config::Dict)
 
     # Get the subgraphs on which we can allocate
     fs = allocatablesubgraphs(s, config)
+
+    # Allocated tokens on filtered subgraphs
+    Ω = stake(Val(:subgraph), fs) .+ fudgefactor
+
+    # Signal on filtered subgraphs
+    ψ = signal(Val(:subgraph), fs)
+
 
     return nothing
 end
