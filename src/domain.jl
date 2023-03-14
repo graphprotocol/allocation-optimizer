@@ -195,3 +195,25 @@ julia> AllocationOpt.pinned(config)
 ```
 """
 pinned(config::AbstractDict) = pinnedamount * length(config["pinnedlist"])
+
+"""
+     unfrozensubgraphs(s::FlexTable, config::AbstractDict)
+
+For the subgraphs `s` return a view of the unfrozen subgraphs.
+
+```julia
+julia> using AllocationOpt
+julia> using TheGraphData
+julia> s = flextable([
+            Dict("ipfsHash" => "Qma", "stakedTokens" => 10),
+            Dict("ipfsHash" => "Qmb", "stakedTokens" => 20),
+            Dict("ipfsHash" => "Qmc", "stakedTokens" => 5),
+       ])
+julia> config = Dict("frozenlist" => ["Qma", "Qmb"])
+julia> fs = AllocationOpt.unfrozensubgraphs(s, config)
+```
+"""
+function unfrozensubgraphs(s::FlexTable, config::AbstractDict)
+    fs = SAC.filterview(r -> ipfshash(Val(:subgraph), r) ∉ config["frozenlist"], s)
+    return fs
+end

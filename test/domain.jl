@@ -54,4 +54,21 @@
         @test AllocationOpt.pinned(config) == 0.0
     end
 
+    @testset "unfrozensubgraphs" begin
+        s = flextable([
+            Dict("ipfsHash" => "Qma", "stakedTokens" => 10),
+            Dict("ipfsHash" => "Qmb", "stakedTokens" => 20),
+            Dict("ipfsHash" => "Qmc", "stakedTokens" => 5),
+        ])
+        config = Dict("frozenlist" => ["Qma", "Qmb"])
+        fs = AllocationOpt.unfrozensubgraphs(s, config)
+        @test AllocationOpt.ipfshash(Val(:subgraph), fs) == ["Qmc"]
+        config = Dict("frozenlist" => ["Qma"])
+        fs = AllocationOpt.unfrozensubgraphs(s, config)
+        @test AllocationOpt.ipfshash(Val(:subgraph), fs) == ["Qmb", "Qmc"]
+        config = Dict("frozenlist" => [])
+        fs = AllocationOpt.unfrozensubgraphs(s, config)
+        @test AllocationOpt.ipfshash(Val(:subgraph), fs) == ["Qma", "Qmb", "Qmc"]
+    end
+
 end
