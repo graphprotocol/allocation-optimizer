@@ -395,3 +395,10 @@ function indexingreward(x, Ω, ψ, Φ, Ψ)
     sr = Φ * ψ / Ψ
     return sum(sr .* x ./ (x .+ Ω))
 end
+
+"""
+    profit(r::Real, g::Real, n::Integer)
+
+Compute the profit for reward `r`, gas cost `g`, and number of new allocations `n`.
+"""
+profit(r::Real, g::Real, n::Integer) = r - g * n

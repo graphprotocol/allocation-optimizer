@@ -177,4 +177,16 @@
         @test AllocationOpt.indexingreward(x, Ω, ψ, Φ, Ψ) == 0.5
     end
 
+    @testset "profit" begin
+        r = 10
+        g = 1
+        n = 1
+        @test AllocationOpt.profit(r, g, n) == 9
+
+        r = 10
+        g = 1
+        n = 10
+        @test AllocationOpt.profit(r, g, n) == 0
+    end
+
 end
