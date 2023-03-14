@@ -3,6 +3,7 @@
 
 module AllocationOpt
 
+using LinearAlgebra
 using Mocking
 using Roots
 using SemioticOpt
@@ -64,6 +65,15 @@ function main(config::Dict)
 
     # New tokens issued over allocation lifetime
     Φ = newtokensissued(n, config)
+
+    # Get max number of allocations
+    K = config["max_allocations"]
+
+    # Get gas cost in GRT
+    g = config["gas"]
+
+    # Get optimal values
+    xs, nonzeros, profits = optimize(Ω, ψ, σ, K, Φ, Ψ, g)
 
     return nothing
 end
