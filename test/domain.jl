@@ -54,20 +54,31 @@
         @test AllocationOpt.pinned(config) == 0.0
     end
 
-    @testset "unfrozensubgraphs" begin
+    @testset "allocatablesubgraphs" begin
         s = flextable([
-            Dict("ipfsHash" => "Qma", "stakedTokens" => 10),
-            Dict("ipfsHash" => "Qmb", "stakedTokens" => 20),
-            Dict("ipfsHash" => "Qmc", "stakedTokens" => 5),
+            Dict("ipfsHash" => "Qma"),
+            Dict("ipfsHash" => "Qmb"),
+            Dict("ipfsHash" => "Qmc"),
         ])
-        config = Dict("frozenlist" => ["Qma", "Qmb"])
-        fs = AllocationOpt.unfrozensubgraphs(s, config)
+
+        config = Dict("whitelist" => String[], "blacklist" => String[], "frozenlist" => String["Qma", "Qmb"])
+        fs = AllocationOpt.allocatablesubgraphs(s, config)
         @test AllocationOpt.ipfshash(Val(:subgraph), fs) == ["Qmc"]
-        config = Dict("frozenlist" => ["Qma"])
-        fs = AllocationOpt.unfrozensubgraphs(s, config)
+
+        config = Dict("whitelist" => String[], "blacklist" => String["Qma"], "frozenlist" => String["Qmb"])
+        fs = AllocationOpt.allocatablesubgraphs(s, config)
+        @test AllocationOpt.ipfshash(Val(:subgraph), fs) == ["Qmc"]
+
+        config = Dict("whitelist" => String["Qmb", "Qmc"], "blacklist" => String[], "frozenlist" => String[])
+        fs = AllocationOpt.allocatablesubgraphs(s, config)
         @test AllocationOpt.ipfshash(Val(:subgraph), fs) == ["Qmb", "Qmc"]
-        config = Dict("frozenlist" => [])
-        fs = AllocationOpt.unfrozensubgraphs(s, config)
+
+        config = Dict("whitelist" => String["Qmb", "Qmc"], "blacklist" => String["Qma"], "frozenlist" => String[])
+        fs = AllocationOpt.allocatablesubgraphs(s, config)
+        @test AllocationOpt.ipfshash(Val(:subgraph), fs) == ["Qmb", "Qmc"]
+
+        config = Dict("whitelist" => String[], "blacklist" => String[], "frozenlist" => String[])
+        fs = AllocationOpt.allocatablesubgraphs(s, config)
         @test AllocationOpt.ipfshash(Val(:subgraph), fs) == ["Qma", "Qmb", "Qmc"]
     end
 

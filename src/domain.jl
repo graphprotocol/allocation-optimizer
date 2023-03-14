@@ -197,9 +197,9 @@ julia> AllocationOpt.pinned(config)
 pinned(config::AbstractDict) = pinnedamount * length(config["pinnedlist"])
 
 """
-     unfrozensubgraphs(s::FlexTable, config::AbstractDict)
+     allocatablesubgraphs(s::FlexTable, config::AbstractDict)
 
-For the subgraphs `s` return a view of the unfrozen subgraphs.
+For the subgraphs `s` return a view of the subgraphs on which we can allocate.
 
 ```julia
 julia> using AllocationOpt
@@ -209,11 +209,27 @@ julia> s = flextable([
             Dict("ipfsHash" => "Qmb", "stakedTokens" => 20),
             Dict("ipfsHash" => "Qmc", "stakedTokens" => 5),
        ])
-julia> config = Dict("frozenlist" => ["Qma", "Qmb"])
-julia> fs = AllocationOpt.unfrozensubgraphs(s, config)
+julia> config = Dict("whitelist" => String["Qmb", "Qmc"], "blacklist" => String[], "frozenlist" => String[])
+julia> fs = AllocationOpt.allocatablesubgraphs(s, config)
 ```
 """
-function unfrozensubgraphs(s::FlexTable, config::AbstractDict)
-    fs = SAC.filterview(r -> ipfshash(Val(:subgraph), r) ∉ config["frozenlist"], s)
+function allocatablesubgraphs(s::FlexTable, config::AbstractDict)
+    # If no whitelist, whitelist is all subgraphs
+    whitelist =
+        isempty(config["whitelist"]) ? ipfshash(Val(:subgraph), s) : config["whitelist"]
+
+    # For filtering, blacklist contains both the blacklist and frozenlist,
+    # since frozen allocations aren't considered during optimisation.
+    blacklist = config["blacklist"] ∪ config["frozenlist"]
+
+    # Anonymous function that returns true if an ipfshash is in the
+    # whitelist and not in the blacklist
+    f = x -> x ∈ whitelist && !(x ∈ blacklist)
+
+    # Filter the subgraph table by our anonymous function
+    fs = SAC.filterview(s) do r
+        x = ipfshash(Val(:subgraph), r)
+        return f(x)
+    end
     return fs
 end

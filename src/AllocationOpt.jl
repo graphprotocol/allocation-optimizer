@@ -45,6 +45,9 @@ function main(config::Dict)
     σpinned = pinned(config)
     σ = stake(Val(:indexer), i) - frozen(a, config) - σpinned
 
+    # Get the subgraphs on which we can allocate
+    fs = allocatablesubgraphs(s, config)
+
     return nothing
 end
 
