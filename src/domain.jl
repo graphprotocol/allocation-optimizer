@@ -375,3 +375,23 @@ function newtokenissuance(n::FlexTable, config::Dict)
     newtokens = p*(r^t - 1.0)
     return newtokens
 end
+
+"""
+    indexingreward(x, Ω, ψ, Φ, Ψ)
+
+The indexing rewards for the allocation vector `x` given signals `ψ`, the existing
+allocations on subgraphs `Ω`, token issuance `Φ`, and total signal `Ψ`.
+
+```julia
+julia> ψ = [0.0, 1.0]
+julia> Ω = [0.0, 0.0]
+julia> Φ = 1.0
+julia> Ψ = 2.0
+julia> x = [0.0, 1.0]
+julia> AllocationOpt.indexingreward(x, Ω, ψ, Φ, Ψ)
+```
+"""
+function indexingreward(x, Ω, ψ, Φ, Ψ)
+    sr = Φ * ψ / Ψ
+    return sum(sr .* x ./ (x .+ Ω))
+end

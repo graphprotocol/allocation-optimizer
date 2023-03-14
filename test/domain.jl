@@ -154,4 +154,27 @@
         @test AllocationOpt.newtokenissuance(n, config) == 1
     end
 
+    @testset "indexingreward" begin
+        ψ = [0.0, 1.0]
+        Ω = [1.0, 1.0]
+        Φ = 1.0
+        Ψ = 2.0
+        x = [1.0, 0.0]
+        @test AllocationOpt.indexingreward(x, Ω, ψ, Φ, Ψ) == 0.0
+
+        ψ = [0.0, 1.0]
+        Ω = [1.0, 1.0]
+        Φ = 1.0
+        Ψ = 2.0
+        x = [0.0, 1.0]
+        @test AllocationOpt.indexingreward(x, Ω, ψ, Φ, Ψ) == 0.25
+
+        ψ = [1.0, 1.0]
+        Ω = [1.0, 1.0]
+        Φ = 1.0
+        Ψ = 2.0
+        x = [1.0, 1.0]
+        @test AllocationOpt.indexingreward(x, Ω, ψ, Φ, Ψ) == 0.5
+    end
+
 end
