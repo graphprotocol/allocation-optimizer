@@ -100,4 +100,58 @@
         @test AllocationOpt.ipfshash(Val(:subgraph), fs) == ["Qma", "Qmb", "Qmc"]
     end
 
+    @testset "newtokenissuance" begin
+        n = flextable([
+            Dict(
+                "id" => 1,
+                "totalSupply" => 1,
+                "networkGRTIssuance" => 1,
+                "epochLength" => 1,
+                "totalTokensSignalled" => 2,
+                "currentEpoch" => 1,
+            )
+        ])
+        config = Dict("allocation_lifetime" => 0)
+        @test AllocationOpt.newtokenissuance(n, config) == 0
+
+        n = flextable([
+            Dict(
+                "id" => 1,
+                "totalSupply" => 1,
+                "networkGRTIssuance" => 1,
+                "epochLength" => 0,
+                "totalTokensSignalled" => 2,
+                "currentEpoch" => 1,
+            )
+        ])
+        config = Dict("allocation_lifetime" => 1)
+        @test AllocationOpt.newtokenissuance(n, config) == 0
+
+        n = flextable([
+            Dict(
+                "id" => 1,
+                "totalSupply" => 0,
+                "networkGRTIssuance" => 1,
+                "epochLength" => 1,
+                "totalTokensSignalled" => 2,
+                "currentEpoch" => 1,
+            )
+        ])
+        config = Dict("allocation_lifetime" => 1)
+        @test AllocationOpt.newtokenissuance(n, config) == 0
+
+        n = flextable([
+            Dict(
+                "id" => 1,
+                "totalSupply" => 1,
+                "networkGRTIssuance" => 2,
+                "epochLength" => 1,
+                "totalTokensSignalled" => 2,
+                "currentEpoch" => 1,
+            )
+        ])
+        config = Dict("allocation_lifetime" => 1)
+        @test AllocationOpt.newtokenissuance(n, config) == 1
+    end
+
 end

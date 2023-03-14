@@ -56,6 +56,11 @@ function main(config::Dict)
     # Signal on filtered subgraphs
     ψ = signal(Val(:subgraph), fs)
 
+    # Signal on all subgraphs
+    Ψ = signal(Val(:network), n)
+
+    # New tokens issued over allocation lifetime
+    Φ = newtokensissued(n, config)
 
     return nothing
 end

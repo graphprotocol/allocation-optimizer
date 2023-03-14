@@ -344,3 +344,34 @@ function allocatablesubgraphs(s::FlexTable, config::AbstractDict)
     end
     return fs
 end
+
+"""
+    newtokenissuance(n::FlexTable, config::Dict)
+
+How many new tokens are issued over the allocation lifetime given network parameters `n`.
+
+```julia
+julia> using AllocationOpt
+julia> using TheGraphData
+julia> n = flextable([
+            Dict(
+                "id" => 1,
+                "totalSupply" => 1,
+                "networkGRTIssuance" => 2,
+                "epochLength" => 1,
+                "totalTokensSignalled" => 2,
+                "currentEpoch" => 1,
+            )
+        ])
+julia> config = Dict("allocation_lifetime" => 1)
+julia> AllocationOpt.newtokenissuance(n, config)
+```
+"""
+function newtokenissuance(n::FlexTable, config::Dict)
+    p = totalsupply(Val(:network), n)
+    r = blockissuance(Val(:network), n)
+    t = blocksperepoch(Val(:network), n) * config["allocation_lifetime"]
+
+    newtokens = p*(r^t - 1.0)
+    return newtokens
+end
