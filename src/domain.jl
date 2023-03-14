@@ -316,11 +316,16 @@ For the subgraphs `s` return a view of the subgraphs on which we can allocate.
 julia> using AllocationOpt
 julia> using TheGraphData
 julia> s = flextable([
-            Dict("ipfsHash" => "Qma", "stakedTokens" => 10),
-            Dict("ipfsHash" => "Qmb", "stakedTokens" => 20),
-            Dict("ipfsHash" => "Qmc", "stakedTokens" => 5),
+            Dict("ipfsHash" => "Qma", "signalledTokens" => 10,),
+            Dict("ipfsHash" => "Qmb", "signalledTokens" => 20),
+            Dict("ipfsHash" => "Qmc", "signalledTokens" => 5),
        ])
-julia> config = Dict("whitelist" => String["Qmb", "Qmc"], "blacklist" => String[], "frozenlist" => String[])
+julia> config = Dict(
+            "whitelist" => String["Qmb", "Qmc"],
+            "blacklist" => String[],
+            "frozenlist" => String[]
+            "min_signal" => 0.0
+)
 julia> fs = AllocationOpt.allocatablesubgraphs(s, config)
 ```
 """
@@ -337,10 +342,15 @@ function allocatablesubgraphs(s::FlexTable, config::AbstractDict)
     # whitelist and not in the blacklist
     f = x -> x ∈ whitelist && !(x ∈ blacklist)
 
+    # Only choose subgraphs with enough signal
+    minsignal = config["min_signal"]
+    g = x -> x ≥ minsignal
+
     # Filter the subgraph table by our anonymous function
     fs = SAC.filterview(s) do r
         x = ipfshash(Val(:subgraph), r)
-        return f(x)
+        y = signal(Val(:subgraph), r)
+        return f(x) && g(y)
     end
     return fs
 end

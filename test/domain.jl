@@ -74,30 +74,64 @@
 
     @testset "allocatablesubgraphs" begin
         s = flextable([
-            Dict("ipfsHash" => "Qma"),
-            Dict("ipfsHash" => "Qmb"),
-            Dict("ipfsHash" => "Qmc"),
+            Dict("ipfsHash" => "Qma", "signalledTokens" => 5.0),
+            Dict("ipfsHash" => "Qmb", "signalledTokens" => 10.0),
+            Dict("ipfsHash" => "Qmc", "signalledTokens" => 15.0),
         ])
 
-        config = Dict("whitelist" => String[], "blacklist" => String[], "frozenlist" => String["Qma", "Qmb"])
+        config = Dict(
+            "whitelist" => String[],
+            "blacklist" => String[],
+            "frozenlist" => String["Qma", "Qmb"],
+            "min_signal" => 0.0
+        )
         fs = AllocationOpt.allocatablesubgraphs(s, config)
         @test AllocationOpt.ipfshash(Val(:subgraph), fs) == ["Qmc"]
 
-        config = Dict("whitelist" => String[], "blacklist" => String["Qma"], "frozenlist" => String["Qmb"])
+        config = Dict(
+            "whitelist" => String[],
+            "blacklist" => String["Qma"],
+            "frozenlist" => String["Qmb"],
+            "min_signal" => 0.0
+        )
         fs = AllocationOpt.allocatablesubgraphs(s, config)
         @test AllocationOpt.ipfshash(Val(:subgraph), fs) == ["Qmc"]
 
-        config = Dict("whitelist" => String["Qmb", "Qmc"], "blacklist" => String[], "frozenlist" => String[])
+        config = Dict(
+            "whitelist" => String["Qmb", "Qmc"],
+            "blacklist" => String[],
+            "frozenlist" => String[],
+            "min_signal" => 0.0
+        )
         fs = AllocationOpt.allocatablesubgraphs(s, config)
         @test AllocationOpt.ipfshash(Val(:subgraph), fs) == ["Qmb", "Qmc"]
 
-        config = Dict("whitelist" => String["Qmb", "Qmc"], "blacklist" => String["Qma"], "frozenlist" => String[])
+        config = Dict(
+            "whitelist" => String["Qmb", "Qmc"],
+            "blacklist" => String["Qma"],
+            "frozenlist" => String[],
+            "min_signal" => 0.0,
+        )
         fs = AllocationOpt.allocatablesubgraphs(s, config)
         @test AllocationOpt.ipfshash(Val(:subgraph), fs) == ["Qmb", "Qmc"]
 
-        config = Dict("whitelist" => String[], "blacklist" => String[], "frozenlist" => String[])
+        config = Dict(
+            "whitelist" => String[],
+            "blacklist" => String[],
+            "frozenlist" => String[],
+            "min_signal" => 0.0
+        )
         fs = AllocationOpt.allocatablesubgraphs(s, config)
         @test AllocationOpt.ipfshash(Val(:subgraph), fs) == ["Qma", "Qmb", "Qmc"]
+
+        config = Dict(
+            "whitelist" => String[],
+            "blacklist" => String[],
+            "frozenlist" => String[],
+            "min_signal" => 7.0
+        )
+        fs = AllocationOpt.allocatablesubgraphs(s, config)
+        @test AllocationOpt.ipfshash(Val(:subgraph), fs) == ["Qmb", "Qmc"]
     end
 
     @testset "newtokenissuance" begin
