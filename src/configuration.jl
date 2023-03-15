@@ -73,6 +73,22 @@ function configuredefaults!(config::AbstractDict)
 end
 
 """
+    formatconfig!(config::AbstractDict)
+
+Given a `config`, reformat values that need to be standardised.
+
+```julia
+julia> using AllocationOpt
+julia> config = Dict("id" => "0xA")
+julia> AllocationOpt.formatconfig!(config)
+```
+"""
+function formatconfig!(config::AbstractDict)
+    config["id"] = config["id"] |> lowercase
+    return config
+end
+
+"""
     readconfig(p::AbstractString)
 
 Read the config file from path `p`. The config file must be specifed as a TOML.

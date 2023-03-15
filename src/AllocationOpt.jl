@@ -34,7 +34,7 @@ main(args::Vector{String}) = main(first(args))
 
 function main(path::AbstractString)
     # Read config and set defaults
-    config = path |> readconfig |> configuredefaults!
+    config = path |> readconfig |> configuredefaults! |> formatconfig!
     return main(config)
 end
 

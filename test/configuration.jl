@@ -38,4 +38,9 @@
         val = AllocationOpt.readconfig(path)
         @test val == dict
     end
+
+    @testset "formatconfig!" begin
+        config = Dict("id" => "0xA")
+        @test AllocationOpt.formatconfig!(config)["id"] == "0xa"
+    end
 end
