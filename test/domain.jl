@@ -230,15 +230,26 @@
     end
 
     @testset "profit" begin
-        r = 10
-        g = 1
-        n = 1
-        @test AllocationOpt.profit(r, g, n) == 9
+        @testset "individual input" begin
+            r = 10
+            g = 1
+            @test AllocationOpt.profit(r, g) == 9
 
-        r = 10
-        g = 1
-        n = 10
-        @test AllocationOpt.profit(r, g, n) == 0
+            r = 0
+            g = 1
+            @test AllocationOpt.profit(r, g) == 0
+        end
+        @testset "summed input" begin
+            r = 10
+            g = 1
+            n = 1
+            @test AllocationOpt.profit(r, g, n) == 9
+
+            r = 10
+            g = 1
+            n = 10
+            @test AllocationOpt.profit(r, g, n) == 0
+        end
     end
 
 end

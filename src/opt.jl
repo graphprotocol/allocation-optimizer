@@ -88,21 +88,21 @@ julia> xs, nonzeros, profits = AllocationOpt.optimize(Ω, ψ, σ, K, Φ, Ψ, g)
 """
 function optimize(Ω, ψ, σ, K, Φ, Ψ, g)
     # Helper function to compute profit
-    f = (x, n) -> profit(indexingreward(x, Ω, ψ, Φ, Ψ), g, n)
+    f = x -> profit.(indexingreward.(x, Ω, ψ, Φ, Ψ), g)
 
     # Get the anchor point for Halpern iteration
     xopt = optimizeanalytic(Ω, ψ, σ)
 
     # Preallocate solution vectors for in-place operations
     x = repeat(xopt, 1, K)
-    profits = Vector{Float64}(undef, K)
+    profits = Matrix{Float64}(undef, length(xopt), K)
     nonzeros = Vector{Int32}(undef, K)
 
     # Optimize
     for k in 1:K
         x[:, k] .= AllocationOpt.optimizek(x[:, k], Ω, ψ, σ, k, Φ, Ψ)
         nonzeros[k] = x[:, k] |> nonzero |> length
-        profits[k] = f(x[:, k], nonzeros[k])
+        profits[:, k] .= f(x[:, k])
     end
 
     return x, nonzeros, profits

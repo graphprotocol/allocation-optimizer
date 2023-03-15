@@ -453,3 +453,17 @@ julia> AllocationOpt.profit(r, g, n)
 ```
 """
 profit(r::Real, g::Real, n::Integer) = r - g * n
+
+"""
+    profit(r::Real, g::Real)
+
+Compute the profit for one allocation with reward `r` and gas cost `g`.
+
+```julia
+julia> using AllocationOpt
+julia> r = 10
+julia> g = 1
+julia> AllocationOpt.profit(r, g)
+```
+"""
+profit(r::Real, g::Real) = r == 0 ? 0 : r - g

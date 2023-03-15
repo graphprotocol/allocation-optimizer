@@ -68,6 +68,6 @@
         xs, nonzeros, profits = AllocationOpt.optimize(Ω, ψ, σ, K, Φ, Ψ, g)
         @test xs == [[5.0 2.5]; [0.0 2.5]]
         @test nonzeros == [1, 2]
-        @test isapprox(profits, [0.41, 0.69]; atol=0.1)
+        @test isapprox(profits, [[0.41 0.35]; [0.0 0.35]]; atol=0.1)
     end
 end
