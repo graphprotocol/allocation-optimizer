@@ -387,7 +387,13 @@ function newtokenissuance(n::FlexTable, config::Dict)
 end
 
 """
-    indexingreward(x, Ω, ψ, Φ, Ψ)
+    function indexingreward(
+        x::AbstractVector{Real},
+        Ω::AbstractVector{Real},
+        ψ::AbstractVector{Real},
+        Φ::Real,
+        Ψ::Real
+    )
 
 The indexing rewards for the allocation vector `x` given signals `ψ`, the existing
 allocations on subgraphs `Ω`, token issuance `Φ`, and total signal `Ψ`.
@@ -402,9 +408,35 @@ julia> x = [0.0, 1.0]
 julia> AllocationOpt.indexingreward(x, Ω, ψ, Φ, Ψ)
 ```
 """
-function indexingreward(x, Ω, ψ, Φ, Ψ)
+function indexingreward(
+    x::AbstractVector{T},
+    Ω::AbstractVector{T},
+    ψ::AbstractVector{T},
+    Φ::Real,
+    Ψ::Real
+) where {T<:Real}
+    return indexingreward.(x, Ω, ψ, Φ, Ψ) |> sum
+end
+
+"""
+    indexingreward(x::Real, Ω::Real, ψ::Real, Φ::Real, Ψ::Real)
+
+The indexing rewards for the allocation scalar `x` given signals `ψ`, the existing
+allocation on subgraphs `Ω`, token issuance `Φ`, and total signal `Ψ`.
+
+```julia
+julia> using AllocationOpt
+julia> ψ = 0.0
+julia> Ω = 1.0
+julia> Φ = 1.0
+julia> Ψ = 2.0
+julia> x = 1.0
+julia> AllocationOpt.indexingreward(x, Ω, ψ, Φ, Ψ)
+```
+"""
+function indexingreward(x::Real, Ω::Real, ψ::Real, Φ::Real, Ψ::Real)
     sr = Φ * ψ / Ψ
-    return sum(sr .* x ./ (x .+ Ω))
+    return sr * x / (x + Ω)
 end
 
 """
