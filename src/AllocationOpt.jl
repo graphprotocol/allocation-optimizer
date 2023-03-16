@@ -80,7 +80,7 @@ function main(config::Dict)
     # Group by unique number of nonzeros
     groupixs = groupunique(nonzeros)
     # For each set of nonzeros, find max profit (should be the same other than rounding)
-    popts = bestprofit.(values(groupixs), Ref(profitmatrix))
+    popts = bestprofitpernz.(values(groupixs), Ref(profitmatrix))
 
     return nothing
 end

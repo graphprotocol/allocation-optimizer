@@ -15,7 +15,7 @@ julia> AllocationOpt.groupunique(x)
 groupunique(x::AbstractVector) = SAC.groupfind(unique, x)
 
 """
-    bestprofit(ixs::AbstractVector{Integer}, profitmatrix::AbstractMatrix{Real})
+    bestprofitpernz(ixs::AbstractVector{Integer}, profitmatrix::AbstractMatrix{Real})
 
 Compute the best profit amongst the given `ixs` given profit matrix `p`
 
@@ -23,9 +23,9 @@ Compute the best profit amongst the given `ixs` given profit matrix `p`
 julia> using AllocationOpt
 julia> ixs = Dict([1] => [1], [2] => [2])
 julia> profitmatrix = [[2.5 5.0]; [2.5, 1.0]]
-julia> popts = AllocationOpt.bestprofit.(values(ixs), Ref(profitmatrix))
+julia> popts = AllocationOpt.bestprofitpernz.(values(ixs), Ref(profitmatrix))
 """
-function bestprofit(
+function bestprofitpernz(
     ixs::AbstractVector{T},
     p::AbstractMatrix{S}
 ) where {T<:Integer, S<:Real}
