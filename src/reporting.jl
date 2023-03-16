@@ -13,3 +13,23 @@ julia> AllocationOpt.groupunique(x)
 ```
 """
 groupunique(x::AbstractVector) = SAC.groupfind(unique, x)
+
+"""
+    bestprofit(ixs::AbstractVector{Integer}, profitmatrix::AbstractMatrix{Real})
+
+Compute the best profit amongst the given `ixs` given profit matrix `p`
+
+```julia
+julia> using AllocationOpt
+julia> ixs = Dict([1] => [1], [2] => [2])
+julia> profitmatrix = [[2.5 5.0]; [2.5, 1.0]]
+julia> popts = AllocationOpt.bestprofit.(values(ixs), Ref(profitmatrix))
+"""
+function bestprofit(
+    ixs::AbstractVector{T},
+    p::AbstractMatrix{S}
+) where {T<:Integer, S<:Real}
+    # Sum the ixth profit vector and find the max over all of them
+    v, i = findmax(map(ix -> p[:, ix] |> sum, ixs))
+    return (; :profit => v, :index => ixs[i])
+end

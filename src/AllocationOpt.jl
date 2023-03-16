@@ -74,11 +74,13 @@ function main(config::Dict)
     g = config["gas"]
 
     # Get optimal values
-    xs, nonzeros, profits = optimize(Ω, ψ, σ, K, Φ, Ψ, g)
+    xs, nonzeros, profitmatrix = optimize(Ω, ψ, σ, K, Φ, Ψ, g)
 
     # Write the result values
     # Group by unique number of nonzeros
-    ixs = groupunique(nonzeros)
+    groupixs = groupunique(nonzeros)
+    # For each set of nonzeros, find max profit (should be the same other than rounding)
+    popts = bestprofit.(values(groupixs), Ref(profitmatrix))
 
     return nothing
 end
