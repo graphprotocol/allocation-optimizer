@@ -17,6 +17,7 @@ include("configuration.jl")
 include("data.jl")
 include("domain.jl")
 include("opt.jl")
+include("reporting.jl")
 
 const fudgefactor = 1.0  # prevents divide by zero
 
@@ -74,6 +75,10 @@ function main(config::Dict)
 
     # Get optimal values
     xs, nonzeros, profits = optimize(Ω, ψ, σ, K, Φ, Ψ, g)
+
+    # Write the result values
+    # Group by unique number of nonzeros
+    ixs = groupunique(nonzeros)
 
     return nothing
 end
