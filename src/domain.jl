@@ -440,21 +440,6 @@ function indexingreward(x::Real, Ω::Real, ψ::Real, Φ::Real, Ψ::Real)
 end
 
 """
-    profit(r::Real, g::Real, n::Integer)
-
-Compute the profit for reward `r`, gas cost `g`, and number of new allocations `n`.
-
-```julia
-julia> using AllocationOpt
-julia> r = 10
-julia> g = 1
-julia> n = 10
-julia> AllocationOpt.profit(r, g, n)
-```
-"""
-profit(r::Real, g::Real, n::Integer) = r - g * n
-
-"""
     profit(r::Real, g::Real)
 
 Compute the profit for one allocation with reward `r` and gas cost `g`.
