@@ -3,6 +3,7 @@
 
 module AllocationOpt
 
+using JSON
 using LinearAlgebra
 using Mocking
 using Roots
@@ -87,6 +88,9 @@ function main(config::Dict)
     # Create JSON string
     strategies = strategydict.(popts, Ref(xs), Ref(nonzeros), Ref(fs), Ref(profitmatrix))
     reportdata = JSON.json(Dict("strategies" => strategies))
+    writejson(reportdata, config)
+
+    # Use config to see if actionqueue or rules with the top profit batch
 
     return nothing
 end

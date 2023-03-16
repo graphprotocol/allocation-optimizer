@@ -47,3 +47,8 @@ write_success_patch = @patch function TheGraphData.write(p, d)
     println("TheGraphData.write stub => simulating success")
     return p
 end
+
+writejson_success_patch = @patch function JSON.print(io, s)
+    println("JSON.print stub => simulating success")
+    return s
+end

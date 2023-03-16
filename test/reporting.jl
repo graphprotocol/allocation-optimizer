@@ -73,4 +73,14 @@
         ]
         @test out == expected
     end
+
+    @testset "writejson" begin
+        output = "{\"strategies\":[{\"num_allocations\":2,\"profit\":6.0,\"allocations\":[{\"allocationAmount\":2.5,\"profit\":3.0,\"deploymentID\":\"Qma\"},{\"allocationAmount\":2.5,\"profit\":3.0,\"deploymentID\":\"Qmb\"}]},{\"num_allocations\":1,\"profit\":5.0,\"allocations\":[{\"allocationAmount\":5.0,\"profit\":5.0,\"deploymentID\":\"Qma\"}]}]}"
+        config = Dict("writedir" => ".")
+        apply(writejson_success_patch) do
+            p = AllocationOpt.writejson(output, config)
+            @test p == "./report.json"
+        end
+        rm("./report.json")
+    end
 end

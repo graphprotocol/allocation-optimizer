@@ -118,3 +118,23 @@ function strategydict(
     )
     return strategy
 end
+
+"""
+    function writejson(results::AbstractString, config::AbstractDict)
+
+Write the optimized results to the `writedir` specified in the `config`.
+
+```julia
+julia> Using AllocationOpt
+julia> results = "{\"strategies\":[{\"num_allocations\":2,\"profit\":6.0,\"allocations\":[{\"allocationAmount\":2.5,\"profit\":3.0,\"deploymentID\":\"Qma\"},{\"allocationAmount\":2.5,\"profit\":3.0,\"deploymentID\":\"Qmb\"}]},{\"num_allocations\":1,\"profit\":5.0,\"allocations\":[{\"allocationAmount\":5.0,\"profit\":5.0,\"deploymentID\":\"Qma\"}]}]}"
+julia> config = Dict{"writedir" => "."}
+julia> AllocationOpt.writejson(results, config)
+```
+"""
+function writejson(results::AbstractString, config::AbstractDict)
+    p = joinpath(config["writedir"], "report.json")
+    f = open(abspath(p), "w")
+    @mock(JSON.print(f, results))
+    close(f)
+    return p
+end
