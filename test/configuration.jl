@@ -20,6 +20,7 @@
         @test config["gas"] == 100
         @test config["min_signal"] == 1000
         @test config["max_allocations"] == 10
+        @test config["num_reported_options"] == 1
         @test !config["verbose"]
 
         config = Dict{String,Any}("id" => "a", "gas" => 0)

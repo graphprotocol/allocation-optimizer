@@ -37,6 +37,9 @@ Set default values for the config dictionary if the value was not specified in t
     in order for you to consider allocating to it. By default, `1000`
 - `max_allocations::Integer`: The maximum number of new allocations you'd like the optimiser
     to consider opening. By default, `10`
+- `num_reported_options::Integer`: The number of proposed allocation strategies to report.
+    For example, if you select `10` we'd report best 10 allocation strategies ranked by
+    profit. By default, `1`
 - `verbose::Bool`: If true, the optimiser will print details about what it is doing to
     stdout. By default, `false`
 
@@ -68,6 +71,7 @@ function configuredefaults!(config::AbstractDict)
     setdefault!(config, "gas", 100)
     setdefault!(config, "min_signal", 1000)
     setdefault!(config, "max_allocations", 10)
+    setdefault!(config, "num_reported_options", 1)
     setdefault!(config, "verbose", false)
     return config
 end
