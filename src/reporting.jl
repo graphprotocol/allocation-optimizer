@@ -33,3 +33,14 @@ function bestprofitpernz(
     v, i = findmax(map(ix -> p[:, ix] |> sum, ixs))
     return (; :profit => v, :index => ixs[i])
 end
+
+"""
+    sortprofits!(NamedTuple{Tuple{Float64, Int64}})
+Sort the nonzero best profits from highest to lowest
+
+
+[(profit = 5.0, index = 1), (profit = 6.0, index = 2)]
+"""
+function sortprofits!(popts::AbstractVector{N}) where {N<:NamedTuple}
+    sort!(popts; by=x -> x[:profit], rev=true)
+end

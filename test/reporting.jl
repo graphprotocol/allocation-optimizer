@@ -21,4 +21,11 @@
         popts = AllocationOpt.bestprofitpernz.(values(ixs), Ref(ps))
         @test popts[1] == (; :profit => 6.0, :index => 2)
     end
+    @testset "sortprofits!" begin
+        popts = [
+            (; :profit => 5.0, :index => 2),
+            (; :profit => 6.0, :index => 1)
+        ]
+        @test AllocationOpt.sortprofits!(popts)[1][:profit] == 6.0
+    end
 end
