@@ -12,7 +12,11 @@ julia> x = [1, 2, 1, 3, 2, 3]
 julia> AllocationOpt.groupunique(x)
 ```
 """
-groupunique(x::AbstractVector) = SAC.groupfind(unique, x)
+function groupunique(x::AbstractVector)
+    ixs = SAC.groupfind(unique, x)
+    ixs = Dict(keys(ixs) .=> values(ixs))
+    return ixs
+end
 
 """
     bestprofitpernz(ixs::AbstractVector{Integer}, profitmatrix::AbstractMatrix{Real})
@@ -134,7 +138,7 @@ julia> AllocationOpt.writejson(results, config)
 function writejson(results::AbstractString, config::AbstractDict)
     p = joinpath(config["writedir"], "report.json")
     f = open(abspath(p), "w")
-    @mock(JSON.print(f, results))
+    @mock(JSON.print(f, JSON.parse(results)))
     close(f)
     return p
 end

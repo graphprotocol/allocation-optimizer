@@ -66,7 +66,7 @@ function main(config::Dict)
     Ψ = signal(Val(:network), n)
 
     # New tokens issued over allocation lifetime
-    Φ = newtokensissued(n, config)
+    Φ = newtokenissuance(n, config)
 
     # Get max number of allocations
     K = config["max_allocations"]
@@ -80,6 +80,7 @@ function main(config::Dict)
     # Write the result values
     # Group by unique number of nonzeros
     groupixs = groupunique(nonzeros)
+    groupixs = Dict(keys(groupixs) .=> values(groupixs))
 
     # For each set of nonzeros, find max profit (should be the same other than rounding)
     popts = bestprofitpernz.(values(groupixs), Ref(profitmatrix)) |> sortprofits!
@@ -88,6 +89,8 @@ function main(config::Dict)
     # Create JSON string
     strategies = strategydict.(popts, Ref(xs), Ref(nonzeros), Ref(fs), Ref(profitmatrix))
     reportdata = JSON.json(Dict("strategies" => strategies))
+
+    # Write JSON string to file
     writejson(reportdata, config)
 
     # Use config to see if actionqueue or rules with the top profit batch
