@@ -79,8 +79,14 @@ function main(config::Dict)
     # Write the result values
     # Group by unique number of nonzeros
     groupixs = groupunique(nonzeros)
+
     # For each set of nonzeros, find max profit (should be the same other than rounding)
-    popts = bestprofitpernz.(values(groupixs), Ref(profitmatrix))
+    popts = bestprofitpernz.(values(groupixs), Ref(profitmatrix)) |> sortprofits!
+    nreport = min(config["num_reported_options"], length(popts))
+
+    # Create JSON string
+    strategies = strategydict.(popts, Ref(xs), Ref(nonzeros), Ref(fs), Ref(profitmatrix))
+    reportdata = JSON.json(Dict("strategies" => strategies))
 
     return nothing
 end

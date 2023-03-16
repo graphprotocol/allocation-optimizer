@@ -28,4 +28,49 @@
         ]
         @test AllocationOpt.sortprofits!(popts)[1][:profit] == 6.0
     end
+    @testset "strategydict" begin
+        popts = [
+            (; :profit => 6.0, :index => 1),
+            (; :profit => 5.0, :index => 2)
+        ]
+        xs = [[2.5 5.0]; [2.5 0.0]]
+        profits = [[3.0 5.0]; [3.0 0.0]]
+        nonzeros = [2, 1]
+        fs = flextable([
+            Dict("stakedTokens" => "1", "signalledTokens" => "0", "ipfsHash" => "Qma"),
+            Dict("stakedTokens" => "2", "signalledTokens" => "0", "ipfsHash" => "Qmb"),
+        ])
+        out = AllocationOpt.strategydict.(
+            popts, Ref(xs), Ref(nonzeros), Ref(fs), Ref(profits)
+        )
+        expected = [
+            Dict(
+                "num_allocations" => 2,
+                "profit" => 6.0,
+                "allocations" => [
+                    Dict(
+                        "deploymentID" => "Qma",
+                        "allocationAmount" => 2.5,
+                        "profit" => 3.0,
+                    )
+                    Dict(
+                        "deploymentID" => "Qmb",
+                        "allocationAmount" => 2.5,
+                        "profit" => 3.0,
+                    )
+                ]
+            )
+            Dict("num_allocations" => 1,
+                "profit" => 5.0,
+                "allocations" => [
+                    Dict(
+                        "deploymentID" => "Qma",
+                        "allocationAmount" => 5.0,
+                        "profit" => 5.0
+                    )
+                ]
+            )
+        ]
+        @test out == expected
+    end
 end
