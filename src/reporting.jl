@@ -136,7 +136,7 @@ function strategydict(
     allocations = map(ft) do r
         return Dict(
                 "deploymentID" => r.ipfshash,
-                "allocationAmount" => r.amount,
+                "allocationAmount" => format(r.amount),
                 "profit" => r.profit
         )
     end

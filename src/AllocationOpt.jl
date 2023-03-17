@@ -11,6 +11,7 @@ using SemioticOpt
 using TheGraphData
 using TOML
 using TypedTables
+using Formatting
 
 import SplitApplyCombine as SAC
 
