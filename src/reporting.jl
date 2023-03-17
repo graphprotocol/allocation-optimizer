@@ -184,20 +184,23 @@ unallocate(::Val{:none}, proposedipfs, existingipfs, config) = nothing
 
 
 """
-    reallocate(::Val{:none}, existingipfs, t, config)
+    reallocate(::Val{:none}, a, t, config)
 
 Do nothing.
 
 ```julia
 julia> using AllocationOpt
 julia> using TheGraphData
+julia > a = flextable([
+            Dict("subgraphDeployment.ipfsHash" => "Qma", "id" => "0xa")
+        ])
 julia> t = flextable([
             Dict("amount" => "1", "profit" => "0", "ipfshash" => "Qma"),
             Dict("amount" => "2", "profit" => "0", "ipfshash" => "Qmb"),
         ])
-julia> AllocationOpt.reallocate(Val{:none}, ["Qma"], t, Dict())
+julia> AllocationOpt.reallocate(Val{:none}, a, t, Dict())
 """
-reallocate(::Val{:none}, existingipfs, t, config) = nothing
+reallocate(::Val{:none}, a, t, config) = nothing
 
 """
     allocate(::Val{:none}, existingipfs, t, config)
@@ -207,15 +210,17 @@ Do nothing.
 ```julia
 julia> using AllocationOpt
 julia> using TheGraphData
-julia> existingipfs = ["Qma"]
+julia > a = flextable([
+            Dict("subgraphDeployment.ipfsHash" => "Qma", "id" => "0xa")
+        ])
 julia> t = flextable([
             Dict("amount" => "1", "profit" => "0", "ipfshash" => "Qma"),
             Dict("amount" => "2", "profit" => "0", "ipfshash" => "Qmb"),
         ])
-julia> AllocationOpt.allocate(Val{:none}, existingipfs, t, Dict())
+julia> AllocationOpt.allocate(Val{:none}, a, t, Dict())
 ```
 """
-allocate(::Val{:none}, existingipfs, t, config) = nothing
+allocate(::Val{:none}, a, t, config) = nothing
 
 """
     unallocate(
@@ -249,7 +254,7 @@ end
 """
     reallocate(
         ::Val{:rules},
-        existingipfs::AbstractVector{S},
+        a::FlexTable,
         t::FlexTable,
         config::AbstractDict,
     ) where {S<:AbstractString}
@@ -259,19 +264,23 @@ Print a rule that reallocates the old allocation with a new allocation amount
 ```julia
 julia> using AllocationOpt
 julia> using TheGraphData
+julia > a = flextable([
+            Dict("subgraphDeployment.ipfsHash" => "Qma", "id" => "0xa")
+        ])
 julia> t = flextable([
     Dict("amount" => "1", "profit" => "0", "ipfshash" => "Qma"),
     Dict("amount" => "2", "profit" => "0", "ipfshash" => "Qmb"),
 ])
-julia> AllocationOpt.reallocate(Val(:rules), ["Qma"], t, Dict())
+julia> AllocationOpt.reallocate(Val(:rules), a, t, Dict())
 ```
 """
 function reallocate(
     ::Val{:rules},
-    existingipfs::AbstractVector{S},
+    a::FlexTable,
     t::FlexTable,
     config::AbstractDict,
-) where {S<:AbstractString}
+)
+    existingipfs = ipfshash(Val(:allocation), a)
     # Filter table to only include subgraphs that are already allocated
     ti = SAC.filterview(r -> r.ipfshash ∈ existingipfs, t)
     ipfses = ti.ipfshash
@@ -290,7 +299,7 @@ end
 """
     allocate(
         ::Val{:rules},
-        existingipfs::AbstractVector{S},
+        a::FlexTable,
         t::FlexTable,
         config::AbstractDict,
     ) where {S<:AbstractString}
@@ -300,19 +309,22 @@ Print the rules that allocates to new subgraphs.
 ```julia
 julia> using AllocationOpt
 julia> using TheGraphData
-julia> existingipfs = ["Qma"]
+julia > a = flextable([
+            Dict("subgraphDeployment.ipfsHash" => "Qma", "id" => "0xa")
+        ])
 julia> t = flextable([
             Dict("amount" => "1", "profit" => "0", "ipfshash" => "Qma"),
             Dict("amount" => "2", "profit" => "0", "ipfshash" => "Qmb"),
         ])
-julia> AllocationOpt.allocate(Val{:rules}, existingipfs, t, Dict())
+julia> AllocationOpt.allocate(Val{:rules}, a, t, Dict())
 """
 function allocate(
     ::Val{:rules},
-    existingipfs::AbstractVector{S},
+    a::FlexTable,
     t::FlexTable,
     config::AbstractDict,
-) where {S<:AbstractString}
+)
+    existingipfs = ipfshash(Val(:allocation), a)
     # Filter table to only include subgraphs that are not already allocated
     ts = SAC.filterview(r -> r.ipfshash ∉ existingipfs, t)
     ipfses = ts.ipfshash
