@@ -158,7 +158,6 @@ julia> using AllocationOpt
 julia> using TheGraphData
 julia> x = flextable([
     Dict(
-        "subgraphDeployment.ipfsHash" => "Qma",
         "allocatedTokens" => 1,
     ),
 ])
@@ -166,6 +165,24 @@ julia> AllocationOpt.stake(Val(:allocation), x)
 ```
 """
 stake(::Val{:allocation}, x) = x.allocatedTokens
+
+"""
+    id(::Val{:allocation}, x)
+
+Get the allocation id for each allocation in `x`.
+
+```julia
+julia> using AllocationOpt
+julia> using TheGraphData
+julia> x = flextable([
+    Dict(
+        "id" => "0x1"
+    ),
+])
+julia> AllocationOpt.id(Val(:allocation), x)
+```
+"""
+id(::Val{:allocation}, x) = x.id
 
 """
     ipfshash(::Val{:subgraph}, x)

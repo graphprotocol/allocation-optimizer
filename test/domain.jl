@@ -28,10 +28,11 @@
 
         @testset "allocation" begin
             x = flextable([
-                Dict("allocatedTokens" => 1, "subgraphDeployment.ipfsHash" => "Qma")
+                Dict("allocatedTokens" => 1, "subgraphDeployment.ipfsHash" => "Qma", "id" => "0xa")
             ])
             @test AllocationOpt.ipfshash(Val(:allocation), x) == ["Qma"]
             @test AllocationOpt.stake(Val(:allocation), x) == [1]
+            @test AllocationOpt.id(Val(:allocation), x) == ["0xa"]
         end
 
         @testset "subgraph" begin
@@ -52,8 +53,8 @@
 
     @testset "frozen" begin
         a = flextable([
-            Dict("subgraphDeployment.ipfsHash" => "Qma", "allocatedTokens" => 5),
-            Dict("subgraphDeployment.ipfsHash" => "Qmb", "allocatedTokens" => 10),
+            Dict("subgraphDeployment.ipfsHash" => "Qma", "allocatedTokens" => 5, "id" => "0xa"),
+            Dict("subgraphDeployment.ipfsHash" => "Qmb", "allocatedTokens" => 10, "id" => "0xb"),
         ])
         config = Dict("frozenlist" => ["Qma", "Qmb"])
         @test AllocationOpt.frozen(a, config) == 15

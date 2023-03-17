@@ -67,7 +67,7 @@ function aquery(id::AbstractString)
     a = Dict{String,Union{Dict{String,String},String}}(
         "where" => Dict("status" => "Active", "indexer" => id)
     )
-    f = ["allocatedTokens", "subgraphDeployment{ipfsHash}"]
+    f = ["allocatedTokens", "id", "subgraphDeployment{ipfsHash}"]
     return v, a, f
 end
 
@@ -393,8 +393,8 @@ julia> s = flextable([
             Dict("ipfsHash" => "Qmc", "stakedTokens" => 5),
         ])
 julia> a = flextable([
-            Dict("subgraphDeployment.ipfsHash" => "Qma", "allocatedTokens" => 5),
-            Dict("subgraphDeployment.ipfsHash" => "Qmb", "allocatedTokens" => 10),
+            Dict("subgraphDeployment.ipfsHash" => "Qma", "allocatedTokens" => 5, id => "0xa"),
+            Dict("subgraphDeployment.ipfsHash" => "Qmb", "allocatedTokens" => 10, id => "0xb"),
         ])
 julia> a, s = AllocationOpt.subtractindexer!(a, s)
 ```
