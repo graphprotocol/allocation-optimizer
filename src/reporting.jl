@@ -171,16 +171,23 @@ function writejson(results::AbstractString, config::AbstractDict)
 end
 
 """
-    unallocate(::Val{:none}, proposedipfs, existingipfs, config)
+    unallocate(::Val{:none}, a, t, config)
 
 Do nothing.
 
 ```julia
 julia> using AllocationOpt
-julia> AllocationOpt.unallocate(Val{:none}, ["Qma"], ["Qmb"], Dict())
+julia > a = flextable([
+            Dict("subgraphDeployment.ipfsHash" => "Qma", "id" => "0xa")
+        ])
+julia> t = flextable([
+            Dict("amount" => "1", "profit" => "0", "ipfshash" => "Qma"),
+            Dict("amount" => "2", "profit" => "0", "ipfshash" => "Qmb"),
+        ])
+julia> AllocationOpt.unallocate(Val{:none}, a, t, Dict())
 ```
 """
-unallocate(::Val{:none}, proposedipfs, existingipfs, config) = nothing
+unallocate(::Val{:none}, a, t, config) = nothing
 
 
 """
@@ -203,7 +210,7 @@ julia> AllocationOpt.reallocate(Val{:none}, a, t, Dict())
 reallocate(::Val{:none}, a, t, config) = nothing
 
 """
-    allocate(::Val{:none}, existingipfs, t, config)
+    allocate(::Val{:none}, a, t, config)
 
 Do nothing.
 
@@ -223,28 +230,26 @@ julia> AllocationOpt.allocate(Val{:none}, a, t, Dict())
 allocate(::Val{:none}, a, t, config) = nothing
 
 """
-    unallocate(
-        ::Val{:rules},
-        proposedipfs::AbstractVector{S},
-        existingipfs::AbstractVector{S},
-        config::AbstractDict,
-    ) where {S<:AbstractString}
+    unallocate(::Val{:rules}, a::FlexTable, t::FlexTable, config::AbstractDict)
 
 Print a rule that stops old allocations that the optimiser has not chosen and that aren't
 frozen.
 
 ```julia
 julia> using AllocationOpt
-julia> AllocationOpt.unallocate(Val{:rules}, ["Qma"], ["Qmb"], Dict("frozenlist" => []))
+julia > a = flextable([
+            Dict("subgraphDeployment.ipfsHash" => "Qma", "id" => "0xa")
+        ])
+julia> t = flextable([
+            Dict("amount" => "2", "profit" => "0", "ipfshash" => "Qmb"),
+        ])
+julia> AllocationOpt.unallocate(Val{:rules}, a, t, Dict("frozenlist" => []))
 ```
 """
-function unallocate(
-    ::Val{:rules},
-    proposedipfs::AbstractVector{S},
-    existingipfs::AbstractVector{S},
-    config::AbstractDict,
-) where {S<:AbstractString}
+function unallocate(::Val{:rules}, a::FlexTable, t::FlexTable, config::AbstractDict)
     frozenlist = config["frozenlist"]
+    existingipfs = ipfshash(Val(:allocation), a)
+    proposedipfs = t.ipfshash
     ipfses = closeipfs(existingipfs, proposedipfs, frozenlist)
     actions::Vector{String} = map(ipfs -> "\e[0mgraph indexer rules stop $(ipfs)", ipfses)
     println.(actions)
@@ -252,12 +257,7 @@ function unallocate(
 end
 
 """
-    reallocate(
-        ::Val{:rules},
-        a::FlexTable,
-        t::FlexTable,
-        config::AbstractDict,
-    ) where {S<:AbstractString}
+    reallocate(::Val{:rules}, a::FlexTable, t::FlexTable, config::AbstractDict)
 
 Print a rule that reallocates the old allocation with a new allocation amount
 
@@ -297,12 +297,7 @@ function reallocate(
 end
 
 """
-    allocate(
-        ::Val{:rules},
-        a::FlexTable,
-        t::FlexTable,
-        config::AbstractDict,
-    ) where {S<:AbstractString}
+    allocate(::Val{:rules}, a::FlexTable, t::FlexTable, config::AbstractDict)
 
 Print the rules that allocates to new subgraphs.
 

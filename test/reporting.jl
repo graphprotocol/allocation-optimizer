@@ -98,21 +98,26 @@
     end
 
     @testset "unallocate" begin
-        existingipfs = ["Qma"]
-        proposedipfs = ["Qmb"]
+        a = flextable([
+            Dict("subgraphDeployment.ipfsHash" => "Qma", "id" => "0xa")
+        ])
+        t = flextable([
+            Dict("amount" => "2", "profit" => "0", "ipfshash" => "Qmb"),
+        ])
+
         config = Dict("frozenlist" => String[])
 
         @testset "none" begin
-            @inferred AllocationOpt.unallocate(Val(:none), existingipfs, proposedipfs, config)
+            @inferred AllocationOpt.unallocate(Val(:none), a, t, config)
         end
 
         @testset "rules" begin
-            @inferred AllocationOpt.unallocate(Val(:rules), proposedipfs, existingipfs, config)
-            out = AllocationOpt.unallocate(Val(:rules), proposedipfs, existingipfs, config)
+            @inferred AllocationOpt.unallocate(Val(:rules), a, t, config)
+            out = AllocationOpt.unallocate(Val(:rules), a, t, config)
             @test out == ["\e[0mgraph indexer rules stop Qma"]
 
             config = Dict("frozenlist" => ["Qma"])
-            out = AllocationOpt.unallocate(Val(:rules), proposedipfs, existingipfs, config)
+            out = AllocationOpt.unallocate(Val(:rules), a, t, config)
             @test isempty(out)
         end
     end
