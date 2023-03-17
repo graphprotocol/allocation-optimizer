@@ -96,4 +96,40 @@
         end
         rm("./report.json")
     end
+
+    @testset "unallocate" begin
+        existingipfs = ["Qma"]
+        proposedipfs = ["Qmb"]
+        config = Dict("frozenlist" => String[])
+
+        @testset "none" begin
+            @inferred AllocationOpt.unallocate(Val(:none), existingipfs, proposedipfs, config)
+        end
+    end
+
+    @testset "reallocate" begin
+        existingipfs = ["Qma"]
+        t = flextable([
+            Dict("stakedTokens" => "1", "signalledTokens" => "0", "ipfsHash" => "Qma"),
+            Dict("stakedTokens" => "2", "signalledTokens" => "0", "ipfsHash" => "Qmb"),
+        ])
+        config = Dict()
+
+        @testset "none" begin
+            @inferred AllocationOpt.reallocate(Val(:none), existingipfs, t, config)
+        end
+    end
+
+    @testset "allocate" begin
+        existingipfs = ["Qma"]
+        t = flextable([
+            Dict("stakedTokens" => "1", "signalledTokens" => "0", "ipfsHash" => "Qma"),
+            Dict("stakedTokens" => "2", "signalledTokens" => "0", "ipfsHash" => "Qmb"),
+        ])
+        config = Dict()
+
+        @testset "none" begin
+            @inferred AllocationOpt.allocate(Val(:none), existingipfs, t, config)
+        end
+    end
 end

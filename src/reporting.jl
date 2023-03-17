@@ -169,3 +169,50 @@ function writejson(results::AbstractString, config::AbstractDict)
     close(f)
     return p
 end
+
+"""
+    unallocate(::Val{:none}, proposedipfs, existingipfs, config)
+
+Do nothing.
+
+```julia
+julia> using AllocationOpt
+julia> AllocationOpt.unallocate(Val{:none}, ["Qma"], ["Qmb"], Dict())
+```
+"""
+unallocate(::Val{:none}, proposedipfs, existingipfs, config) = nothing
+
+
+"""
+    reallocate(::Val{:none}, existingipfs, t, config)
+
+Do nothing.
+
+```julia
+julia> using AllocationOpt
+julia> using TheGraphData
+julia> t = flextable([
+    Dict("stakedTokens" => "1", "signalledTokens" => "0", "ipfsHash" => "Qma"),
+    Dict("stakedTokens" => "2", "signalledTokens" => "0", "ipfsHash" => "Qmb"),
+])
+julia> AllocationOpt.reallocate(Val{:none}, ["Qma"], t, Dict())
+"""
+reallocate(::Val{:none}, existingipfs, t, config) = nothing
+
+"""
+    allocate(::Val{:none}, existingipfs, t, config)
+
+Do nothing.
+
+```julia
+julia> using AllocationOpt
+julia> using TheGraphData
+julia> existingipfs = ["Qma"]
+julia> t = flextable([
+    Dict("stakedTokens" => "1", "signalledTokens" => "0", "ipfsHash" => "Qma"),
+    Dict("stakedTokens" => "2", "signalledTokens" => "0", "ipfsHash" => "Qmb"),
+])
+julia> AllocationOpt.allocate(Val{:none}, existingipfs, t, Dict())
+```
+"""
+allocate(::Val{:none}, existingipfs, t, config) = nothing
