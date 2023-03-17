@@ -192,9 +192,9 @@ Do nothing.
 julia> using AllocationOpt
 julia> using TheGraphData
 julia> t = flextable([
-    Dict("stakedTokens" => "1", "signalledTokens" => "0", "ipfsHash" => "Qma"),
-    Dict("stakedTokens" => "2", "signalledTokens" => "0", "ipfsHash" => "Qmb"),
-])
+            Dict("amount" => "1", "profit" => "0", "ipfshash" => "Qma"),
+            Dict("amount" => "2", "profit" => "0", "ipfshash" => "Qmb"),
+        ])
 julia> AllocationOpt.reallocate(Val{:none}, ["Qma"], t, Dict())
 """
 reallocate(::Val{:none}, existingipfs, t, config) = nothing
@@ -209,10 +209,135 @@ julia> using AllocationOpt
 julia> using TheGraphData
 julia> existingipfs = ["Qma"]
 julia> t = flextable([
-    Dict("stakedTokens" => "1", "signalledTokens" => "0", "ipfsHash" => "Qma"),
-    Dict("stakedTokens" => "2", "signalledTokens" => "0", "ipfsHash" => "Qmb"),
-])
+            Dict("amount" => "1", "profit" => "0", "ipfshash" => "Qma"),
+            Dict("amount" => "2", "profit" => "0", "ipfshash" => "Qmb"),
+        ])
 julia> AllocationOpt.allocate(Val{:none}, existingipfs, t, Dict())
 ```
 """
 allocate(::Val{:none}, existingipfs, t, config) = nothing
+
+"""
+    unallocate(
+        ::Val{:rules},
+        proposedipfs::AbstractVector{S},
+        existingipfs::AbstractVector{S},
+        config::AbstractDict,
+    ) where {S<:AbstractString}
+
+Print a rule that stops old allocations that the optimiser has not chosen and that aren't
+frozen.
+
+```julia
+julia> using AllocationOpt
+julia> AllocationOpt.unallocate(Val{:rules}, ["Qma"], ["Qmb"], Dict("frozenlist" => []))
+```
+"""
+function unallocate(
+    ::Val{:rules},
+    proposedipfs::AbstractVector{S},
+    existingipfs::AbstractVector{S},
+    config::AbstractDict,
+) where {S<:AbstractString}
+    frozenlist = config["frozenlist"]
+    ipfses = closeipfs(existingipfs, proposedipfs, frozenlist)
+    actions::Vector{String} = map(ipfs -> "\e[0mgraph indexer rules stop $(ipfs)", ipfses)
+    println.(actions)
+    return actions
+end
+
+"""
+    reallocate(
+        ::Val{:rules},
+        existingipfs::AbstractVector{S},
+        t::FlexTable,
+        config::AbstractDict,
+    ) where {S<:AbstractString}
+
+Print a rule that reallocates the old allocation with a new allocation amount
+
+```julia
+julia> using AllocationOpt
+julia> using TheGraphData
+julia> t = flextable([
+    Dict("amount" => "1", "profit" => "0", "ipfshash" => "Qma"),
+    Dict("amount" => "2", "profit" => "0", "ipfshash" => "Qmb"),
+])
+julia> AllocationOpt.reallocate(Val(:rules), ["Qma"], t, Dict())
+```
+"""
+function reallocate(
+    ::Val{:rules},
+    existingipfs::AbstractVector{S},
+    t::FlexTable,
+    config::AbstractDict,
+) where {S<:AbstractString}
+    # Filter table to only include subgraphs that are already allocated
+    ti = SAC.filterview(r -> r.ipfshash ∈ existingipfs, t)
+    ipfses = ti.ipfshash
+    amounts = ti.amount
+
+    actions::Vector{String} = map(
+        (ipfs, amount) ->
+            "\e[0mgraph indexer rules stop $(ipfs)\n\e[1m\e[38;2;255;0;0;249mCheck allocation status being closed before submitting: \e[0mgraph indexer rules set $(ipfs) decisionBasis always allocationAmount $(format(amount))",
+        ipfses,
+        amounts
+    )
+    println(actions)
+    return actions
+end
+
+"""
+    allocate(
+        ::Val{:rules},
+        existingipfs::AbstractVector{S},
+        t::FlexTable,
+        config::AbstractDict,
+    ) where {S<:AbstractString}
+
+Print the rules that allocates to new subgraphs.
+
+```julia
+julia> using AllocationOpt
+julia> using TheGraphData
+julia> existingipfs = ["Qma"]
+julia> t = flextable([
+            Dict("amount" => "1", "profit" => "0", "ipfshash" => "Qma"),
+            Dict("amount" => "2", "profit" => "0", "ipfshash" => "Qmb"),
+        ])
+julia> AllocationOpt.allocate(Val{:rules}, existingipfs, t, Dict())
+"""
+function allocate(
+    ::Val{:rules},
+    existingipfs::AbstractVector{S},
+    t::FlexTable,
+    config::AbstractDict,
+) where {S<:AbstractString}
+    # Filter table to only include subgraphs that are not already allocated
+    ts = SAC.filterview(r -> r.ipfshash ∉ existingipfs, t)
+    ipfses = ts.ipfshash
+    amounts = ts.amount
+
+    actions::Vector{String} = map(
+        (ipfs, amount) ->
+            "\e[0mgraph indexer rules set $(ipfs) decisionBasis always allocationAmount $(format(amount))",
+        ipfses,
+        amounts
+    )
+    println(actions)
+    return actions
+end
+
+"""
+    closeipfs(existingipfs, proposedipfs, frozenlist)
+
+Get the list of the ipfs hashes of allocations to close.
+
+```julia
+julia> using AllocationOpt
+julia> AllocationOptcloseipfs(["Qma"], ["Qmb"], String[])
+```
+"""
+function closeipfs(existingipfs, proposedipfs, frozenlist)
+    setdiff(setdiff(existingipfs, proposedipfs), frozenlist)
+end

@@ -105,31 +105,53 @@
         @testset "none" begin
             @inferred AllocationOpt.unallocate(Val(:none), existingipfs, proposedipfs, config)
         end
+
+        @testset "rules" begin
+            @inferred AllocationOpt.unallocate(Val(:rules), proposedipfs, existingipfs, config)
+            out = AllocationOpt.unallocate(Val(:rules), proposedipfs, existingipfs, config)
+            @test out == ["\e[0mgraph indexer rules stop Qma"]
+
+            config = Dict("frozenlist" => ["Qma"])
+            out = AllocationOpt.unallocate(Val(:rules), proposedipfs, existingipfs, config)
+            @test isempty(out)
+        end
     end
 
     @testset "reallocate" begin
         existingipfs = ["Qma"]
         t = flextable([
-            Dict("stakedTokens" => "1", "signalledTokens" => "0", "ipfsHash" => "Qma"),
-            Dict("stakedTokens" => "2", "signalledTokens" => "0", "ipfsHash" => "Qmb"),
+            Dict("amount" => "1", "profit" => "0", "ipfshash" => "Qma"),
+            Dict("amount" => "2", "profit" => "0", "ipfshash" => "Qmb"),
         ])
         config = Dict()
 
         @testset "none" begin
             @inferred AllocationOpt.reallocate(Val(:none), existingipfs, t, config)
         end
+
+        @testset "rules" begin
+            @inferred AllocationOpt.reallocate(Val(:rules), existingipfs, t, config)
+            out = AllocationOpt.reallocate(Val(:rules), existingipfs, t, config)
+            @test out == ["\e[0mgraph indexer rules stop Qma\n\e[1m\e[38;2;255;0;0;249mCheck allocation status being closed before submitting: \e[0mgraph indexer rules set Qma decisionBasis always allocationAmount 1"]
+        end
     end
 
     @testset "allocate" begin
         existingipfs = ["Qma"]
         t = flextable([
-            Dict("stakedTokens" => "1", "signalledTokens" => "0", "ipfsHash" => "Qma"),
-            Dict("stakedTokens" => "2", "signalledTokens" => "0", "ipfsHash" => "Qmb"),
+            Dict("amount" => "1", "profit" => "0", "ipfshash" => "Qma"),
+            Dict("amount" => "2", "profit" => "0", "ipfshash" => "Qmb"),
         ])
         config = Dict()
 
         @testset "none" begin
             @inferred AllocationOpt.allocate(Val(:none), existingipfs, t, config)
+        end
+
+        @testset "rules" begin
+            @inferred AllocationOpt.allocate(Val(:rules), existingipfs, t, config)
+            out = AllocationOpt.allocate(Val(:rules), existingipfs, t, config)
+            @test out == ["\e[0mgraph indexer rules set Qmb decisionBasis always allocationAmount 2"]
         end
     end
 end
