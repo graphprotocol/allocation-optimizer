@@ -47,8 +47,8 @@ Set default values for the config dictionary if the value was not specified in t
     push actions to the action queue, and `"rules"`, which will generate indexing rules.
     By default, `"none"`
 - `indexer_url::Union{String, Nothing}`: The URL of the indexer management server you want
-    to execute the allocation strategies on. If you specify `"actionqueue"` or `"rules"`,
-    you must also specify `indexer_url`. By default, `nothing`
+    to execute the allocation strategies on. If you specify `"actionqueue"`, you must also
+    specify `indexer_url`. By default, `nothing`
 
 ```julia
 julia> using AllocationOpt
