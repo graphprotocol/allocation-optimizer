@@ -42,6 +42,13 @@ Set default values for the config dictionary if the value was not specified in t
     profit. By default, `1`
 - `verbose::Bool`: If true, the optimiser will print details about what it is doing to
     stdout. By default, `false`
+- `execution_mode::String`: How the optimiser should execute the allocation strategies it
+    finds. Options are `"none"`, which won't do anything, `"actionqueue"`, which will
+    push actions to the action queue, and `"rules"`, which will generate indexing rules.
+    By default, `"none"`
+- `indexer_url::Union{String, Nothing}`: The URL of the indexer management server you want
+    to execute the allocation strategies on. If you specify `"actionqueue"` or `"rules"`,
+    you must also specify `indexer_url`. By default, `nothing`
 
 ```julia
 julia> using AllocationOpt
@@ -72,6 +79,8 @@ function configuredefaults!(config::AbstractDict)
     setdefault!(config, "min_signal", 1000)
     setdefault!(config, "max_allocations", 10)
     setdefault!(config, "num_reported_options", 1)
+    setdefault!(config, "indexer_url", nothing)
+    setdefault!(config, "execution_mode", "none")
     setdefault!(config, "verbose", false)
     return config
 end

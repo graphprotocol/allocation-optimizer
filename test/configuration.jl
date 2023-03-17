@@ -21,6 +21,8 @@
         @test config["min_signal"] == 1000
         @test config["max_allocations"] == 10
         @test config["num_reported_options"] == 1
+        @test config["execution_mode"] == "none"
+        @test isnothing(config["indexer_url"])
         @test !config["verbose"]
 
         config = Dict{String,Any}("id" => "a", "gas" => 0)
