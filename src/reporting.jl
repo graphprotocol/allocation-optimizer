@@ -57,6 +57,39 @@ function sortprofits!(popts::AbstractVector{N}) where {N<:NamedTuple}
 end
 
 """
+    reportingtable(
+        s::FlexTable, xs::AbstractMatrix{Real}, ps::AbstractMatrix{Real}, i::Integer
+    )
+
+Construct a table for the strategy mapping the ipfshash, allocation amount, and profit
+
+```julia
+julia> using AllocationOpt
+julia> s = flextable([
+        Dict("stakedTokens" => "1", "signalledTokens" => "2", "ipfsHash" => "Qma"),
+        Dict("stakedTokens" => "2", "signalledTokens" => "1", "ipfsHash" => "Qmb"),
+    ])
+julia> xs = [[2.5 5.0]; [2.5 0.0]]
+julia> ps = [[3.0 5.0]; [3.0 0.0]]
+julia> i = 1
+julia> AllocationOpt.reportingtable(s, xs, ps, i)
+```
+"""
+function reportingtable(
+    s::FlexTable, xs::AbstractMatrix{T}, ps::AbstractMatrix{T}, i::Integer
+) where {T<:Real}
+    # Associate ipfs with allocation and profit vectors
+    t = flextable(
+        (; :ipfshash => s.ipfsHash, :amount => xs[:, i], :profit => ps[:, i])
+    )
+
+    # Filter table to only include nonzeros
+    ft = SAC.filterview(r -> r.amount > 0, t)
+
+    return ft
+end
+
+"""
     strategydict(
         p::NamedTuple,
         xs::AbstractMatrix{Real},
@@ -96,13 +129,7 @@ function strategydict(
 ) where {T<:Real, I<:Integer}
     i = p[:index]
 
-    # Associate ipfs with allocation and profit vectors
-    t = flextable(
-        (; :ipfshash => fs.ipfsHash, :amount => xs[:, i], :profit => profitmatrix[:, i])
-    )
-
-    # Filter table to only include nonzeros
-    ft = SAC.filterview(r -> r.amount > 0, t)
+    ft = reportingtable(fs, xs, profitmatrix, i)
 
     nnz = nonzeros[i]
     sp = p[:profit]

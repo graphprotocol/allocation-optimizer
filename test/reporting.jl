@@ -28,6 +28,19 @@
         ]
         @test AllocationOpt.sortprofits!(popts)[1][:profit] == 6.0
     end
+    @testset "reportingtable" begin
+        s = flextable([
+            Dict("stakedTokens" => "1", "signalledTokens" => "2", "ipfsHash" => "Qma"),
+            Dict("stakedTokens" => "2", "signalledTokens" => "1", "ipfsHash" => "Qmb"),
+        ])
+        xs = [[2.5 5.0]; [2.5 0.0]]
+        ps = [[3.0 5.0]; [3.0 0.0]]
+        i = 2
+        t = AllocationOpt.reportingtable(s, xs, ps, i)
+        @test t.ipfshash ==  ["Qma"]
+        @test t.amount == [5.0]
+        @test t.profit == [5.0]
+    end
     @testset "strategydict" begin
         popts = [
             (; :profit => 6.0, :index => 1),
