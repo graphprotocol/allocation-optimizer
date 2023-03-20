@@ -15,6 +15,7 @@ Convert `x` to GRT.
 ```julia
 julia> using AllocationOpt
 julia> AllocationOpt.togrt("1")
+1.0e-18
 ```
 """
 togrt(x::AbstractString) = parse(Float64, x) / ethtogrt
@@ -38,6 +39,7 @@ julia> n = flextable([
     )
 ])
 julia> AllocationOpt.totalsupply(Val(:network), n)
+1
 """
 totalsupply(::Val{:network}, x) = x.totalSupply |> only
 
@@ -60,6 +62,7 @@ julia> n = flextable([
     )
 ])
 julia> AllocationOpt.blockissuance(Val(:network), n)
+1
 """
 blockissuance(::Val{:network}, x) = x.networkGRTIssuance |> only
 
@@ -82,6 +85,7 @@ julia> n = flextable([
     )
 ])
 julia> AllocationOpt.blocksperepoch(Val(:network), n)
+28
 """
 blocksperepoch(::Val{:network}, x) = x.epochLength |> only
 
@@ -104,6 +108,7 @@ julia> n = flextable([
     )
 ])
 julia> AllocationOpt.signal(Val(:network), n)
+2
 """
 signal(::Val{:network}, x) = x.totalTokensSignalled |> only
 
@@ -125,7 +130,8 @@ julia> n = flextable([
         "currentEpoch" => 1,
     )
 ])
-julia> AllocationOpt.currentepoch.(Val(:network), n)
+julia> AllocationOpt.currentepoch(Val(:network), n)
+1
 """
 currentepoch(::Val{:network}, x) = x.currentEpoch |> only
 
@@ -143,6 +149,8 @@ julia> x = flextable([
     ),
 ])
 julia> AllocationOpt.ipfshash(Val(:allocation), x)
+1-element view(lazystack(::Vector{Vector{String}}), 1, :) with eltype String:
+ "Qma"
 ```
 """
 ipfshash(::Val{:allocation}, x) = getproperty(x, Symbol("subgraphDeployment.ipfsHash"))
@@ -161,6 +169,8 @@ julia> x = flextable([
     ),
 ])
 julia> AllocationOpt.stake(Val(:allocation), x)
+1-element view(transpose(lazystack(::Vector{Vector{Int64}})), :, 1) with eltype Int64:
+ 1
 ```
 """
 stake(::Val{:allocation}, x) = x.allocatedTokens
@@ -179,6 +189,8 @@ julia> x = flextable([
     ),
 ])
 julia> AllocationOpt.id(Val(:allocation), x)
+1-element view(lazystack(::Vector{Vector{String}}), 1, :) with eltype String:
+ "0x1"
 ```
 """
 id(::Val{:allocation}, x) = x.id
@@ -196,7 +208,9 @@ julia> x = flextable([
         "ipfsHash" => "Qma",
     ),
 ])
-julia> AllocationOpt.ipfshash(Val(:allocation), x)
+julia> AllocationOpt.ipfshash(Val(:subgraph), x)
+1-element view(lazystack(::Vector{Vector{String}}), 1, :) with eltype String:
+ "Qma"
 ```
 """
 ipfshash(::Val{:subgraph}, x) = x.ipfsHash
@@ -214,6 +228,9 @@ julia> x = flextable([
     Dict("stakedTokens" => 5,),
 ])
 julia> AllocationOpt.stake(Val(:subgraph), x)
+2-element view(transpose(lazystack(::Vector{Vector{Int64}})), :, 1) with eltype Int64:
+ 10
+  5
 ```
 """
 stake(::Val{:subgraph}, x) = x.stakedTokens
@@ -231,6 +248,9 @@ julia> x = flextable([
     Dict("signalledTokens" => 5,),
 ])
 julia> AllocationOpt.signal(Val(:subgraph), x)
+2-element view(transpose(lazystack(::Vector{Vector{Int64}})), :, 1) with eltype Int64:
+ 10
+  5
 ```
 """
 signal(::Val{:subgraph}, x) = x.signalledTokens
@@ -249,6 +269,7 @@ julia> x = flextable([
     ),
 ])
 julia> AllocationOpt.stake(Val(:indexer), x)
+10
 ```
 """
 stake(::Val{:indexer}, x) = x.stakedTokens |> only
@@ -267,6 +288,7 @@ julia> x = flextable([
     ),
 ])
 julia> AllocationOpt.delegation(Val(:indexer), x)
+10
 ```
 """
 delegation(::Val{:indexer}, x) = x.delegatedTokens |> only
@@ -285,6 +307,7 @@ julia> x = flextable([
     ),
 ])
 julia> AllocationOpt.locked(Val(:indexer), x)
+10
 ```
 """
 locked(::Val{:indexer}, x) = x.lockedTokens |> only
@@ -303,6 +326,7 @@ julia> a = flextable([
        ])
 julia> config = Dict("frozenlist" => ["Qma", "Qmb"])
 julia> AllocationOpt.frozen(a, config)
+15.0
 ```
 """
 function frozen(a::FlexTable, config::AbstractDict)
@@ -319,8 +343,17 @@ The pinned vector of the indexer.
 
 ```julia
 julia> using AllocationOpt
+julia> s = flextable([
+    Dict("ipfsHash" => "Qma", "signalledTokens" => 5.0),
+    Dict("ipfsHash" => "Qmb", "signalledTokens" => 10.0),
+    Dict("ipfsHash" => "Qmc", "signalledTokens" => 15.0),
+])
 julia> config = Dict("pinnedlist" => ["Qma", "Qmb"])
-julia> AllocationOpt.pinned(config)
+julia> AllocationOpt.pinned(s, config)
+3-element Vector{Float64}:
+ 0.1
+ 0.1
+ 0.0
 ```
 """
 function pinned(s::FlexTable, config::AbstractDict)
@@ -346,10 +379,15 @@ julia> s = flextable([
 julia> config = Dict(
             "whitelist" => String["Qmb", "Qmc"],
             "blacklist" => String[],
-            "frozenlist" => String[]
+            "frozenlist" => String[],
             "min_signal" => 0.0
 )
 julia> fs = AllocationOpt.allocatablesubgraphs(s, config)
+FlexTable with 2 columns and 2 rows:
+     signalledTokens  ipfsHash
+   ┌──────────────────────────
+ 1 │ 20               Qmb
+ 2 │ 5                Qmc
 ```
 """
 function allocatablesubgraphs(s::FlexTable, config::AbstractDict)
@@ -398,6 +436,7 @@ julia> n = flextable([
         ])
 julia> config = Dict("allocation_lifetime" => 1)
 julia> AllocationOpt.newtokenissuance(n, config)
+1.0
 ```
 """
 function newtokenissuance(n::FlexTable, config::Dict)
@@ -424,11 +463,12 @@ allocations on subgraphs `Ω`, token issuance `Φ`, and total signal `Ψ`.
 ```julia
 julia> using AllocationOpt
 julia> ψ = [0.0, 1.0]
-julia> Ω = [0.0, 0.0]
+julia> Ω = [1.0, 1.0]
 julia> Φ = 1.0
 julia> Ψ = 2.0
 julia> x = [0.0, 1.0]
 julia> AllocationOpt.indexingreward(x, Ω, ψ, Φ, Ψ)
+0.25
 ```
 """
 function indexingreward(
@@ -451,6 +491,7 @@ julia> Φ = 1.0
 julia> Ψ = 2.0
 julia> x = 1.0
 julia> AllocationOpt.indexingreward(x, Ω, ψ, Φ, Ψ)
+0.0
 ```
 """
 function indexingreward(x::Real, Ω::Real, ψ::Real, Φ::Real, Ψ::Real)
@@ -468,6 +509,7 @@ julia> using AllocationOpt
 julia> r = 10
 julia> g = 1
 julia> AllocationOpt.profit(r, g)
+9
 ```
 """
 profit(r::Real, g::Real) = r == 0 ? 0 : r - g
