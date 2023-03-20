@@ -52,13 +52,24 @@ Set default values for the config dictionary if the value was not specified in t
 
 ```julia
 julia> using AllocationOpt
-julia> config = Dict{String, Any}()
+julia> config = Dict{String, Any}("id" => "0xa")
 julia> config = AllocationOpt.configuredefaults!(config)
-[...]
-julia> isnothing(config["readdir"])
-true
-julia> config["writedir"] == "."
-true
+Dict{String, Any} with 16 entries:
+  "execution_mode"            => "none"
+  "readdir"                   => nothing
+  "writedir"                  => "."
+  "num_reported_options"      => 1
+  "id"                        => "0xa"
+  "pinnedlist"                => String[]
+  "indexer_url"               => nothing
+  "gas"                       => 100
+  "allocation_lifetime"       => 28
+  "blacklist"                 => String[]
+  "verbose"                   => false
+  "min_signal"                => 1000
+  "network_subgraph_endpoint" => "https://api.thegraph.com/subgraphs/name/graphprotocol/graph-network-mainnet"
+  "whitelist"                 => String[]
+  ⋮                           => ⋮
 ```
 """
 function configuredefaults!(config::AbstractDict)
@@ -94,6 +105,8 @@ Given a `config`, reformat values that need to be standardised.
 julia> using AllocationOpt
 julia> config = Dict("id" => "0xA")
 julia> AllocationOpt.formatconfig!(config)
+Dict{String, String} with 1 entry:
+  "id" => "0xa"
 ```
 """
 function formatconfig!(config::AbstractDict)
@@ -110,8 +123,22 @@ See [`configuredefaults!`](@ref) to see which fields you should specify in the c
 
 ```julia
 julia> using AllocationOpt
-julia> path = "myconfig.TOML"
+julia> path = "myconfig.toml"
 julia> config = AllocationOpt.readconfig(path)
+Dict{String, Any} with 13 entries:
+  "execution_mode"       => "none"
+  "writedir"             => "data"
+  "num_reported_options" => 2
+  "id"                   => "0xd75c4dbcb215a6cf9097cfbcc70aab2596b96a9c"
+  "pinnedlist"           => Union{}[]
+  "gas"                  => 100
+  "allocation_lifetime"  => 28
+  "blacklist"            => Union{}[]
+  "verbose"              => true
+  "min_signal"           => 1000
+  "whitelist"            => Union{}[]
+  "max_allocations"      => 5
+  "frozenlist"           => Union{}[]
 ```
 """
 readconfig(p::AbstractString) = p |> TOML.parsefile
