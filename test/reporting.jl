@@ -210,5 +210,26 @@
             out = AllocationOpt.allocate(Val(:rules), a, t, config)
             @test out == ["\e[0mgraph indexer rules set Qmb decisionBasis always allocationAmount 2"]
         end
+
+        @testset "actionqueue" begin
+            apply(mutate_success_patch) do
+                @inferred AllocationOpt.allocate(Val(:actionqueue), a, t, config)
+            end
+
+            apply(mutate_success_patch) do
+                out = AllocationOpt.allocate(Val(:actionqueue), a, t, config)
+                @test out == [
+                    Dict(
+                        "status" => AllocationOpt.queued,
+                        "type" => AllocationOpt.allocateaction,
+                        "ipfshash" => "Qmb",
+                        "amount" => "2",
+                        "user" => "AllocationOpt",
+                        "reason" => "Expected profit: 0",
+                        "priority" => 0,
+                    )
+                ]
+            end
+        end
     end
 end

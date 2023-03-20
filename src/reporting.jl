@@ -411,7 +411,7 @@ end
 """
     reallocate(::Val{:actionqueue}, a::FlexTable, t::FlexTable, config::AbstractDict)
 
-Create and push reallocate action to the action queue.
+Create and push reallocate actions to the action queue.
 
 ```julia
 julia> using AllocationOpt
@@ -446,6 +446,53 @@ function reallocate(
             "priority" => 0,
         ),
         ti,
+    )
+
+    # Send graphql mutation to action queue
+    _ = @mock(mutate("queueActions", Dict("actions" => actions)))
+
+    return actions
+end
+
+"""
+    allocate(::Val{:actionqueue}, a::FlexTable, t::FlexTable, config::AbstractDict)
+
+Create and push allocate actions to the action queue.
+
+```julia
+julia> using AllocationOpt
+julia> using TheGraphData
+julia > a = flextable([
+            Dict("subgraphDeployment.ipfsHash" => "Qma", "id" => "0xa")
+        ])
+julia> t = flextable([
+    Dict("amount" => "1", "profit" => "0", "ipfshash" => "Qma"),
+    Dict("amount" => "2", "profit" => "0", "ipfshash" => "Qmb"),
+])
+julia> AllocationOpt.allocate(Val(:actionqueue), a, t, Dict())
+```
+"""
+function allocate(
+    ::Val{:actionqueue},
+    a::FlexTable,
+    t::FlexTable,
+    config::AbstractDict,
+)
+    existingipfs = ipfshash(Val(:allocation), a)
+    # Filter table to only include subgraphs that are not already allocated
+    ts = SAC.filterview(r -> r.ipfshash ∉ existingipfs, t)
+
+    actions::Vector{Dict{String, Any}} = map(
+        r -> Dict(
+            "status" => queued,
+            "type" => allocateaction,
+            "ipfshash" => r.ipfshash,
+            "amount" => format(r.amount),
+            "user" => "AllocationOpt",
+            "reason" => "Expected profit: $(format(r.profit))",
+            "priority" => 0,
+        ),
+        ts,
     )
 
     # Send graphql mutation to action queue
