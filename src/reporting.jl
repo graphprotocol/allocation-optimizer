@@ -171,7 +171,7 @@ function writejson(results::AbstractString, config::AbstractDict)
 end
 
 """
-    unallocate(::Val{:none}, a, t, config)
+    unallocate_action(::Val{:none}, a, t, config)
 
 Do nothing.
 
@@ -184,14 +184,14 @@ julia> t = flextable([
             Dict("amount" => "1", "profit" => "0", "ipfshash" => "Qma"),
             Dict("amount" => "2", "profit" => "0", "ipfshash" => "Qmb"),
         ])
-julia> AllocationOpt.unallocate(Val{:none}, a, t, Dict())
+julia> AllocationOpt.unallocate_action(Val{:none}, a, t, Dict())
 ```
 """
-unallocate(::Val{:none}, a, t, config) = nothing
+unallocate_action(::Val{:none}, a, t, config) = nothing
 
 
 """
-    reallocate(::Val{:none}, a, t, config)
+    reallocate_action(::Val{:none}, a, t, config)
 
 Do nothing.
 
@@ -205,12 +205,12 @@ julia> t = flextable([
             Dict("amount" => "1", "profit" => "0", "ipfshash" => "Qma"),
             Dict("amount" => "2", "profit" => "0", "ipfshash" => "Qmb"),
         ])
-julia> AllocationOpt.reallocate(Val{:none}, a, t, Dict())
+julia> AllocationOpt.reallocate_action(Val{:none}, a, t, Dict())
 """
-reallocate(::Val{:none}, a, t, config) = nothing
+reallocate_action(::Val{:none}, a, t, config) = nothing
 
 """
-    allocate(::Val{:none}, a, t, config)
+    allocate_action(::Val{:none}, a, t, config)
 
 Do nothing.
 
@@ -224,13 +224,13 @@ julia> t = flextable([
             Dict("amount" => "1", "profit" => "0", "ipfshash" => "Qma"),
             Dict("amount" => "2", "profit" => "0", "ipfshash" => "Qmb"),
         ])
-julia> AllocationOpt.allocate(Val{:none}, a, t, Dict())
+julia> AllocationOpt.allocate_action(Val{:none}, a, t, Dict())
 ```
 """
-allocate(::Val{:none}, a, t, config) = nothing
+allocate_action(::Val{:none}, a, t, config) = nothing
 
 """
-    unallocate(::Val{:rules}, a::FlexTable, t::FlexTable, config::AbstractDict)
+    unallocate_action(::Val{:rules}, a::FlexTable, t::FlexTable, config::AbstractDict)
 
 Print a rule that stops old allocations that the optimiser has not chosen and that aren't
 frozen.
@@ -243,10 +243,10 @@ julia > a = flextable([
 julia> t = flextable([
             Dict("amount" => "2", "profit" => "0", "ipfshash" => "Qmb"),
         ])
-julia> AllocationOpt.unallocate(Val{:rules}, a, t, Dict("frozenlist" => []))
+julia> AllocationOpt.unallocate_action(Val{:rules}, a, t, Dict("frozenlist" => []))
 ```
 """
-function unallocate(::Val{:rules}, a::FlexTable, t::FlexTable, config::AbstractDict)
+function unallocate_action(::Val{:rules}, a::FlexTable, t::FlexTable, config::AbstractDict)
     frozenlist = config["frozenlist"]
     existingipfs = ipfshash(Val(:allocation), a)
     proposedipfs = t.ipfshash
@@ -257,7 +257,7 @@ function unallocate(::Val{:rules}, a::FlexTable, t::FlexTable, config::AbstractD
 end
 
 """
-    reallocate(::Val{:rules}, a::FlexTable, t::FlexTable, config::AbstractDict)
+    reallocate_action(::Val{:rules}, a::FlexTable, t::FlexTable, config::AbstractDict)
 
 Print a rule that reallocates the old allocation with a new allocation amount
 
@@ -271,10 +271,10 @@ julia> t = flextable([
     Dict("amount" => "1", "profit" => "0", "ipfshash" => "Qma"),
     Dict("amount" => "2", "profit" => "0", "ipfshash" => "Qmb"),
 ])
-julia> AllocationOpt.reallocate(Val(:rules), a, t, Dict())
+julia> AllocationOpt.reallocate_action(Val(:rules), a, t, Dict())
 ```
 """
-function reallocate(
+function reallocate_action(
     ::Val{:rules},
     a::FlexTable,
     t::FlexTable,
@@ -292,12 +292,12 @@ function reallocate(
         ipfses,
         amounts
     )
-    println(actions)
+    println.(actions)
     return actions
 end
 
 """
-    allocate(::Val{:rules}, a::FlexTable, t::FlexTable, config::AbstractDict)
+    allocate_action(::Val{:rules}, a::FlexTable, t::FlexTable, config::AbstractDict)
 
 Print the rules that allocates to new subgraphs.
 
@@ -311,9 +311,9 @@ julia> t = flextable([
             Dict("amount" => "1", "profit" => "0", "ipfshash" => "Qma"),
             Dict("amount" => "2", "profit" => "0", "ipfshash" => "Qmb"),
         ])
-julia> AllocationOpt.allocate(Val{:rules}, a, t, Dict())
+julia> AllocationOpt.allocate_action(Val{:rules}, a, t, Dict())
 """
-function allocate(
+function allocate_action(
     ::Val{:rules},
     a::FlexTable,
     t::FlexTable,
@@ -331,7 +331,7 @@ function allocate(
         ipfses,
         amounts
     )
-    println(actions)
+    println.(actions)
     return actions
 end
 
@@ -360,14 +360,14 @@ end
 end
 
 @enum ActionType begin
-    allocateaction
-    unallocateaction
-    reallocateaction
-    collectaction
+    allocate
+    unallocate
+    reallocate
+    collect
 end
 
 """
-    unallocate(::Val{:actionqueue}, a::FlexTable, t::FlexTable, config::AbstractDict)
+    unallocate_action(::Val{:actionqueue}, a::FlexTable, t::FlexTable, config::AbstractDict)
 
 Create and push the unallocate actions to the action queue.
 
@@ -379,9 +379,9 @@ julia > a = flextable([
 julia> t = flextable([
             Dict("amount" => "2", "profit" => "0", "ipfshash" => "Qmb"),
         ])
-julia> AllocationOpt.unallocate(Val{:rules}, a, t, Dict("frozenlist" => []))
+julia> AllocationOpt.unallocate_action(Val{:rules}, a, t, Dict("frozenlist" => []))
 """
-function unallocate(
+function unallocate_action(
     ::Val{:actionqueue},
     a::FlexTable,
     t::FlexTable,
@@ -393,23 +393,24 @@ function unallocate(
     actions::Vector{Dict{String, Any}} = map(
         r -> Dict(
             "status" => queued,
-            "type" => unallocateaction,
-            "allocation" => id(Val(:allocation), r),
-            "ipfshash" => ipfshash(Val(:allocation), r),
-            "user" => "AllocationOpt",
+            "type" => unallocate,
+            "allocationID" => id(Val(:allocation), r),
+            "deploymentID" => ipfshash(Val(:allocation), r),
+            "source" => "AllocationOpt",
             "reason" => "AllocationOpt",
             "priority" => 0,
         ),
         ft
     )
+
     # Send graphql mutation to action queue
-    _ = @mock(mutate("queueActions", Dict("actions" => actions)))
+    @mock(mutate("queueActions", Dict("actions" => actions); direct_write=true))
 
     return actions
 end
 
 """
-    reallocate(::Val{:actionqueue}, a::FlexTable, t::FlexTable, config::AbstractDict)
+    reallocate_action(::Val{:actionqueue}, a::FlexTable, t::FlexTable, config::AbstractDict)
 
 Create and push reallocate actions to the action queue.
 
@@ -423,10 +424,10 @@ julia> t = flextable([
     Dict("amount" => "1", "profit" => "0", "ipfshash" => "Qma"),
     Dict("amount" => "2", "profit" => "0", "ipfshash" => "Qmb"),
 ])
-julia> AllocationOpt.reallocate(Val(:actionqueue), a, t, Dict())
+julia> AllocationOpt.reallocate_action(Val(:actionqueue), a, t, Dict())
 ```
 """
-function reallocate(
+function reallocate_action(
     ::Val{:actionqueue},
     a::FlexTable,
     t::FlexTable,
@@ -439,11 +440,11 @@ function reallocate(
     actions::Vector{Dict{String, Any}} = map(
         r -> Dict(
             "status" => queued,
-            "type" => reallocateaction,
-            "allocation" => id(Val(:allocation), r),
-            "ipfshash" => ipfshash(Val(:allocation), r),
+            "type" => reallocate,
+            "allocationID" => id(Val(:allocation), r),
+            "deploymentID" => ipfshash(Val(:allocation), r),
             "amount" => format(r.amount),
-            "user" => "AllocationOpt",
+            "source" => "AllocationOpt",
             "reason" => "Expected profit: $(format(r.profit))",
             "priority" => 0,
         ),
@@ -451,13 +452,13 @@ function reallocate(
     )
 
     # Send graphql mutation to action queue
-    _ = @mock(mutate("queueActions", Dict("actions" => actions)))
+    @mock(mutate("queueActions", Dict("actions" => actions); direct_write=true))
 
     return actions
 end
 
 """
-    allocate(::Val{:actionqueue}, a::FlexTable, t::FlexTable, config::AbstractDict)
+    allocate_action(::Val{:actionqueue}, a::FlexTable, t::FlexTable, config::AbstractDict)
 
 Create and push allocate actions to the action queue.
 
@@ -471,10 +472,10 @@ julia> t = flextable([
     Dict("amount" => "1", "profit" => "0", "ipfshash" => "Qma"),
     Dict("amount" => "2", "profit" => "0", "ipfshash" => "Qmb"),
 ])
-julia> AllocationOpt.allocate(Val(:actionqueue), a, t, Dict())
+julia> AllocationOpt.allocate_action(Val(:actionqueue), a, t, Dict())
 ```
 """
-function allocate(
+function allocate_action(
     ::Val{:actionqueue},
     a::FlexTable,
     t::FlexTable,
@@ -487,10 +488,10 @@ function allocate(
     actions::Vector{Dict{String, Any}} = map(
         r -> Dict(
             "status" => queued,
-            "type" => allocateaction,
-            "ipfshash" => r.ipfshash,
+            "type" => allocate,
+            "deploymentID" => r.ipfshash,
             "amount" => format(r.amount),
-            "user" => "AllocationOpt",
+            "source" => "AllocationOpt",
             "reason" => "Expected profit: $(format(r.profit))",
             "priority" => 0,
         ),
@@ -498,7 +499,7 @@ function allocate(
     )
 
     # Send graphql mutation to action queue
-    _ = @mock(mutate("queueActions", Dict("actions" => actions)))
+    @mock(mutate("queueActions", Dict("actions" => actions); direct_write=true))
 
     return actions
 end
@@ -546,9 +547,9 @@ function execute(
     mode = Val(Symbol(config["execution_mode"]))
 
     indexerurlclient(mode, config)
-    _ = unallocate(mode, a, t, config)
-    _ = reallocate(mode, a, t, config)
-    _ = allocate(mode, a, t, config)
+    _ = unallocate_action(mode, a, t, config)
+    _ = reallocate_action(mode, a, t, config)
+    _ = allocate_action(mode, a, t, config)
 
     return nothing
 end

@@ -10,3 +10,6 @@ gas = 100
 min_signal = 1000
 verbose = true
 num_reported_options = 2
+execution_mode = "none"
+indexer_url = "http://localhost:18000"
+network_subgraph_endpoint = "https://api.thegraph.com/subgraphs/name/graphprotocol/graph-network-goerli"

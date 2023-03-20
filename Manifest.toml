@@ -606,7 +606,7 @@ uuid = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [[deps.TheGraphData]]
 deps = ["CSV", "GraphQLClient", "Mocking", "TensorCast", "TypedTables"]
-git-tree-sha1 = "a8e55dcab58a88fdd27c315e3f09ba48891a908e"
+git-tree-sha1 = "65b0fe4819e206fcabc133a8eb3a039d7eefb144"
 repo-rev = "main"
 repo-url = "https://github.com/semiotic-ai/TheGraphData.jl.git"
 uuid = "871720c8-5dfb-4fa2-998e-3fe6ebd08819"

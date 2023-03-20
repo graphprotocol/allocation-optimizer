@@ -109,32 +109,32 @@
         cfg = Dict("frozenlist" => ["Qma"])
 
         @testset "none" begin
-            @inferred AllocationOpt.unallocate(Val(:none), a, t, config)
+            @inferred AllocationOpt.unallocate_action(Val(:none), a, t, config)
         end
 
         @testset "rules" begin
-            @inferred AllocationOpt.unallocate(Val(:rules), a, t, config)
-            out = AllocationOpt.unallocate(Val(:rules), a, t, config)
+            @inferred AllocationOpt.unallocate_action(Val(:rules), a, t, config)
+            out = AllocationOpt.unallocate_action(Val(:rules), a, t, config)
             @test out == ["\e[0mgraph indexer rules stop Qma"]
 
-            out = AllocationOpt.unallocate(Val(:rules), a, t, cfg)
+            out = AllocationOpt.unallocate_action(Val(:rules), a, t, cfg)
             @test isempty(out)
         end
 
         @testset "actionqueue" begin
             apply(mutate_success_patch) do
-                @inferred AllocationOpt.unallocate(Val(:actionqueue), a, t, config)
+                @inferred AllocationOpt.unallocate_action(Val(:actionqueue), a, t, config)
             end
 
             apply(mutate_success_patch) do
-                out = AllocationOpt.unallocate(Val(:actionqueue), a, t, config)
+                out = AllocationOpt.unallocate_action(Val(:actionqueue), a, t, config)
                 @test out == [
                     Dict(
                         "status" => AllocationOpt.queued,
-                        "type" => AllocationOpt.unallocateaction,
-                        "allocation" => "0xa",
-                        "ipfshash" => "Qma",
-                        "user" => "AllocationOpt",
+                        "type" => AllocationOpt.unallocate,
+                        "allocationID" => "0xa",
+                        "deploymentID" => "Qma",
+                        "source" => "AllocationOpt",
                         "reason" => "AllocationOpt",
                         "priority" => 0,
                     )
@@ -142,7 +142,7 @@
             end
 
             apply(mutate_success_patch) do
-                out = AllocationOpt.unallocate(Val(:actionqueue), a, t, cfg)
+                out = AllocationOpt.unallocate_action(Val(:actionqueue), a, t, cfg)
                 @test isempty(out)
             end
         end
@@ -159,30 +159,30 @@
         config = Dict()
 
         @testset "none" begin
-            @inferred AllocationOpt.reallocate(Val(:none), a, t, config)
+            @inferred AllocationOpt.reallocate_action(Val(:none), a, t, config)
         end
 
         @testset "rules" begin
-            @inferred AllocationOpt.reallocate(Val(:rules), a, t, config)
-            out = AllocationOpt.reallocate(Val(:rules), a, t, config)
+            @inferred AllocationOpt.reallocate_action(Val(:rules), a, t, config)
+            out = AllocationOpt.reallocate_action(Val(:rules), a, t, config)
             @test out == ["\e[0mgraph indexer rules stop Qma\n\e[1m\e[38;2;255;0;0;249mCheck allocation status being closed before submitting: \e[0mgraph indexer rules set Qma decisionBasis always allocationAmount 1"]
         end
 
         @testset "actionqueue" begin
             apply(mutate_success_patch) do
-                @inferred AllocationOpt.reallocate(Val(:actionqueue), a, t, config)
+                @inferred AllocationOpt.reallocate_action(Val(:actionqueue), a, t, config)
             end
 
             apply(mutate_success_patch) do
-                out = AllocationOpt.reallocate(Val(:actionqueue), a, t, config)
+                out = AllocationOpt.reallocate_action(Val(:actionqueue), a, t, config)
                 @test out == [
                     Dict(
                         "status" => AllocationOpt.queued,
-                        "type" => AllocationOpt.reallocateaction,
-                        "allocation" => "0xa",
-                        "ipfshash" => "Qma",
+                        "type" => AllocationOpt.reallocate,
+                        "allocationID" => "0xa",
+                        "deploymentID" => "Qma",
                         "amount" => "1",
-                        "user" => "AllocationOpt",
+                        "source" => "AllocationOpt",
                         "reason" => "Expected profit: 0",
                         "priority" => 0,
                     )
@@ -202,29 +202,29 @@
         config = Dict()
 
         @testset "none" begin
-            @inferred AllocationOpt.allocate(Val(:none), a, t, config)
+            @inferred AllocationOpt.allocate_action(Val(:none), a, t, config)
         end
 
         @testset "rules" begin
-            @inferred AllocationOpt.allocate(Val(:rules), a, t, config)
-            out = AllocationOpt.allocate(Val(:rules), a, t, config)
+            @inferred AllocationOpt.allocate_action(Val(:rules), a, t, config)
+            out = AllocationOpt.allocate_action(Val(:rules), a, t, config)
             @test out == ["\e[0mgraph indexer rules set Qmb decisionBasis always allocationAmount 2"]
         end
 
         @testset "actionqueue" begin
             apply(mutate_success_patch) do
-                @inferred AllocationOpt.allocate(Val(:actionqueue), a, t, config)
+                @inferred AllocationOpt.allocate_action(Val(:actionqueue), a, t, config)
             end
 
             apply(mutate_success_patch) do
-                out = AllocationOpt.allocate(Val(:actionqueue), a, t, config)
+                out = AllocationOpt.allocate_action(Val(:actionqueue), a, t, config)
                 @test out == [
                     Dict(
                         "status" => AllocationOpt.queued,
-                        "type" => AllocationOpt.allocateaction,
-                        "ipfshash" => "Qmb",
+                        "type" => AllocationOpt.allocate,
+                        "deploymentID" => "Qmb",
                         "amount" => "2",
-                        "user" => "AllocationOpt",
+                        "source" => "AllocationOpt",
                         "reason" => "Expected profit: 0",
                         "priority" => 0,
                     )

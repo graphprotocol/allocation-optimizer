@@ -99,7 +99,7 @@ function main(config::Dict)
 
     # Use config for using actionqueue or rules with the top profit batch
     ix = first(popts)[:index]
-    execute(a, ix, fs, xs, ps, config)
+    execute(a, ix, fs, xs, profitmatrix, config)
 
     return nothing
 end
