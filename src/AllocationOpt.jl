@@ -77,6 +77,7 @@ function main(config::Dict)
 
     # Get optimal values
     # TODO: Handle pinned stake
+    config["verbose"] && @info "Optimizing"
     xs, nonzeros, profitmatrix = optimize(Ω, ψ, σ, K, Φ, Ψ, g)
 
     # Write the result values
@@ -84,19 +85,20 @@ function main(config::Dict)
     groupixs = groupunique(nonzeros)
     groupixs = Dict(keys(groupixs) .=> values(groupixs))
 
+    config["verbose"] && @info "Writing results report"
     # For each set of nonzeros, find max profit (should be the same other than rounding)
     popts = bestprofitpernz.(values(groupixs), Ref(profitmatrix)) |> sortprofits!
     nreport = min(config["num_reported_options"], length(popts))
 
     # Create JSON string
-    strategies = strategydict.(
-        popts[1:nreport], Ref(xs), Ref(nonzeros), Ref(fs), Ref(profitmatrix)
-    )
+    strategies =
+        strategydict.(popts[1:nreport], Ref(xs), Ref(nonzeros), Ref(fs), Ref(profitmatrix))
     reportdata = JSON.json(Dict("strategies" => strategies))
 
     # Write JSON string to file
     writejson(reportdata, config)
 
+    config["verbose"] && @info "Executing best strategy"
     # Use config for using actionqueue or rules with the top profit batch
     ix = first(popts)[:index]
     execute(a, ix, fs, xs, profitmatrix, config)
