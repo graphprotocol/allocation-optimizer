@@ -167,6 +167,28 @@
             out = AllocationOpt.reallocate(Val(:rules), a, t, config)
             @test out == ["\e[0mgraph indexer rules stop Qma\n\e[1m\e[38;2;255;0;0;249mCheck allocation status being closed before submitting: \e[0mgraph indexer rules set Qma decisionBasis always allocationAmount 1"]
         end
+
+        @testset "actionqueue" begin
+            apply(mutate_success_patch) do
+                @inferred AllocationOpt.reallocate(Val(:actionqueue), a, t, config)
+            end
+
+            apply(mutate_success_patch) do
+                out = AllocationOpt.reallocate(Val(:actionqueue), a, t, config)
+                @test out == [
+                    Dict(
+                        "status" => AllocationOpt.queued,
+                        "type" => AllocationOpt.reallocateaction,
+                        "allocation" => "0xa",
+                        "ipfshash" => "Qma",
+                        "amount" => "1",
+                        "user" => "AllocationOpt",
+                        "reason" => "Expected profit: 0",
+                        "priority" => 0,
+                    )
+                ]
+            end
+        end
     end
 
     @testset "allocate" begin

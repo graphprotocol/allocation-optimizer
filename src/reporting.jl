@@ -367,10 +367,9 @@ end
 end
 
 """
-    unallocate(::Val{:rules}, a::FlexTable, t::FlexTable, config::AbstractDict)
+    unallocate(::Val{:actionqueue}, a::FlexTable, t::FlexTable, config::AbstractDict)
 
-Print a rule that stops old allocations that the optimiser has not chosen and that aren't
-frozen.
+Create and push the unallocate actions to the action queue.
 
 ```julia
 julia> using AllocationOpt
@@ -403,6 +402,52 @@ function unallocate(
         ),
         ft
     )
+    # Send graphql mutation to action queue
+    _ = @mock(mutate("queueActions", Dict("actions" => actions)))
+
+    return actions
+end
+
+"""
+    reallocate(::Val{:actionqueue}, a::FlexTable, t::FlexTable, config::AbstractDict)
+
+Create and push reallocate action to the action queue.
+
+```julia
+julia> using AllocationOpt
+julia> using TheGraphData
+julia > a = flextable([
+            Dict("subgraphDeployment.ipfsHash" => "Qma", "id" => "0xa")
+        ])
+julia> t = flextable([
+    Dict("amount" => "1", "profit" => "0", "ipfshash" => "Qma"),
+    Dict("amount" => "2", "profit" => "0", "ipfshash" => "Qmb"),
+])
+julia> AllocationOpt.reallocate(Val(:actionqueue), a, t, Dict())
+```
+"""
+function reallocate(
+    ::Val{:actionqueue},
+    a::FlexTable,
+    t::FlexTable,
+    config::AbstractDict,
+)
+    ti = SAC.innerjoin(getproperty(:ipfshash), getproperty(Symbol("subgraphDeployment.ipfsHash")), t, a)
+
+    actions::Vector{Dict{String, Any}} = map(
+        r -> Dict(
+            "status" => queued,
+            "type" => reallocateaction,
+            "allocation" => id(Val(:allocation), r),
+            "ipfshash" => ipfshash(Val(:allocation), r),
+            "amount" => format(r.amount),
+            "user" => "AllocationOpt",
+            "reason" => "Expected profit: $(format(r.profit))",
+            "priority" => 0,
+        ),
+        ti,
+    )
+
     # Send graphql mutation to action queue
     _ = @mock(mutate("queueActions", Dict("actions" => actions)))
 
