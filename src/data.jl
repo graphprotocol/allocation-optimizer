@@ -11,6 +11,7 @@ For use with the TheGraphData.jl package.
 ```julia
 julia> using AllocationOpt
 julia> value, args, fields = AllocationOpt.squery()
+("subgraphDeployments", Dict{String, Union{Dict{String, String}, String}}(), ["ipfsHash", "signalledTokens", "stakedTokens"])
 ```
 
 # Extended Help
@@ -33,7 +34,8 @@ For use with the TheGraphData.jl package.
 ```julia
 julia> using AllocationOpt
 julia> id = "0xa"
-julia> value, args, fields = AllocationOpt.iquery()
+julia> value, args, fields = AllocationOpt.iquery(id)
+("indexer", Dict{String, Union{Int64, Dict{String, String}, String}}("id" => "0xa"), ["delegatedTokens", "stakedTokens", "lockedTokens"])
 ```
 
 # Extended Help
@@ -57,6 +59,7 @@ For use with the TheGraphData.jl package.
 julia> using AllocationOpt
 julia> id = "0xa"
 julia> value, args, fields = AllocationOpt.aquery(id)
+("allocations", Dict{String, Union{Dict{String, String}, String}}("where" => Dict("status" => "Active", "indexer" => "0xa")), ["allocatedTokens", "id", "subgraphDeployment{ipfsHash}"])
 ```
 
 # Extended Help
@@ -81,6 +84,7 @@ For use with the TheGraphData.jl package.
 ```julia
 julia> using AllocationOpt
 julia> value, args, fields = AllocationOpt.nquery()
+("graphNetwork", Dict("id" => 1), ["id", "totalSupply", "networkGRTIssuance", "epochLength", "totalTokensSignalled", "currentEpoch"])
 ```
 
 # Extended Help
@@ -109,7 +113,8 @@ path specified by `p`.
 ```julia
 julia> using AllocationOpt
 julia> path = "mypath"
-julia> paths = AllocationOpt.path(path)
+julia> paths = AllocationOpt.savenames(path)
+Base.Generator{NTuple{4, String}, AllocationOpt.var"#1#2"{String}}(AllocationOpt.var"#1#2"{String}("mypath"), ("indexer.csv", "allocation.csv", "subgraph.csv", "network.csv"))
 ```
 """
 function savenames(p::AbstractString)
@@ -126,7 +131,7 @@ Read the CSV files from `f` and return the tables from those files.
 
 ```julia
 julia> using AllocationOpt
-julia> i, a, s, n = AllocationOpt.read("myreaddir", config("verbose" => true))
+julia> i, a, s, n = AllocationOpt.read("myreaddir", Dict("verbose" => true))
 ```
 """
 function read(f::AbstractString, config::AbstractDict)
@@ -246,6 +251,10 @@ julia> i = flextable([
     ),
 ])
 julia> AllocationOpt.correcttypes!(Val(:indexer), i)
+FlexTable with 4 columns and 1 row:
+     stakedTokens  delegatedTokens  id   lockedTokens
+   ┌─────────────────────────────────────────────────
+ 1 │ 1.0e-18       0.0              0xa  0.0
 ```
 """
 function correcttypes!(::Val{:indexer}, i::FlexTable)
@@ -271,6 +280,10 @@ julia> s = flextable([
     ),
 ])
 julia> AllocationOpt.correcttypes!(Val(:subgraph), s)
+FlexTable with 3 columns and 1 row:
+     stakedTokens  signalledTokens  ipfsHash
+   ┌────────────────────────────────────────
+ 1 │ 1.0e-18       0.0              Qma
 ```
 """
 function correcttypes!(::Val{:subgraph}, s::FlexTable)
@@ -294,6 +307,10 @@ julia> a = flextable([
     ),
 ])
 julia> AllocationOpt.correcttypes!(Val(:allocation), a)
+FlexTable with 2 columns and 1 row:
+     subgraphDeployment.ipfsHash  allocatedTokens
+   ┌─────────────────────────────────────────────
+ 1 │ Qma                          1.0e-18
 ```
 """
 function correcttypes!(::Val{:allocation}, a::FlexTable)
@@ -320,6 +337,10 @@ julia> n = flextable([
     )
 ])
 julia> AllocationOpt.correcttypes!(Val(:network), n)
+FlexTable with 6 columns and 1 row:
+     totalTokensSignalled  currentEpoch  totalSupply  id  networkGRTIssuance  epochLength
+   ┌─────────────────────────────────────────────────────────────────────────────────────
+ 1 │ 2.0e-18               1             1.0e-18      1   1.0e-18             28
 ```
 """
 function correcttypes!(::Val{:network}, n::FlexTable)
@@ -393,10 +414,11 @@ julia> s = flextable([
             Dict("ipfsHash" => "Qmc", "stakedTokens" => 5),
         ])
 julia> a = flextable([
-            Dict("subgraphDeployment.ipfsHash" => "Qma", "allocatedTokens" => 5, id => "0xa"),
-            Dict("subgraphDeployment.ipfsHash" => "Qmb", "allocatedTokens" => 10, id => "0xb"),
+            Dict("subgraphDeployment.ipfsHash" => "Qma", "allocatedTokens" => 5, "id" => "0xa"),
+            Dict("subgraphDeployment.ipfsHash" => "Qmb", "allocatedTokens" => 10, "id" => "0xb"),
         ])
 julia> a, s = AllocationOpt.subtractindexer!(a, s)
+(NamedTuple[(var"subgraphDeployment.ipfsHash" = "Qma", allocatedTokens = 5, id = "0xa"), (var"subgraphDeployment.ipfsHash" = "Qmb", allocatedTokens = 10, id = "0xb")], NamedTuple[(stakedTokens = 5.0, ipfsHash = "Qma"), (stakedTokens = 10, ipfsHash = "Qmb"), (stakedTokens = 5, ipfsHash = "Qmc")])
 ```
 """
 function subtractindexer!(a::FlexTable, s::FlexTable)
