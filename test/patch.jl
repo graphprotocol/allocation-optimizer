@@ -54,3 +54,8 @@ writejson_success_patch = @patch function JSON.print(io, s)
     println("JSON.print stub => simulating success")
     return s
 end
+
+mutate_success_patch = @patch function mutate(v, a)
+    println("mutate stub ==> simulating queueActions")
+    return [Dict(v => a["actions"])]
+end

@@ -106,6 +106,7 @@
         ])
 
         config = Dict("frozenlist" => String[])
+        cfg = Dict("frozenlist" => ["Qma"])
 
         @testset "none" begin
             @inferred AllocationOpt.unallocate(Val(:none), a, t, config)
@@ -116,9 +117,34 @@
             out = AllocationOpt.unallocate(Val(:rules), a, t, config)
             @test out == ["\e[0mgraph indexer rules stop Qma"]
 
-            config = Dict("frozenlist" => ["Qma"])
-            out = AllocationOpt.unallocate(Val(:rules), a, t, config)
+            out = AllocationOpt.unallocate(Val(:rules), a, t, cfg)
             @test isempty(out)
+        end
+
+        @testset "actionqueue" begin
+            apply(mutate_success_patch) do
+                @inferred AllocationOpt.unallocate(Val(:actionqueue), a, t, config)
+            end
+
+            apply(mutate_success_patch) do
+                out = AllocationOpt.unallocate(Val(:actionqueue), a, t, config)
+                @test out == [
+                    Dict(
+                        "status" => AllocationOpt.queued,
+                        "type" => AllocationOpt.unallocateaction,
+                        "allocation" => "0xa",
+                        "ipfshash" => "Qma",
+                        "user" => "AllocationOpt",
+                        "reason" => "AllocationOpt",
+                        "priority" => 0,
+                    )
+                ]
+            end
+
+            apply(mutate_success_patch) do
+                out = AllocationOpt.unallocate(Val(:actionqueue), a, t, cfg)
+                @test isempty(out)
+            end
         end
     end
 

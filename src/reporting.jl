@@ -348,3 +348,63 @@ julia> AllocationOptcloseipfs(["Qma"], ["Qmb"], String[])
 function closeipfs(existingipfs, proposedipfs, frozenlist)
     setdiff(setdiff(existingipfs, proposedipfs), frozenlist)
 end
+
+
+@enum ActionStatus begin
+    queued
+    approved
+    pending
+    success
+    failed
+    canceled
+end
+
+@enum ActionType begin
+    allocateaction
+    unallocateaction
+    reallocateaction
+    collectaction
+end
+
+"""
+    unallocate(::Val{:rules}, a::FlexTable, t::FlexTable, config::AbstractDict)
+
+Print a rule that stops old allocations that the optimiser has not chosen and that aren't
+frozen.
+
+```julia
+julia> using AllocationOpt
+julia > a = flextable([
+            Dict("subgraphDeployment.ipfsHash" => "Qma", "id" => "0xa")
+        ])
+julia> t = flextable([
+            Dict("amount" => "2", "profit" => "0", "ipfshash" => "Qmb"),
+        ])
+julia> AllocationOpt.unallocate(Val{:rules}, a, t, Dict("frozenlist" => []))
+"""
+function unallocate(
+    ::Val{:actionqueue},
+    a::FlexTable,
+    t::FlexTable,
+    config::AbstractDict,
+)
+    toallocatelist = config["frozenlist"] ∪ t.ipfshash
+    ft = SAC.filterview(r -> ipfshash(Val(:allocation), r) ∉ toallocatelist, a)
+
+    actions::Vector{Dict{String, Any}} = map(
+        r -> Dict(
+            "status" => queued,
+            "type" => unallocateaction,
+            "allocation" => id(Val(:allocation), r),
+            "ipfshash" => ipfshash(Val(:allocation), r),
+            "user" => "AllocationOpt",
+            "reason" => "AllocationOpt",
+            "priority" => 0,
+        ),
+        ft
+    )
+    # Send graphql mutation to action queue
+    _ = @mock(mutate("queueActions", Dict("actions" => actions)))
+
+    return actions
+end
