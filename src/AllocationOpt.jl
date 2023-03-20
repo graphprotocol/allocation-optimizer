@@ -76,6 +76,7 @@ function main(config::Dict)
     g = config["gas"]
 
     # Get optimal values
+    # TODO: Handle pinned stake
     xs, nonzeros, profitmatrix = optimize(Ω, ψ, σ, K, Φ, Ψ, g)
 
     # Write the result values
@@ -88,13 +89,17 @@ function main(config::Dict)
     nreport = min(config["num_reported_options"], length(popts))
 
     # Create JSON string
-    strategies = strategydict.(popts, Ref(xs), Ref(nonzeros), Ref(fs), Ref(profitmatrix))
+    strategies = strategydict.(
+        popts[1:nreport], Ref(xs), Ref(nonzeros), Ref(fs), Ref(profitmatrix)
+    )
     reportdata = JSON.json(Dict("strategies" => strategies))
 
     # Write JSON string to file
     writejson(reportdata, config)
 
-    # Use config to see if actionqueue or rules with the top profit batch
+    # Use config for using actionqueue or rules with the top profit batch
+    ix = first(popts)[:index]
+    execute(a, ix, fs, xs, ps, config)
 
     return nothing
 end

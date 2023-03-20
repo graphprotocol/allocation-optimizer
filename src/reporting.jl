@@ -432,7 +432,9 @@ function reallocate(
     t::FlexTable,
     config::AbstractDict,
 )
-    ti = SAC.innerjoin(getproperty(:ipfshash), getproperty(Symbol("subgraphDeployment.ipfsHash")), t, a)
+    ti = SAC.innerjoin(
+        getproperty(:ipfshash), getproperty(Symbol("subgraphDeployment.ipfsHash")), t, a
+    )
 
     actions::Vector{Dict{String, Any}} = map(
         r -> Dict(
@@ -500,3 +502,56 @@ function allocate(
 
     return actions
 end
+
+"""
+    execute(
+        a::FlexTable,
+        ix::Integer,
+        s::FlexTable,
+        xs::AbstractMatrix{T},
+        ps::AbstractMatrix{T},
+        config::AbstractDict
+    ) where {T<:Real}
+
+Execute the actions picked by the optimiser.
+
+```julia
+julia> using AllocationOpt
+julia> using TheGraphData
+julia> a = flextable([
+            Dict("subgraphDeployment.ipfsHash" => "Qma", "id" => "0xa")
+        ])
+julia> xs = [[2.5 5.0]; [2.5 0.0]]
+julia> ps = [[3.0 5.0]; [3.0 0.0]]
+julia> s = flextable([
+            Dict("stakedTokens" => "1", "signalledTokens" => "0", "ipfsHash" => "Qma"),
+            Dict("stakedTokens" => "2", "signalledTokens" => "0", "ipfsHash" => "Qmb"),
+        ])
+julia> config = Dict("execution_mode" => "none")
+julia> ix = 1
+julia> AllocationOpt.execute(a, ix, s, xs, ps, config)
+```
+"""
+function execute(
+    a::FlexTable,
+    ix::Integer,
+    s::FlexTable,
+    xs::AbstractMatrix{T},
+    ps::AbstractMatrix{T},
+    config::AbstractDict
+) where {T<:Real}
+    # Construct t
+    t = reportingtable(s, xs, ps, ix)
+
+    mode = Val(Symbol(config["execution_mode"]))
+
+    indexerurlclient(mode, config)
+    _ = unallocate(mode, a, t, config)
+    _ = reallocate(mode, a, t, config)
+    _ = allocate(mode, a, t, config)
+
+    return nothing
+end
+
+indexerurlclient(::Val{:actionqueue}, config::AbstractDict) = client!(config["indexer_url"])
+indexerurlclient(::Any, config::AbstractDict) = nothing
