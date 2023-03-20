@@ -10,6 +10,10 @@ Find the indices of each unique value in `x`
 julia> using AllocationOpt
 julia> x = [1, 2, 1, 3, 2, 3]
 julia> AllocationOpt.groupunique(x)
+Dict{Vector{Int64}, Vector{Int64}} with 3 entries:
+  [3] => [4, 6]
+  [1] => [1, 3]
+  [2] => [2, 5]
 ```
 """
 function groupunique(x::AbstractVector)
@@ -26,14 +30,16 @@ Compute the best profit amongst the given `ixs` given profit matrix `p`
 ```julia
 julia> using AllocationOpt
 julia> ixs = Dict([1] => [1], [2] => [2])
-julia> profitmatrix = [[2.5 5.0]; [2.5, 1.0]]
+julia> profitmatrix = [[2.5 5.0]; [2.5 1.0]]
 julia> AllocationOpt.bestprofitpernz.(values(ixs), Ref(profitmatrix))
+2-element Vector{NamedTuple{(:profit, :index), Tuple{Float64, Int64}}}:
+ (profit = 5.0, index = 1)
+ (profit = 6.0, index = 2)
 ```
 """
 function bestprofitpernz(
-    ixs::AbstractVector{T},
-    p::AbstractMatrix{S}
-) where {T<:Integer, S<:Real}
+    ixs::AbstractVector{T}, p::AbstractMatrix{S}
+) where {T<:Integer,S<:Real}
     # Sum the ixth profit vector and find the max over all of them
     v, i = findmax(map(ix -> p[:, ix] |> sum, ixs))
     return (; :profit => v, :index => ixs[i])
@@ -46,14 +52,17 @@ Sort the nonzero best profits from highest to lowest
 ```julia
 julia> using AllocationOpt
 julia> popts = [
-        (; :profit => 6.0, :index => 1),
-        (; :profit => 5.0, :index => 2)
+        (; :profit => 5.0, :index => 2),
+        (; :profit => 6.0, :index => 1)
     ]
-julia> popts = sortprofits!(popts)
+julia> popts = AllocationOpt.sortprofits!(popts)
+2-element Vector{NamedTuple{(:profit, :index), Tuple{Float64, Int64}}}:
+ (profit = 6.0, index = 1)
+ (profit = 5.0, index = 2)
 ```
 """
 function sortprofits!(popts::AbstractVector{N}) where {N<:NamedTuple}
-    sort!(popts; by=x -> x[:profit], rev=true)
+    return sort!(popts; by=x -> x[:profit], rev=true)
 end
 
 """
@@ -73,15 +82,18 @@ julia> xs = [[2.5 5.0]; [2.5 0.0]]
 julia> ps = [[3.0 5.0]; [3.0 0.0]]
 julia> i = 1
 julia> AllocationOpt.reportingtable(s, xs, ps, i)
+FlexTable with 3 columns and 2 rows:
+     ipfshash  amount  profit
+   ┌─────────────────────────
+ 1 │ Qma       2.5     3.0
+ 2 │ Qmb       2.5     3.0
 ```
 """
 function reportingtable(
     s::FlexTable, xs::AbstractMatrix{T}, ps::AbstractMatrix{T}, i::Integer
 ) where {T<:Real}
     # Associate ipfs with allocation and profit vectors
-    t = flextable(
-        (; :ipfshash => s.ipfsHash, :amount => xs[:, i], :profit => ps[:, i])
-    )
+    t = flextable((; :ipfshash => s.ipfsHash, :amount => xs[:, i], :profit => ps[:, i]))
 
     # Filter table to only include nonzeros
     ft = SAC.filterview(r -> r.amount > 0, t)
@@ -117,7 +129,10 @@ julia> fs = flextable([
         Dict("stakedTokens" => "1", "signalledTokens" => "0", "ipfsHash" => "Qma"),
         Dict("stakedTokens" => "2", "signalledTokens" => "0", "ipfsHash" => "Qmb"),
     ])
-julia> AllocationOpt.strategydict(popts, Ref(xs), Ref(nonzeros), Ref(fs), Ref(profits))
+julia> AllocationOpt.strategydict.(popts, Ref(xs), Ref(nonzeros), Ref(fs), Ref(profits))
+2-element Vector{Dict{String, Any}}:
+ Dict("num_allocations" => 2, "profit" => 6.0, "allocations" => Dict{String, Any}[Dict("allocationAmount" => "2.5", "profit" => 3.0, "deploymentID" => "Qma"), Dict("allocationAmount" => "2.5", "profit" => 3.0, "deploymentID" => "Qmb")])
+ Dict("num_allocations" => 1, "profit" => 5.0, "allocations" => Dict{String, Any}[Dict("allocationAmount" => "5", "profit" => 5.0, "deploymentID" => "Qma")])
 ```
 """
 function strategydict(
@@ -125,8 +140,8 @@ function strategydict(
     xs::AbstractMatrix{T},
     nonzeros::AbstractVector{I},
     fs::FlexTable,
-    profitmatrix::AbstractMatrix{T}
-) where {T<:Real, I<:Integer}
+    profitmatrix::AbstractMatrix{T},
+) where {T<:Real,I<:Integer}
     i = p[:index]
 
     ft = reportingtable(fs, xs, profitmatrix, i)
@@ -135,18 +150,14 @@ function strategydict(
     sp = p[:profit]
     allocations = map(ft) do r
         return Dict(
-                "deploymentID" => r.ipfshash,
-                "allocationAmount" => format(r.amount),
-                "profit" => r.profit
+            "deploymentID" => r.ipfshash,
+            "allocationAmount" => format(r.amount),
+            "profit" => r.profit,
         )
     end
 
     # Construct dictionary
-    strategy = Dict(
-        "num_allocations" => nnz,
-        "profit" => sp,
-        "allocations" => allocations,
-    )
+    strategy = Dict("num_allocations" => nnz, "profit" => sp, "allocations" => allocations)
     return strategy
 end
 
@@ -177,18 +188,17 @@ Do nothing.
 
 ```julia
 julia> using AllocationOpt
-julia > a = flextable([
+julia> a = flextable([
             Dict("subgraphDeployment.ipfsHash" => "Qma", "id" => "0xa")
         ])
 julia> t = flextable([
             Dict("amount" => "1", "profit" => "0", "ipfshash" => "Qma"),
             Dict("amount" => "2", "profit" => "0", "ipfshash" => "Qmb"),
         ])
-julia> AllocationOpt.unallocate_action(Val{:none}, a, t, Dict())
+julia> AllocationOpt.unallocate_action(Val(:none), a, t, Dict())
 ```
 """
 unallocate_action(::Val{:none}, a, t, config) = nothing
-
 
 """
     reallocate_action(::Val{:none}, a, t, config)
@@ -198,14 +208,14 @@ Do nothing.
 ```julia
 julia> using AllocationOpt
 julia> using TheGraphData
-julia > a = flextable([
+julia> a = flextable([
             Dict("subgraphDeployment.ipfsHash" => "Qma", "id" => "0xa")
         ])
 julia> t = flextable([
             Dict("amount" => "1", "profit" => "0", "ipfshash" => "Qma"),
             Dict("amount" => "2", "profit" => "0", "ipfshash" => "Qmb"),
         ])
-julia> AllocationOpt.reallocate_action(Val{:none}, a, t, Dict())
+julia> AllocationOpt.reallocate_action(Val(:none), a, t, Dict())
 """
 reallocate_action(::Val{:none}, a, t, config) = nothing
 
@@ -217,14 +227,14 @@ Do nothing.
 ```julia
 julia> using AllocationOpt
 julia> using TheGraphData
-julia > a = flextable([
+julia> a = flextable([
             Dict("subgraphDeployment.ipfsHash" => "Qma", "id" => "0xa")
         ])
 julia> t = flextable([
             Dict("amount" => "1", "profit" => "0", "ipfshash" => "Qma"),
             Dict("amount" => "2", "profit" => "0", "ipfshash" => "Qmb"),
         ])
-julia> AllocationOpt.allocate_action(Val{:none}, a, t, Dict())
+julia> AllocationOpt.allocate_action(Val(:none), a, t, Dict())
 ```
 """
 allocate_action(::Val{:none}, a, t, config) = nothing
@@ -237,13 +247,16 @@ frozen.
 
 ```julia
 julia> using AllocationOpt
-julia > a = flextable([
+julia> a = flextable([
             Dict("subgraphDeployment.ipfsHash" => "Qma", "id" => "0xa")
         ])
 julia> t = flextable([
             Dict("amount" => "2", "profit" => "0", "ipfshash" => "Qmb"),
         ])
-julia> AllocationOpt.unallocate_action(Val{:rules}, a, t, Dict("frozenlist" => []))
+julia> AllocationOpt.unallocate_action(Val(:rules), a, t, Dict("frozenlist" => []))
+graph indexer rules stop Qma
+1-element Vector{String}:
+ "\e[0mgraph indexer rules stop Qma"
 ```
 """
 function unallocate_action(::Val{:rules}, a::FlexTable, t::FlexTable, config::AbstractDict)
@@ -264,7 +277,7 @@ Print a rule that reallocates the old allocation with a new allocation amount
 ```julia
 julia> using AllocationOpt
 julia> using TheGraphData
-julia > a = flextable([
+julia> a = flextable([
             Dict("subgraphDeployment.ipfsHash" => "Qma", "id" => "0xa")
         ])
 julia> t = flextable([
@@ -272,14 +285,13 @@ julia> t = flextable([
     Dict("amount" => "2", "profit" => "0", "ipfshash" => "Qmb"),
 ])
 julia> AllocationOpt.reallocate_action(Val(:rules), a, t, Dict())
+graph indexer rules stop Qma
+Check allocation status being closed before submitting: graph indexer rules set Qma decisionBasis always allocationAmount 1
+1-element Vector{String}:
+ "\e[0mgraph indexer rules stop Qm" ⋯ 122 bytes ⋯ "asis always allocationAmount 1"
 ```
 """
-function reallocate_action(
-    ::Val{:rules},
-    a::FlexTable,
-    t::FlexTable,
-    config::AbstractDict,
-)
+function reallocate_action(::Val{:rules}, a::FlexTable, t::FlexTable, config::AbstractDict)
     existingipfs = ipfshash(Val(:allocation), a)
     # Filter table to only include subgraphs that are already allocated
     ti = SAC.filterview(r -> r.ipfshash ∈ existingipfs, t)
@@ -290,7 +302,7 @@ function reallocate_action(
         (ipfs, amount) ->
             "\e[0mgraph indexer rules stop $(ipfs)\n\e[1m\e[38;2;255;0;0;249mCheck allocation status being closed before submitting: \e[0mgraph indexer rules set $(ipfs) decisionBasis always allocationAmount $(format(amount))",
         ipfses,
-        amounts
+        amounts,
     )
     println.(actions)
     return actions
@@ -304,21 +316,19 @@ Print the rules that allocates to new subgraphs.
 ```julia
 julia> using AllocationOpt
 julia> using TheGraphData
-julia > a = flextable([
+julia> a = flextable([
             Dict("subgraphDeployment.ipfsHash" => "Qma", "id" => "0xa")
         ])
 julia> t = flextable([
             Dict("amount" => "1", "profit" => "0", "ipfshash" => "Qma"),
             Dict("amount" => "2", "profit" => "0", "ipfshash" => "Qmb"),
         ])
-julia> AllocationOpt.allocate_action(Val{:rules}, a, t, Dict())
+julia> AllocationOpt.allocate_action(Val(:rules), a, t, Dict())
+graph indexer rules set Qmb decisionBasis always allocationAmount 2
+1-element Vector{String}:
+ "\e[0mgraph indexer rules set Qmb decisionBasis always allocationAmount 2"
 """
-function allocate_action(
-    ::Val{:rules},
-    a::FlexTable,
-    t::FlexTable,
-    config::AbstractDict,
-)
+function allocate_action(::Val{:rules}, a::FlexTable, t::FlexTable, config::AbstractDict)
     existingipfs = ipfshash(Val(:allocation), a)
     # Filter table to only include subgraphs that are not already allocated
     ts = SAC.filterview(r -> r.ipfshash ∉ existingipfs, t)
@@ -329,7 +339,7 @@ function allocate_action(
         (ipfs, amount) ->
             "\e[0mgraph indexer rules set $(ipfs) decisionBasis always allocationAmount $(format(amount))",
         ipfses,
-        amounts
+        amounts,
     )
     println.(actions)
     return actions
@@ -342,13 +352,14 @@ Get the list of the ipfs hashes of allocations to close.
 
 ```julia
 julia> using AllocationOpt
-julia> AllocationOptcloseipfs(["Qma"], ["Qmb"], String[])
+julia> AllocationOpt.closeipfs(["Qma"], ["Qmb"], String[])
+1-element Vector{String}:
+ "Qma"
 ```
 """
 function closeipfs(existingipfs, proposedipfs, frozenlist)
-    setdiff(setdiff(existingipfs, proposedipfs), frozenlist)
+    return setdiff(setdiff(existingipfs, proposedipfs), frozenlist)
 end
-
 
 @enum ActionStatus begin
     queued
@@ -382,15 +393,12 @@ julia> t = flextable([
 julia> AllocationOpt.unallocate_action(Val{:rules}, a, t, Dict("frozenlist" => []))
 """
 function unallocate_action(
-    ::Val{:actionqueue},
-    a::FlexTable,
-    t::FlexTable,
-    config::AbstractDict,
+    ::Val{:actionqueue}, a::FlexTable, t::FlexTable, config::AbstractDict
 )
     toallocatelist = config["frozenlist"] ∪ t.ipfshash
     ft = SAC.filterview(r -> ipfshash(Val(:allocation), r) ∉ toallocatelist, a)
 
-    actions::Vector{Dict{String, Any}} = map(
+    actions::Vector{Dict{String,Any}} = map(
         r -> Dict(
             "status" => queued,
             "type" => unallocate,
@@ -400,7 +408,7 @@ function unallocate_action(
             "reason" => "AllocationOpt",
             "priority" => 0,
         ),
-        ft
+        ft,
     )
 
     # Send graphql mutation to action queue
@@ -428,16 +436,13 @@ julia> AllocationOpt.reallocate_action(Val(:actionqueue), a, t, Dict())
 ```
 """
 function reallocate_action(
-    ::Val{:actionqueue},
-    a::FlexTable,
-    t::FlexTable,
-    config::AbstractDict,
+    ::Val{:actionqueue}, a::FlexTable, t::FlexTable, config::AbstractDict
 )
     ti = SAC.innerjoin(
         getproperty(:ipfshash), getproperty(Symbol("subgraphDeployment.ipfsHash")), t, a
     )
 
-    actions::Vector{Dict{String, Any}} = map(
+    actions::Vector{Dict{String,Any}} = map(
         r -> Dict(
             "status" => queued,
             "type" => reallocate,
@@ -476,16 +481,13 @@ julia> AllocationOpt.allocate_action(Val(:actionqueue), a, t, Dict())
 ```
 """
 function allocate_action(
-    ::Val{:actionqueue},
-    a::FlexTable,
-    t::FlexTable,
-    config::AbstractDict,
+    ::Val{:actionqueue}, a::FlexTable, t::FlexTable, config::AbstractDict
 )
     existingipfs = ipfshash(Val(:allocation), a)
     # Filter table to only include subgraphs that are not already allocated
     ts = SAC.filterview(r -> r.ipfshash ∉ existingipfs, t)
 
-    actions::Vector{Dict{String, Any}} = map(
+    actions::Vector{Dict{String,Any}} = map(
         r -> Dict(
             "status" => queued,
             "type" => allocate,
@@ -539,7 +541,7 @@ function execute(
     s::FlexTable,
     xs::AbstractMatrix{T},
     ps::AbstractMatrix{T},
-    config::AbstractDict
+    config::AbstractDict,
 ) where {T<:Real}
     # Construct t
     t = reportingtable(s, xs, ps, ix)
