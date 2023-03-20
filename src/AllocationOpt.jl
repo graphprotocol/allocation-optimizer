@@ -50,12 +50,13 @@ function main(config::Dict)
     # types and write the data out to CSVs
     isnothing(config["readdir"]) && write(i, a, s, n, config)
 
-    # Get the indexer stake
-    σpinned = pinned(config)
-    σ = stake(Val(:indexer), i) - frozen(a, config) - σpinned
-
     # Get the subgraphs on which we can allocate
     fs = allocatablesubgraphs(s, config)
+
+    # Get the indexer stake
+    pinnedvec = pinned(fs, config)
+    σpinned = pinnedvec |> sum
+    σ = stake(Val(:indexer), i) - frozen(a, config) - σpinned
 
     # Allocated tokens on filtered subgraphs
     Ω = stake(Val(:subgraph), fs) .+ fudgefactor
@@ -76,9 +77,17 @@ function main(config::Dict)
     g = config["gas"]
 
     # Get optimal values
-    # TODO: Handle pinned stake
     config["verbose"] && @info "Optimizing"
     xs, nonzeros, profitmatrix = optimize(Ω, ψ, σ, K, Φ, Ψ, g)
+
+    # Add the pinned stake back in
+    xs .= xs .+ pinnedvec
+
+    # Ensure that the indexer stake is not exceeded
+    σmax = σ + σpinned
+    for x in sum(xs; dims=1)
+        x ≤ σmax || error("Tried to allocate more stake than is available")
+    end
 
     # Write the result values
     # Group by unique number of nonzeros

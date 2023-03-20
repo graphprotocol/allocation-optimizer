@@ -139,7 +139,7 @@ function optimizek(xopt, Ω, ψ, σ, k, Φ, Ψ)
     )
     f = x -> indexingreward(x, ψ, Ω, Φ, Ψ)
     sol = minimize!(f, alg)
-    return SemioticOpt.x(sol)
+    return floor.(SemioticOpt.x(sol); digits=1)
 end
 
 """

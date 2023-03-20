@@ -7,7 +7,6 @@
     end
 
     @testset "accessors" begin
-
         @testset "network" begin
             n = flextable([
                 Dict(
@@ -17,7 +16,7 @@
                     "epochLength" => 28,
                     "totalTokensSignalled" => 2,
                     "currentEpoch" => 1,
-                )
+                ),
             ])
             @test AllocationOpt.totalsupply(Val(:network), n) == 1
             @test AllocationOpt.blockissuance(Val(:network), n) == 1
@@ -28,7 +27,11 @@
 
         @testset "allocation" begin
             x = flextable([
-                Dict("allocatedTokens" => 1, "subgraphDeployment.ipfsHash" => "Qma", "id" => "0xa")
+                Dict(
+                    "allocatedTokens" => 1,
+                    "subgraphDeployment.ipfsHash" => "Qma",
+                    "id" => "0xa",
+                ),
             ])
             @test AllocationOpt.ipfshash(Val(:allocation), x) == ["Qma"]
             @test AllocationOpt.stake(Val(:allocation), x) == [1]
@@ -36,25 +39,36 @@
         end
 
         @testset "subgraph" begin
-            x = flextable([Dict("stakedTokens" => 1, "ipfsHash" => "Qma", "signalledTokens" => 2)])
+            x = flextable([
+                Dict("stakedTokens" => 1, "ipfsHash" => "Qma", "signalledTokens" => 2)
+            ])
             @test AllocationOpt.ipfshash(Val(:subgraph), x) == ["Qma"]
             @test AllocationOpt.stake(Val(:subgraph), x) == [1]
             @test AllocationOpt.signal(Val(:subgraph), x) == [2]
         end
 
         @testset "indexer" begin
-            x = flextable([Dict("stakedTokens" => 10, "delegatedTokens" => 5, "lockedTokens" => 1)])
+            x = flextable([
+                Dict("stakedTokens" => 10, "delegatedTokens" => 5, "lockedTokens" => 1)
+            ])
             @test AllocationOpt.stake(Val(:indexer), x) == 10
             @test AllocationOpt.delegation(Val(:indexer), x) == 5
             @test AllocationOpt.locked(Val(:indexer), x) == 1
         end
-
     end
 
     @testset "frozen" begin
         a = flextable([
-            Dict("subgraphDeployment.ipfsHash" => "Qma", "allocatedTokens" => 5, "id" => "0xa"),
-            Dict("subgraphDeployment.ipfsHash" => "Qmb", "allocatedTokens" => 10, "id" => "0xb"),
+            Dict(
+                "subgraphDeployment.ipfsHash" => "Qma",
+                "allocatedTokens" => 5,
+                "id" => "0xa",
+            ),
+            Dict(
+                "subgraphDeployment.ipfsHash" => "Qmb",
+                "allocatedTokens" => 10,
+                "id" => "0xb",
+            ),
         ])
         config = Dict("frozenlist" => ["Qma", "Qmb"])
         @test AllocationOpt.frozen(a, config) == 15
@@ -65,12 +79,17 @@
     end
 
     @testset "pinned" begin
+        s = flextable([
+            Dict("ipfsHash" => "Qma", "signalledTokens" => 5.0),
+            Dict("ipfsHash" => "Qmb", "signalledTokens" => 10.0),
+            Dict("ipfsHash" => "Qmc", "signalledTokens" => 15.0),
+        ])
         config = Dict("pinnedlist" => ["Qma", "Qmb"])
-        @test AllocationOpt.pinned(config) == 0.2
+        @test AllocationOpt.pinned(s, config) == [0.1, 0.1, 0.0]
         config = Dict("pinnedlist" => ["Qmb"])
-        @test AllocationOpt.pinned(config) == 0.1
+        @test AllocationOpt.pinned(s, config) == [0.0, 0.1, 0.0]
         config = Dict("pinnedlist" => [])
-        @test AllocationOpt.pinned(config) == 0.0
+        @test AllocationOpt.pinned(s, config) == [0.0, 0.0, 0.0]
     end
 
     @testset "allocatablesubgraphs" begin
@@ -84,7 +103,7 @@
             "whitelist" => String[],
             "blacklist" => String[],
             "frozenlist" => String["Qma", "Qmb"],
-            "min_signal" => 0.0
+            "min_signal" => 0.0,
         )
         fs = AllocationOpt.allocatablesubgraphs(s, config)
         @test AllocationOpt.ipfshash(Val(:subgraph), fs) == ["Qmc"]
@@ -93,7 +112,7 @@
             "whitelist" => String[],
             "blacklist" => String["Qma"],
             "frozenlist" => String["Qmb"],
-            "min_signal" => 0.0
+            "min_signal" => 0.0,
         )
         fs = AllocationOpt.allocatablesubgraphs(s, config)
         @test AllocationOpt.ipfshash(Val(:subgraph), fs) == ["Qmc"]
@@ -102,7 +121,7 @@
             "whitelist" => String["Qmb", "Qmc"],
             "blacklist" => String[],
             "frozenlist" => String[],
-            "min_signal" => 0.0
+            "min_signal" => 0.0,
         )
         fs = AllocationOpt.allocatablesubgraphs(s, config)
         @test AllocationOpt.ipfshash(Val(:subgraph), fs) == ["Qmb", "Qmc"]
@@ -120,7 +139,7 @@
             "whitelist" => String[],
             "blacklist" => String[],
             "frozenlist" => String[],
-            "min_signal" => 0.0
+            "min_signal" => 0.0,
         )
         fs = AllocationOpt.allocatablesubgraphs(s, config)
         @test AllocationOpt.ipfshash(Val(:subgraph), fs) == ["Qma", "Qmb", "Qmc"]
@@ -129,7 +148,7 @@
             "whitelist" => String[],
             "blacklist" => String[],
             "frozenlist" => String[],
-            "min_signal" => 7.0
+            "min_signal" => 7.0,
         )
         fs = AllocationOpt.allocatablesubgraphs(s, config)
         @test AllocationOpt.ipfshash(Val(:subgraph), fs) == ["Qmb", "Qmc"]
@@ -144,7 +163,7 @@
                 "epochLength" => 1,
                 "totalTokensSignalled" => 2,
                 "currentEpoch" => 1,
-            )
+            ),
         ])
         config = Dict("allocation_lifetime" => 0)
         @test AllocationOpt.newtokenissuance(n, config) == 0
@@ -157,7 +176,7 @@
                 "epochLength" => 0,
                 "totalTokensSignalled" => 2,
                 "currentEpoch" => 1,
-            )
+            ),
         ])
         config = Dict("allocation_lifetime" => 1)
         @test AllocationOpt.newtokenissuance(n, config) == 0
@@ -170,7 +189,7 @@
                 "epochLength" => 1,
                 "totalTokensSignalled" => 2,
                 "currentEpoch" => 1,
-            )
+            ),
         ])
         config = Dict("allocation_lifetime" => 1)
         @test AllocationOpt.newtokenissuance(n, config) == 0
@@ -183,7 +202,7 @@
                 "epochLength" => 1,
                 "totalTokensSignalled" => 2,
                 "currentEpoch" => 1,
-            )
+            ),
         ])
         config = Dict("allocation_lifetime" => 1)
         @test AllocationOpt.newtokenissuance(n, config) == 1
@@ -241,5 +260,4 @@
             @test AllocationOpt.profit(r, g) == 0
         end
     end
-
 end

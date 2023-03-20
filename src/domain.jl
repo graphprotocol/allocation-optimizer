@@ -19,7 +19,6 @@ julia> AllocationOpt.togrt("1")
 """
 togrt(x::AbstractString) = parse(Float64, x) / ethtogrt
 
-
 """
     totalsupply(::Val{:network}, x)
 
@@ -307,14 +306,16 @@ julia> AllocationOpt.frozen(a, config)
 ```
 """
 function frozen(a::FlexTable, config::AbstractDict)
-    frozenallocs = SAC.filterview(r -> ipfshash(Val(:allocation), r) ∈ config["frozenlist"], a)
+    frozenallocs = SAC.filterview(
+        r -> ipfshash(Val(:allocation), r) ∈ config["frozenlist"], a
+    )
     return sum(stake(Val(:allocation), frozenallocs); init=0.0)
 end
 
 """
     pinned(config::AbstractDict)
 
-The pinned stake of the indexer.
+The pinned vector of the indexer.
 
 ```julia
 julia> using AllocationOpt
@@ -322,7 +323,12 @@ julia> config = Dict("pinnedlist" => ["Qma", "Qmb"])
 julia> AllocationOpt.pinned(config)
 ```
 """
-pinned(config::AbstractDict) = pinnedamount * length(config["pinnedlist"])
+function pinned(s::FlexTable, config::AbstractDict)
+    pinnedixs = findall(r -> ipfshash(Val(:subgraph), r) ∈ config["pinnedlist"], s)
+    v = zeros(length(s))
+    v[pinnedixs] .= pinnedamount
+    return v
+end
 
 """
      allocatablesubgraphs(s::FlexTable, config::AbstractDict)
@@ -399,7 +405,7 @@ function newtokenissuance(n::FlexTable, config::Dict)
     r = blockissuance(Val(:network), n)
     t = blocksperepoch(Val(:network), n) * config["allocation_lifetime"]
 
-    newtokens = p*(r^t - 1.0)
+    newtokens = p * (r^t - 1.0)
     return newtokens
 end
 
@@ -426,11 +432,7 @@ julia> AllocationOpt.indexingreward(x, Ω, ψ, Φ, Ψ)
 ```
 """
 function indexingreward(
-    x::AbstractVector{T},
-    Ω::AbstractVector{T},
-    ψ::AbstractVector{T},
-    Φ::Real,
-    Ψ::Real
+    x::AbstractVector{T}, Ω::AbstractVector{T}, ψ::AbstractVector{T}, Φ::Real, Ψ::Real
 ) where {T<:Real}
     return indexingreward.(x, Ω, ψ, Φ, Ψ) |> sum
 end
