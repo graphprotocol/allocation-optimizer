@@ -73,7 +73,7 @@ execution_mode = "none"
     to consider opening. If unspecified, `10`
 - `num_reported_options::Integer`: The number of proposed allocation strategies to report.
     For example, if you select `10` we'd report best 10 allocation strategies ranked by
-    profit. If unspecified, `1`
+    profit. Options are reported to a *report.json* in your `writedir`. If unspecified, `1`
 - `verbose::Bool`: If true, the optimiser will print details about what it is doing to
     stdout. If unspecified, `false`
 - `execution_mode::String`: How the optimiser should execute the allocation strategies it
@@ -83,3 +83,118 @@ execution_mode = "none"
 - `indexer_url::Union{String, Nothing}`: The URL of the indexer management server you want
     to execute the allocation strategies on. If you specify `"actionqueue"`, you must also
     specify `indexer_url`. If unspecified, `nothing`
+
+### Example Configurations
+
+#### ActionQueue
+
+Change `execution_mode` to `"actionqueue"` and provide an `indexer_url`.
+
+``` toml
+id = "0xd75c4dbcb215a6cf9097cfbcc70aab2596b96a9c"
+writedir = "data"
+readdir = "data"
+max_allocations = 10
+whitelist = []
+blacklist = []
+frozenlist = []
+pinnedlist = []
+allocation_lifetime = 28
+gas = 100
+min_signal = 1000
+verbose = true
+num_reported_options = 2
+execution_mode = "actionqueue"
+indexer_url = "https://localhost:8000"
+```
+
+#### Indexer Rules
+
+Change `execution_mode` to `"rules"`.
+
+``` toml
+id = "0xd75c4dbcb215a6cf9097cfbcc70aab2596b96a9c"
+writedir = "data"
+readdir = "data"
+max_allocations = 10
+whitelist = []
+blacklist = []
+frozenlist = []
+pinnedlist = []
+allocation_lifetime = 28
+gas = 100
+min_signal = 1000
+verbose = true
+num_reported_options = 2
+execution_mode = "rules"
+```
+
+#### Query data Instead of Reading Local CSVs
+
+Just don't specify the `readdir`.
+
+``` toml
+id = "0xd75c4dbcb215a6cf9097cfbcc70aab2596b96a9c"
+writedir = "data"
+max_allocations = 10
+whitelist = []
+blacklist = []
+frozenlist = []
+pinnedlist = []
+allocation_lifetime = 28
+gas = 100
+min_signal = 1000
+verbose = true
+num_reported_options = 2
+execution_mode = "none"
+```
+
+#### Quiet Mode
+
+We set `verbose` to `false` here to surpress info messages.
+
+``` toml
+id = "0xd75c4dbcb215a6cf9097cfbcc70aab2596b96a9c"
+writedir = "data"
+readdir = "data"
+max_allocations = 10
+whitelist = []
+blacklist = []
+frozenlist = []
+pinnedlist = []
+allocation_lifetime = 28
+gas = 100
+min_signal = 1000
+verbose = false
+num_reported_options = 2
+execution_mode = "none"
+```
+
+#### Whitelisting Subgraphs
+
+Add some subgraph deployment IDs to the `whitelist`.
+If, in addition or instead you want to use `blacklist`, `frozenlist`, or `pinnedlist`, you can
+similarly add subgraph deployment IDs to those lists.
+Notice that we did not change `max_allocations` here.
+If `max_allocations` exceeds the number of available subgraphs (2 in this case), the code will
+treat the number of available subgraphs as `max_allocations`.
+
+``` toml
+id = "0xd75c4dbcb215a6cf9097cfbcc70aab2596b96a9c"
+writedir = "data"
+readdir = "data"
+max_allocations = 10
+whitelist = [
+    "QmUVskWrz1ZiQZ76AtyhcfFDEH1ELnRpoyEhVL8p6NFTbR",
+    "QmcBSr5R3K2M5tk8qeHFaX8pxAhdViYhcKD8ZegYuTcUhC"
+]
+blacklist = []
+frozenlist = []
+pinnedlist = []
+allocation_lifetime = 28
+gas = 100
+min_signal = 1000
+verbose = false
+num_reported_options = 2
+execution_mode = "none"
+```
