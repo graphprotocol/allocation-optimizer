@@ -71,7 +71,7 @@ function main(config::Dict)
     Φ = newtokenissuance(n, config)
 
     # Get max number of allocations
-    K = config["max_allocations"]
+    K = min(config["max_allocations"], length(fs))
 
     # Get gas cost in GRT
     g = config["gas"]
