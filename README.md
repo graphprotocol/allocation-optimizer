@@ -88,7 +88,7 @@ execution_mode = "none"
 
 #### ActionQueue
 
-Change `execution_mode` to `"actionqueue"` and provide an `indexer_url`.
+Set `execution_mode` to `"actionqueue"` and provide an `indexer_url`.
 
 ``` toml
 id = "0xd75c4dbcb215a6cf9097cfbcc70aab2596b96a9c"
@@ -147,6 +147,15 @@ min_signal = 1000
 verbose = true
 num_reported_options = 2
 execution_mode = "none"
+```
+
+#### Query data for Testnet
+
+Specify the network subgraph endpoint for testnet. Here we use the endpoint to goerli network subgraph.
+
+``` toml
+id = "0xE9a1CABd57700B17945Fd81feeFba82340D9568F"
+network_subgraph_endpoint = "https://api.thegraph.com/subgraphs/name/graphprotocol/graph-network-goerli"
 ```
 
 #### Quiet Mode
