@@ -384,13 +384,21 @@ Create and push the unallocate actions to the action queue.
 
 ```julia
 julia> using AllocationOpt
-julia > a = flextable([
+julia> using TheGraphData
+julia> a = flextable([
             Dict("subgraphDeployment.ipfsHash" => "Qma", "id" => "0xa")
         ])
 julia> t = flextable([
             Dict("amount" => "2", "profit" => "0", "ipfshash" => "Qmb"),
         ])
-julia> AllocationOpt.unallocate_action(Val{:rules}, a, t, Dict("frozenlist" => []))
+julia> config = Dict(
+    "frozenlist" => [],
+    "indexer_url" => "http://localhost:18000"
+)
+julia> TheGraphData.client!(config["indexer_url"])
+julia> AllocationOpt.unallocate_action(Val(:actionqueue), a, t, config)
+1-element Vector{Dict{String, Any}}:
+ Dict("priority" => 0, "status" => AllocationOpt.queued, "allocationID" => "0xa", "source" => "AllocationOpt", "reason" => "AllocationOpt", "type" => AllocationOpt.unallocate, "deploymentID" => "Qma")
 """
 function unallocate_action(
     ::Val{:actionqueue}, a::FlexTable, t::FlexTable, config::AbstractDict
@@ -425,14 +433,18 @@ Create and push reallocate actions to the action queue.
 ```julia
 julia> using AllocationOpt
 julia> using TheGraphData
-julia > a = flextable([
+julia> a = flextable([
             Dict("subgraphDeployment.ipfsHash" => "Qma", "id" => "0xa")
         ])
 julia> t = flextable([
     Dict("amount" => "1", "profit" => "0", "ipfshash" => "Qma"),
     Dict("amount" => "2", "profit" => "0", "ipfshash" => "Qmb"),
 ])
-julia> AllocationOpt.reallocate_action(Val(:actionqueue), a, t, Dict())
+julia> config = Dict("indexer_url" => "http://localhost:18000")
+julia> TheGraphData.client!(config["indexer_url"])
+julia> AllocationOpt.reallocate_action(Val(:actionqueue), a, t, config)
+1-element Vector{Dict{String, Any}}:
+ Dict("amount" => "1", "priority" => 0, "status" => AllocationOpt.queued, "allocationID" => "0xa", "source" => "AllocationOpt", "reason" => "Expected profit: 0", "type" => AllocationOpt.reallocate, "deploymentID" => "Qma")
 ```
 """
 function reallocate_action(
@@ -470,14 +482,20 @@ Create and push allocate actions to the action queue.
 ```julia
 julia> using AllocationOpt
 julia> using TheGraphData
-julia > a = flextable([
+julia> a = flextable([
             Dict("subgraphDeployment.ipfsHash" => "Qma", "id" => "0xa")
         ])
 julia> t = flextable([
     Dict("amount" => "1", "profit" => "0", "ipfshash" => "Qma"),
     Dict("amount" => "2", "profit" => "0", "ipfshash" => "Qmb"),
 ])
+julia> config = Dict(
+    "indexer_url" => "http://localhost:18000"
+)
+julia> TheGraphData.client!(config["indexer_url"])
 julia> AllocationOpt.allocate_action(Val(:actionqueue), a, t, Dict())
+1-element Vector{Dict{String, Any}}:
+ Dict("amount" => "2", "priority" => 0, "status" => AllocationOpt.queued, "source" => "AllocationOpt", "reason" => "Expected profit: 0", "type" => AllocationOpt.allocate, "deploymentID" => "Qmb")
 ```
 """
 function allocate_action(
