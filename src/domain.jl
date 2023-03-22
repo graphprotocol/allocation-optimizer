@@ -313,6 +313,30 @@ julia> AllocationOpt.locked(Val(:indexer), x)
 locked(::Val{:indexer}, x) = x.lockedTokens |> only
 
 """
+    available(::Val{:indexer}, x)
+
+The tokens available for the indexer to allocate in table `x`.
+
+```julia
+julia> using AllocationOpt
+julia> using TheGraphData
+julia> x = flextable([
+    Dict(
+        "stakedTokens" => 10,
+        "delegatedTokens" => 20,
+        "lockedTokens" => 5,
+    ),
+])
+julia> AllocationOpt.availablestake(Val(:indexer), x)
+25.0
+```
+"""
+function availablestake(::Val{:indexer}, x)
+    val = Val(:indexer)
+    return stake(val, x) + delegation(val, x) - locked(val, x)
+end
+
+"""
     frozen(a::FlexTable, config::AbstractDict)
 
 The frozen stake of the indexer with allocations `a`.

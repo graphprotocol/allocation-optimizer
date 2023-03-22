@@ -57,6 +57,17 @@
         end
     end
 
+    @testset "availablestake" begin
+        x = flextable([
+            Dict(
+                "stakedTokens" => 10,
+                "delegatedTokens" => 20,
+                "lockedTokens" => 5,
+            ),
+        ])
+        @test AllocationOpt.availablestake(Val(:indexer), x) == 25
+    end
+
     @testset "frozen" begin
         a = flextable([
             Dict(

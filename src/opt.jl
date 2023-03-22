@@ -25,15 +25,15 @@ function optimizeanalytic(Ω, ψ, σ)
 end
 
 """
-    primal(Ω, ψ, v)
+    primal(Ω, ψ, ν)
 
 Analytic solution of the primal form of the optimisation problem given signals `ψ`,
-allocations `Ω`, and a dual solution vector `v`.
+allocations `Ω`, and a dual solution vector `ν`.
 
 !!! note
     You should probably not use this function directly. Use [`optimizeanalytic`](@ref) instead.
 """
-primal(Ω, ψ, v) = max.(0.0, .√(ψ .* Ω / v) - Ω)
+primal(Ω, ψ, ν) = max.(0.0, .√(ψ .* Ω / ν) - Ω)
 
 """
     dual(Ω, ψ, σ)

@@ -56,7 +56,8 @@ function main(config::Dict)
     # Get the indexer stake
     pinnedvec = pinned(fs, config)
     σpinned = pinnedvec |> sum
-    σ = stake(Val(:indexer), i) - frozen(a, config) - σpinned
+    σ = availablestake(Val(:indexer), i) - frozen(a, config) - σpinned
+    @assert σ > 0 "No stake available to allocate with the configured frozenlist and pinnedlist"
 
     # Allocated tokens on filtered subgraphs
     Ω = stake(Val(:subgraph), fs) .+ fudgefactor
