@@ -1,7 +1,7 @@
 name = "AllocationOpt"
 uuid = "e2472b13-1eb9-46f1-ac4b-64ea04136a8a"
 authors = ["The Graph Foundation"]
-version = "0.1.0"
+version = "2.0.0"
 
 [deps]
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
@@ -18,6 +18,17 @@ TheGraphData = "871720c8-5dfb-4fa2-998e-3fe6ebd08819"
 TypedTables = "9d95f2ec-7b3d-5a63-8d20-e2491e220bb9"
 
 [compat]
+CSV = "0.10"
+Formatting = "0.4"
+JSON = "0.21"
+Mocking = "0.7"
+PackageCompiler = "2.1"
+Roots = "2.0"
+SemioticOpt = "^0.5"
+SplitApplyCombine = "1.2"
+TOML = "1.0"
+TheGraphData = "^0.2"
+TypedTables = "1.4"
 julia = "1.8"
 
 [extras]
