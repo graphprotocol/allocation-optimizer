@@ -1,3 +1,5 @@
 [deps]
-AllocationOpt = "c8d4fa36-652a-4cad-a59b-8b946e6f88a6"
+AllocationOpt = "e2472b13-1eb9-46f1-ac4b-64ea04136a8a"
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
+SemioticOpt = "a0c0fc10-8635-40d2-82ff-39f738735ee1"
+TheGraphData = "871720c8-5dfb-4fa2-998e-3fe6ebd08819"
