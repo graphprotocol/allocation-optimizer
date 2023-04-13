@@ -7,14 +7,27 @@ makedocs(;
     modules=[AllocationOpt],
     authors="The Graph Foundation",
     repo="https://github.com/graphprotocol/allocation-optimizer/blob/{commit}{path}#{line}",
-    sitename="allocation-optimizer",
+    sitename="The Allocation Optimizer",
     format=Documenter.HTML(;
         prettyurls=get(ENV, "CI", "false") == "true",
         canonical="https://graphprotocol.github.io/allocation-optimizer",
         edit_link="main",
         assets=String[],
     ),
-    pages=["Home" => "index.md", "API Reference" => "api.md"],
+    pages=[
+        "Home" => "index.md",
+        "Configuration" => "configuration.md",
+        "Usage" => [
+            "provided-binary.md",
+            "build-a-binary.md",
+            "call-julia.md",
+            "calling-another.md",
+        ],
+        "Understanding The Output" => "output.md",
+        "API Reference" => "api.md",
+        "Reporting Bugs" => "bugs.md",
+        "Contributing" => "contributing.md",
+    ],
 )
 
 deploydocs(;
