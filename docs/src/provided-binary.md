@@ -1,5 +1,9 @@
 # Using The Provided Binary
 
+!!! note
+    We're currently working on getting this set up.
+    For now, use one of the other options.
+
 Using the provided binary has the advantage of being that only method that doesn't require that you use the Julia runtime.
 If you want to get running as quickly as possible, this is the path for you.
 
