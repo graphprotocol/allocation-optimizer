@@ -37,3 +37,4 @@
     "@semantic-release/github"
   ],
   "repositoryUrl": "git@github.com:graphprotocol/allocation-optimizer.git"
+}
