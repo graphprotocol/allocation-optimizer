@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Calling From Another Language · The Allocation Optimizer</title><script data-outdated-warner src="../assets/warner.js"></script><link rel="canonical" href="https://graphprotocol.github.io/allocation-optimizer/calling-another/"/><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.045/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.24/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../">The Allocation Optimizer</a></span></div><form class="docs-search" action="../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../">Home</a></li><li><a class="tocitem" href="../configuration/">Configuration</a></li><li><span class="tocitem">Usage</span><ul><li><a class="tocitem" href="../provided-binary/">Using The Provided Binary</a></li><li><a class="tocitem" href="../build-a-binary/">Build Your Own Binary</a></li><li><a class="tocitem" href="../call-julia/">Calling From Julia</a></li><li class="is-active"><a class="tocitem" href>Calling From Another Language</a><ul class="internal"><li><a class="tocitem" href="#Under-The-Hood"><span>Under The Hood</span></a></li></ul></li></ul></li><li><a class="tocitem" href="../output/">Understanding The Output</a></li><li><a class="tocitem" href="../api/">API Reference</a></li><li><a class="tocitem" href="../bugs/">Reporting Bugs</a></li><li><a class="tocitem" href="../contributing/">Contributing</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Usage</a></li><li class="is-active"><a href>Calling From Another Language</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Calling From Another Language</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/graphprotocol/allocation-optimizer/blob/main/docs/src/calling-another.md#" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Calling-From-Another-Language"><a class="docs-heading-anchor" href="#Calling-From-Another-Language">Calling From Another Language</a><a id="Calling-From-Another-Language-1"></a><a class="docs-heading-anchor-permalink" href="#Calling-From-Another-Language" title="Permalink"></a></h1><p>It&#39;s possible to call the Allocation Optimizer from another language. There are already some solutions out there that do this. In general, if you&#39;re going to take this approach, we assume that you know what you&#39;re doing. We won&#39;t hold your hand through the process as we don&#39;t want to officially support a multitude of different languages. Instead, we&#39;ll point you to resources you can use for various languages.</p><div class="admonition is-warning"><header class="admonition-header">Warning</header><div class="admonition-body"><p>We don&#39;t recommend you use this approach, as you may have to delay integrating bugfixes and new features while you are figuring out how to integrate the new code. People using the mainline routes will always be able to more quickly access the updates we push. We especially don&#39;t recommend this route if you&#39;re not a developer. We will not support bugs that arise from integrating the tool into third-party scripts.</p></div></div><ul><li><a href="https://docs.julialang.org/en/v1/manual/embedding/">C/C++</a></li><li><a href="https://docs.juliahub.com/PythonCall/WdXsa/0.9.12/">Python</a></li><li><a href="https://docs.rs/jlrs/latest/jlrs/">Rust</a></li></ul><h2 id="Under-The-Hood"><a class="docs-heading-anchor" href="#Under-The-Hood">Under The Hood</a><a id="Under-The-Hood-1"></a><a class="docs-heading-anchor-permalink" href="#Under-The-Hood" title="Permalink"></a></h2><p>Before we let you go, we&#39;ll explain at a high-level the main function. Roughly speaking, we can break down this problem into the following steps.</p><ol><li>Read the data, where from the network subgraph or from local CSVs. The currency used is GRT.</li><li>Filter the data based on the whitelist, blacklist, pinnedlist, and frozenlist</li><li>Get the values we care about for the indexing rewards</li></ol><ul><li><code>σ</code> - The indexer&#39;s stake</li><li><code>Ω</code> - A vector of floats containing the sum of the allocations of all other indexers on each subgraph in our data</li><li><code>ψ</code> - A vector of floats representing the signal on each subgraph in our data.</li><li><code>Ψ</code> - A float representing the total signal in the network</li><li><code>K</code> - The maximum number of new allocations</li><li><code>g</code> - The gas cost in GRT</li></ul><ol><li>Get the optimal allocation vectors for each <code>k ∈ 1,...,K</code></li><li>Sort these by their profit</li><li>Report information about the most profitable vectors.</li></ol><p>The full code for the main function with comments follows.</p><pre><code class="language-julia hljs">function main(config::Dict)
+    # Read data
+    i, a, s, n = AllocationOpt.read(config)
+
+    # Write the data if it was queried rather than read from file
+    isnothing(config[&quot;readdir&quot;]) &amp;&amp; write(i, a, s, n, config)
+
+    # Get the subgraphs on which we can allocate
+    fs = allocatablesubgraphs(s, config)
+
+    # Get the indexer stake
+    pinnedvec = pinned(fs, config)
+    σpinned = pinnedvec |&gt; sum
+    σ = availablestake(Val(:indexer), i) - frozen(a, config) - σpinned
+    @assert σ &gt; 0 &quot;No stake available to allocate with the configured frozenlist and pinnedlist&quot;
+
+    # Allocated tokens on filtered subgraphs
+    Ω = stake(Val(:subgraph), fs) .+ fudgefactor
+
+    # Signal on filtered subgraphs
+    ψ = signal(Val(:subgraph), fs)
+
+    # Signal on all subgraphs
+    Ψ = signal(Val(:network), n)
+
+    # New tokens issued over allocation lifetime
+    Φ = newtokenissuance(n, config)
+
+    # Get max number of allocations
+    K = min(config[&quot;max_allocations&quot;], length(fs))
+
+    # Get gas cost in GRT
+    g = config[&quot;gas&quot;]
+
+    # Get optimal values
+    config[&quot;verbose&quot;] &amp;&amp; @info &quot;Optimizing&quot;
+    xs, nonzeros, profitmatrix = optimize(Ω, ψ, σ, K, Φ, Ψ, g)
+
+    # Add the pinned stake back in
+    xs .= xs .+ pinnedvec
+
+    # Ensure that the indexer stake is not exceeded
+    σmax = σ + σpinned
+    for x in sum(xs; dims=1)
+        x ≤ σmax || error(&quot;Tried to allocate more stake than is available&quot;)
+    end
+
+    # Write the result values
+    # Group by unique number of nonzeros
+    groupixs = groupunique(nonzeros)
+    groupixs = Dict(keys(groupixs) .=&gt; values(groupixs))
+
+    config[&quot;verbose&quot;] &amp;&amp; @info &quot;Writing results report&quot;
+    # For each set of nonzeros, find max profit (should be the same other than rounding)
+    popts = bestprofitpernz.(values(groupixs), Ref(profitmatrix)) |&gt; sortprofits!
+    nreport = min(config[&quot;num_reported_options&quot;], length(popts))
+
+    # Create JSON string
+    strategies =
+        strategydict.(popts[1:nreport], Ref(xs), Ref(nonzeros), Ref(fs), Ref(profitmatrix))
+    reportdata = JSON.json(Dict(&quot;strategies&quot; =&gt; strategies))
+
+    # Write JSON string to file
+    writejson(reportdata, config)
+
+    config[&quot;verbose&quot;] &amp;&amp; @info &quot;Executing best strategy&quot;
+    # Use config for using actionqueue or rules with the top profit batch
+    ix = first(popts)[:index]
+    execute(a, ix, fs, xs, profitmatrix, config)
+
+    return nothing
+end</code></pre><p>For details on any of the specific functions called, look at the <a href="../api/#API-Reference">API Reference</a>.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../call-julia/">« Calling From Julia</a><a class="docs-footer-nextpage" href="../output/">Understanding The Output »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.24 on <span class="colophon-date" title="Thursday 13 April 2023 22:28">Thursday 13 April 2023</span>. Using Julia version 1.8.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
