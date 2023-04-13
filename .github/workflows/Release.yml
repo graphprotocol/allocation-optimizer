@@ -1,0 +1,36 @@
+name: Release
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Semantic Release
+        uses: cycjimmy/semantic-release-action@v2
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          semantic_version: 18.0.1
+          extra_plugins: |
+            @semantic-release/changelog
+            @semantic-release/git
+            @google/semantic-release-replace-plugin
+
+  no-release:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+    steps:
+      - run: |
+          echo "Release skipped as previous stage failed."
+          curl \
+          -X POST \
+          -H "Accept: application/vnd.github.v3+json" \
+          https://api.github.com/repos/octocat/hello-world/actions/runs/42/cancel
