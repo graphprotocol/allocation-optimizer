@@ -1,0 +1,14 @@
+id = "0xd75c4dbcb215a6cf9097cfbcc70aab2596b96a9c"
+writedir = "data"
+readdir = "data"
+max_allocations = 10
+whitelist = []
+blacklist = []
+frozenlist = []
+pinnedlist = []
+allocation_lifetime = 28
+gas = 100
+min_signal = 1000
+verbose = true
+num_reported_options = 2
+execution_mode = "none"

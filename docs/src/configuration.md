@@ -1,25 +1,9 @@
-# AllocationOpt
+# Configuration
 
-[![Latest](https://img.shields.io/badge/docs-latest-purple.svg)](https://graphprotocol.github.io/allocation-optimizer/latest/)
-[![Build Status](https://github.com/graphprotocol/allocation-optimizer/actions/workflows/CI.yml/badge.svg?branch=)](https://github.com/graphprotocol/allocation-optimizer/actions/workflows/CI.yml?query=branch%3A)
-[![Coverage](https://codecov.io/gh/graphprotocol/allocation-optimizer/branch/main/graph/badge.svg)](https://codecov.io/gh/graphprotocol/allocation-optimizer)
-[![ColPrac: Contributor's Guide on Collaborative Practices for Community Packages](https://img.shields.io/badge/ColPrac-Contributor's%20Guide-blueviolet)](https://github.com/SciML/ColPrac)
-
-
-AllocationOpt is a library for optimising the stake distribution for The Graph indexers for indexing rewards [The Graph Protocol](https://thegraph.com/en/).
-
-For details on installation and usage, visit our [documentation](https://graphprotocol.github.io/allocation-optimizer/latest).
-For the underlying optimisation method, visit our [blog post](https://semiotic.ai/articles/indexer-allocation-optimisation/).
-
-## Usage
-
-Run the provided binary pointing at the configuration TOML that you would like to use.
-
-``` sh
-./AllocationOptCompiled/bin/AllocationOpt /path/to/your_config.toml
-```
-
-## Configuration
+When using the optimiser, you change it's behaviour via a configuration file specified as a TOML.
+The configuration file serves two purposes.
+Firstly, it makes it easier for you to track various settings and their impacts.
+Secondly, if something breaks, it makes it easier for us to reproduce what went wrong.
 
 An example configuration TOML file might look as below.
 
@@ -209,3 +193,5 @@ verbose = false
 num_reported_options = 2
 execution_mode = "none"
 ```
+
+
