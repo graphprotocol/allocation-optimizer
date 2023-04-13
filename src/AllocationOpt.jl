@@ -45,9 +45,7 @@ function main(config::Dict)
     # Read data
     i, a, s, n = AllocationOpt.read(config)
 
-    # Queried data has not yet been converted to GRT, so
-    # if this isn't data that we've queried, correct the
-    # types and write the data out to CSVs
+    # Write the data if it was queried rather than read from file
     isnothing(config["readdir"]) && write(i, a, s, n, config)
 
     # Get the subgraphs on which we can allocate
