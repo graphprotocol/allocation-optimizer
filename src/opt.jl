@@ -2,6 +2,81 @@
 # SPDX-License-Identifier: MIT
 
 """
+    AnalyticOpt{T<:Real,V<:AbstractArray{T},A<:AbstractArray{T},S<:AbstractVector{<:Hook}} <: OptAlgorithm
+
+Optimise the indexing reward analytically.
+
+# Fields
+- `x::V` is the current best guess for the solution. Typically zeros.
+- `Ω::V` is the allocation vector of other indexers.
+- `ψ::A` is the signal vector.
+- `σ::T` is the stake.
+- `hooks::S` are the hooks
+
+# Example
+```julia
+julia> using AllocationOpt
+julia> using SemioticOpt
+julia> x = zeros(2)
+julia> Ω = [1.0, 1.0]
+julia> ψ = [10.0, 10.0]
+julia> σ = 5.0
+julia> alg = AllocationOpt.AnalyticOpt(;
+           x=x, Ω=Ω, ψ=ψ, σ=σ, hooks=[StopWhen((a; kws...) -> kws[:i] > 1)]
+       )
+julia> f = x -> x  # This doesn't matter. `f` isn't used by the algorithm.
+julia> alg = minimize!(f, alg)
+julia> SemioticOpt.x(alg)
+2-element Vector{Float64}:
+ 2.5
+ 2.5
+```
+"""
+Base.@kwdef struct AnalyticOpt{
+    T<:Real,V<:AbstractVector{T},A<:AbstractArray{T},S<:AbstractVector{<:Hook}
+} <: SemioticOpt.OptAlgorithm
+    x::V
+    Ω::V
+    ψ::A
+    σ::T
+    hooks::S
+end
+
+"""
+    x(a::AnalyticOpt)
+
+Return the current best guess for the solution.
+"""
+SemioticOpt.x(a::AnalyticOpt) = a.x
+"""
+    x!(a::AnalyticOpt, v)
+
+In-place setting of `a.x` to `v`
+
+See [`SemioticOpt.x`](@ref).
+"""
+function SemioticOpt.x!(a::AnalyticOpt, v)
+    a.x .= v
+    return a
+end
+SemioticOpt.hooks(a::AnalyticOpt) = a.hooks
+
+"""
+    iteration(::Function, a::AnalyticOpt)
+
+Perform the analytic optimisation.
+"""
+function SemioticOpt.iteration(::Function, a::AnalyticOpt)
+    Ω = a.Ω
+    ψ = a.ψ
+    σ = a.σ
+    v = dual(Ω, ψ, σ)
+    x = primal(Ω, ψ, v)
+    y = σsimplex(x, σ)
+    return y
+end
+
+"""
     optimizeanalytic(Ω, ψ, σ)
 
 Optimise analytically over existing allocation vector `Ω`, signals `ψ`, and stake `σ`.
@@ -18,9 +93,12 @@ julia> AllocationOpt.optimizeanalytic(Ω, ψ, σ)
 ```
 """
 function optimizeanalytic(Ω, ψ, σ)
-    v = dual(Ω, ψ, σ)
-    x = primal(Ω, ψ, v)
-    y = σsimplex(x, σ)
+    f = x -> x  # This doesn't matter; we're not using it
+    alg = AllocationOpt.AnalyticOpt(;
+        x=zero(ψ), Ω=Ω, ψ=ψ, σ=σ, hooks=[StopWhen((a; kws...) -> kws[:i] > 1)]
+    )
+    minimize!(f, alg)
+    y = SemioticOpt.x(alg)
     return y
 end
 

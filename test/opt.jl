@@ -2,6 +2,40 @@
 # SPDX-License-Identifier: MIT
 
 @testset "opt" begin
+    @testset "SemioticOpt analytic" begin
+        f = x -> x  # This doesn't matter; analytic opt doesn't use it
+
+        x = zeros(2)
+        Ω = [1.0, 1.0]
+        ψ = [10.0, 10.0]
+        σ = 5.0
+        alg = AllocationOpt.AnalyticOpt(;
+            x=x, Ω=Ω, ψ=ψ, σ=σ, hooks=[StopWhen((a; kws...) -> kws[:i] > 1)]
+        )
+        alg = minimize!(f, alg)
+        @test isapprox(SemioticOpt.x(alg), [2.5, 2.5]; atol=0.1)
+
+        x = zeros(2)
+        Ω = [1.0, 1.0]
+        ψ = [0.0, 10.0]
+        σ = 5.0
+        alg = AllocationOpt.AnalyticOpt(;
+            x=x, Ω=Ω, ψ=ψ, σ=σ, hooks=[StopWhen((a; kws...) -> kws[:i] > 1)]
+        )
+        alg = minimize!(f, alg)
+        @test isapprox(SemioticOpt.x(alg), [0.0, 5.0]; atol=0.1)
+
+        x = zeros(2)
+        Ω = [1.0, 10000.0]
+        ψ = [10.0, 10.0]
+        σ = 5.0
+        alg = AllocationOpt.AnalyticOpt(;
+            x=x, Ω=Ω, ψ=ψ, σ=σ, hooks=[StopWhen((a; kws...) -> kws[:i] > 1)]
+        )
+        alg = minimize!(f, alg)
+        @test isapprox(SemioticOpt.x(alg), [5.0, 0.0]; atol=0.1)
+    end
+
     @testset "optimizeanalytic" begin
         Ω = [1.0, 1.0]
         ψ = [10.0, 10.0]
