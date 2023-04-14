@@ -41,6 +41,7 @@ min_signal = 1000
 verbose = true
 num_reported_options = 2
 execution_mode = "none"
+opt_mode = "fast"
 ```
 
 
@@ -88,6 +89,12 @@ execution_mode = "none"
 - `indexer_url::Union{String, Nothing}`: The URL of the indexer management server you want
     to execute the allocation strategies on. If you specify `"actionqueue"`, you must also
     specify `indexer_url`. If unspecified, `nothing`
+- `opt_mode::String`: We support two optimisation modes. One is `"fast"`. This mode is
+    fast, but may not find the optimal allocation. This mode is also used to the top
+    `num_reported_options` allocation strategies. The other mode is `"optimal"`. This
+    mode is slower, but will find the optimal allocation. In general, we recommend
+    exploring config options using `"fast"` mode first, and then using `"optimal"`
+    mode to find the optimal allocation. By default, `"fast"`
 
 ### Example Configurations
 

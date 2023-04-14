@@ -49,6 +49,12 @@ Set default values for the config dictionary if the value was not specified in t
 - `indexer_url::Union{String, Nothing}`: The URL of the indexer management server you want
     to execute the allocation strategies on. If you specify `"actionqueue"`, you must also
     specify `indexer_url`. By default, `nothing`
+- `opt_mode::String`: We support two optimisation modes. One is `"fast"`. This mode is
+    fast, but may not find the optimal allocation. This mode is also used to the top
+    `num_reported_options` allocation strategies. The other mode is `"optimal"`. This
+    mode is slower, but will find the optimal allocation. In general, we recommend
+    exploring config options using `"fast"` mode first, and then using `"optimal"`
+    mode to find the optimal allocation. By default, `"fast"`
 
 ```julia
 julia> using AllocationOpt
@@ -93,6 +99,7 @@ function configuredefaults!(config::AbstractDict)
     setdefault!(config, "indexer_url", nothing)
     setdefault!(config, "execution_mode", "none")
     setdefault!(config, "verbose", false)
+    setdefault!(config, "opt_mode", "fast")
     return config
 end
 
