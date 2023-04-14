@@ -5,6 +5,7 @@ using CSV
 using TheGraphData
 using JSON
 using Mocking
+using SemioticOpt
 using AllocationOpt
 using Test
 
