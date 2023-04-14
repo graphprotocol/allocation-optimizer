@@ -52,7 +52,7 @@ From the Julia REPL (the TUI that comes up when you use `julia --project`), comp
 
 ```julia
 julia> using PackageCompiler
-julia> create_app(".", "AllocationOptCompiled")
+julia> create_app(".", "app")
 ```
 !!! note
     If you are still in Pkg mode, `pkg>`, hitting *backspace* will bring you back into the REPL.
@@ -63,5 +63,5 @@ See [Configuration](@ref) for details.
 Run the binary pointing at the configuration TOML that you would like to use.
 
 ``` sh
-./AllocationOptCompiled/bin/AllocationOpt /path/to/your_config.toml
+./app/bin/AllocationOpt /path/to/your_config.toml
 ```

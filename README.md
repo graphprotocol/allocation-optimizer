@@ -16,8 +16,11 @@ For the underlying optimisation method, visit our [blog post](https://semiotic.a
 Run the provided binary pointing at the configuration TOML that you would like to use.
 
 ``` sh
-./AllocationOptCompiled/bin/AllocationOpt /path/to/your_config.toml
+./app/bin/AllocationOpt /path/to/your_config.toml
 ```
+
+**NOTE:** This binary only works for x86 Linux.
+If you are you a different operating system or architecture, please see the documentation for other options.
 
 ## Configuration
 
