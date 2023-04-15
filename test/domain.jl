@@ -59,11 +59,7 @@
 
     @testset "availablestake" begin
         x = flextable([
-            Dict(
-                "stakedTokens" => 10,
-                "delegatedTokens" => 20,
-                "lockedTokens" => 5,
-            ),
+            Dict("stakedTokens" => 10, "delegatedTokens" => 20, "lockedTokens" => 5)
         ])
         @test AllocationOpt.availablestake(Val(:indexer), x) == 25
     end
@@ -257,6 +253,24 @@
             Ψ = 2.0
             x = [1.0, 1.0]
             @test AllocationOpt.indexingreward(x, Ω, ψ, Φ, Ψ) == 0.5
+        end
+
+        @testset "specifying ixs" begin
+            ixs = Int32[2]
+            ψ = [0.0, 1.0]
+            Ω = [1.0, 1.0]
+            Φ = 1.0
+            Ψ = 2.0
+            x = [0.0, 1.0]
+            @test AllocationOpt.indexingreward(ixs, x, Ω, ψ, Φ, Ψ) == 0.25
+
+            ixs = Int32[1]
+            ψ = [0.0, 1.0]
+            Ω = [1.0, 1.0]
+            Φ = 1.0
+            Ψ = 2.0
+            x = [0.0, 1.0]
+            @test AllocationOpt.indexingreward(ixs, x, Ω, ψ, Φ, Ψ) == 0.0
         end
     end
 
