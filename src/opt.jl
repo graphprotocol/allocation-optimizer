@@ -134,7 +134,37 @@ function dual(Ω, ψ, σ)
 end
 
 """
-    optimize(Ω, ψ, σ, K, Φ, Ψ, g)
+    optimize(Ω, ψ, σ, K, Φ, Ψ, g, config::AbstractDict)
+
+Find the optimal solution vector given allocations of other indexers `Ω`, signals
+`ψ`, available stake `σ`, new tokens issued `Φ`, total signal `Ψ`, and gas in grt `g`.
+
+
+Dispatches to [`optimize`](@ref) with the `opt_mode` key.
+
+If `opt_mode` is `fast`, then run projected gradient descent with GSSP and Halpern.
+If `opt_mode` is `optimal`, then run Pairwise Greedy Optimisation.
+
+```julia
+julia> using AllocationOpt
+julia> config = Dict("opt_mode" => "fast")
+julia> Ω = [1.0, 1.0]
+julia> ψ = [10.0, 10.0]
+julia> σ = 5.0
+julia> K = 2
+julia> Φ = 1.0
+julia> Ψ = 20.0
+julia> g = 0.01
+julia> xs, nonzeros, profits = AllocationOpt.optimize(Ω, ψ, σ, K, Φ, Ψ, g, config)
+([5.0 2.5; 0.0 2.5], Int32[1, 2], [0.4066666666666667 0.34714285714285714; 0.0 0.34714285714285714])
+```
+"""
+function optimize(Ω, ψ, σ, K, Φ, Ψ, g, config::AbstractDict)
+    return optimize(Val(Symbol(config["opt_mode"])), Ω, ψ, σ, K, Φ, Ψ, g)
+end
+
+"""
+    optimize(::Val{:fast}, Ω, ψ, σ, K, Φ, Ψ, g)
 
 Find the optimal vectors for k ∈ [1,`K`] given allocations of other indexers `Ω`, signals
 `ψ`, available stake `σ`, new tokens issued `Φ`, total signal `Ψ`, and gas in grt `g`.
@@ -148,11 +178,11 @@ julia> K = 2
 julia> Φ = 1.0
 julia> Ψ = 20.0
 julia> g = 0.01
-julia> xs, nonzeros, profits = AllocationOpt.optimize(Ω, ψ, σ, K, Φ, Ψ, g)
+julia> xs, nonzeros, profits = AllocationOpt.optimize(Val(:fast), Ω, ψ, σ, K, Φ, Ψ, g)
 ([5.0 2.5; 0.0 2.5], Int32[1, 2], [0.4066666666666667 0.34714285714285714; 0.0 0.34714285714285714])
 ```
 """
-function optimize(Ω, ψ, σ, K, Φ, Ψ, g)
+function optimize(::Val{:fast}, Ω, ψ, σ, K, Φ, Ψ, g)
     # Helper function to compute profit
     f = x -> profit.(indexingreward.(x, Ω, ψ, Φ, Ψ), g)
 
