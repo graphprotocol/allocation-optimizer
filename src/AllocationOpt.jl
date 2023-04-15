@@ -77,7 +77,7 @@ function main(config::Dict)
 
     # Get optimal values
     config["verbose"] && @info "Optimizing"
-    xs, nonzeros, profitmatrix = optimize(Ω, ψ, σ, K, Φ, Ψ, g)
+    xs, nonzeros, profitmatrix = optimize(Ω, ψ, σ, K, Φ, Ψ, g, config)
 
     # Add the pinned stake back in
     xs .= xs .+ pinnedvec
