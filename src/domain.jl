@@ -473,7 +473,47 @@ function newtokenissuance(n::FlexTable, config::Dict)
 end
 
 """
-    function indexingreward(
+    indexingreward(
+        ixs::AbstractVector{Integer},
+        x::AbstractVector{Real},
+        Ω::AbstractVector{Real},
+        ψ::AbstractVector{Real},
+        Φ::Real,
+        Ψ::Real
+    )
+
+The indexing rewards for the allocation vector `x` given signals `ψ`, the existing
+allocations on subgraphs `Ω`, token issuance `Φ`, and total signal `Ψ`. Here `ixs`
+is a vector of indices `Ω`, and `ψ`. `x` will be filtered by `SemioticOpt`, so we
+don't do this here.
+
+
+```julia
+julia> using AllocationOpt
+julia> using AllocationOpt
+julia> ixs = Int32[2]
+julia> ψ = [0.0, 1.0]
+julia> Ω = [1.0, 1.0]
+julia> Φ = 1.0
+julia> Ψ = 2.0
+julia> x = [0.0, 1.0]
+julia> AllocationOpt.indexingreward(ixs, x, Ω, ψ, Φ, Ψ)
+0.25
+````
+"""
+function indexingreward(
+    ixs::AbstractVector{I},
+    x::AbstractVector{T},
+    Ω::AbstractVector{T},
+    ψ::AbstractVector{T},
+    Φ::Real,
+    Ψ::Real,
+) where {T<:Real,I<:Integer}
+    return indexingreward(x, Ω[ixs], ψ[ixs], Φ, Ψ)
+end
+
+"""
+    indexingreward(
         x::AbstractVector{Real},
         Ω::AbstractVector{Real},
         ψ::AbstractVector{Real},
