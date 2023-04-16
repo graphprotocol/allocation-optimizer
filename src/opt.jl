@@ -62,11 +62,12 @@ end
 SemioticOpt.hooks(a::AnalyticOpt) = a.hooks
 
 """
-    iteration(::Function, a::AnalyticOpt)
+    iteration(f::Function, a::AnalyticOpt)
 
 Perform the analytic optimisation.
 """
-function SemioticOpt.iteration(::Function, a::AnalyticOpt)
+function SemioticOpt.iteration(f::Function, a::AnalyticOpt)
+    ixs = f(nothing)
     Ω = a.Ω
     ψ = a.ψ
     σ = a.σ
@@ -93,7 +94,7 @@ julia> AllocationOpt.optimizeanalytic(Ω, ψ, σ)
 ```
 """
 function optimizeanalytic(Ω, ψ, σ)
-    f = x -> x  # This doesn't matter; we're not using it
+    f(::Nothing) = 1:length(ψ)  # This doesn't matter; we're not using it
     alg = AllocationOpt.AnalyticOpt(;
         x=zero(ψ), Ω=Ω, ψ=ψ, σ=σ, hooks=[StopWhen((a; kws...) -> kws[:i] > 1)]
     )
