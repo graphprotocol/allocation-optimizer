@@ -3,12 +3,11 @@
 
 @testset "opt" begin
     @testset "SemioticOpt analytic" begin
-        f = x -> x  # This doesn't matter; analytic opt doesn't use it
-
         x = zeros(2)
         Ω = [1.0, 1.0]
         ψ = [10.0, 10.0]
         σ = 5.0
+        f(::Nothing) = 1:length(ψ)
         alg = AllocationOpt.AnalyticOpt(;
             x=x, Ω=Ω, ψ=ψ, σ=σ, hooks=[StopWhen((a; kws...) -> kws[:i] > 1)]
         )
