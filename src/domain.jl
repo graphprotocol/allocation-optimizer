@@ -474,7 +474,7 @@ end
 
 """
     indexingreward(
-        ixs::AbstractVector{Integer},
+        ixs::AbstractArray{Integer},
         x::AbstractVector{Real},
         Ω::AbstractVector{Real},
         ψ::AbstractVector{Real},
@@ -490,7 +490,6 @@ don't do this here.
 
 ```julia
 julia> using AllocationOpt
-julia> using AllocationOpt
 julia> ixs = Int32[2]
 julia> ψ = [0.0, 1.0]
 julia> Ω = [1.0, 1.0]
@@ -502,7 +501,7 @@ julia> AllocationOpt.indexingreward(ixs, x, Ω, ψ, Φ, Ψ)
 ````
 """
 function indexingreward(
-    ixs::AbstractVector{I},
+    ixs::AbstractArray{I},
     x::AbstractVector{T},
     Ω::AbstractVector{T},
     ψ::AbstractVector{T},
