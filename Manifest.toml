@@ -506,11 +506,11 @@ version = "1.2.0"
 
 [[deps.SemioticOpt]]
 deps = ["Accessors", "Lazy", "LinearAlgebra", "Zygote"]
-git-tree-sha1 = "5bf163b2e1654f1c4b22700b41e0b76bc704b080"
+git-tree-sha1 = "040f29b277472bb104412d5329978efd75b68106"
 repo-rev = "main"
 repo-url = "https://github.com/semiotic-ai/SemioticOpt.jl.git"
 uuid = "a0c0fc10-8635-40d2-82ff-39f738735ee1"
-version = "0.5.1"
+version = "0.5.2"
 
 [[deps.SentinelArrays]]
 deps = ["Dates", "Random"]
