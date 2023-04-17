@@ -1,5 +1,23 @@
 # Changelog
 
+# [2.1.0](https://github.com/graphprotocol/allocation-optimizer/compare/v2.0.1...v2.1.0) (2023-04-17)
+
+
+### Bug Fixes
+
+* Allow for views ([2476317](https://github.com/graphprotocol/allocation-optimizer/commit/2476317597c1de2073142c42c0b0a9915982a8f4))
+* Minimisation needs to use negative profit ([470a72e](https://github.com/graphprotocol/allocation-optimizer/commit/470a72e64c4b0358eb264858d49081adf795349b))
+
+
+### Features
+
+* Add opt_mode option to the config ([0b4534a](https://github.com/graphprotocol/allocation-optimizer/commit/0b4534aae0f784a87eca1e162adfb0c3d1b01427))
+* Add slower but more accurate "optimal" path ([1629de7](https://github.com/graphprotocol/allocation-optimizer/commit/1629de7f49cec83a117af853e626cbb8e77e942b))
+* Add warning for using optimal path ([0ced47f](https://github.com/graphprotocol/allocation-optimizer/commit/0ced47f3b3a10741073d845924cf7727ab3f3f62))
+* Analytic optimisation backed by SemioticOpt ([33d049a](https://github.com/graphprotocol/allocation-optimizer/commit/33d049a4864085ddf86b9b4b7c8d2c0f51de27db))
+* Indexing reward computed for ixs ([7e651f2](https://github.com/graphprotocol/allocation-optimizer/commit/7e651f24b4f611a38823ba86d948204828f5621b))
+* Optimize call dispatches on opt_mode ([3a1b116](https://github.com/graphprotocol/allocation-optimizer/commit/3a1b1164c03bd9e1c9165e33a8670087b31ff8bb))
+
 ## [2.0.1](https://github.com/graphprotocol/allocation-optimizer/compare/v2.0.0...v2.0.1) (2023-04-17)
 
 
