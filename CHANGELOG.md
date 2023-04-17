@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.1](https://github.com/graphprotocol/allocation-optimizer/compare/v2.0.0...v2.0.1) (2023-04-17)
+
+
+### Bug Fixes
+
+* Increased precision of simplex projection ([53c4aef](https://github.com/graphprotocol/allocation-optimizer/commit/53c4aef94e33eef96f50791da2530e91593ec546)), closes [#32](https://github.com/graphprotocol/allocation-optimizer/issues/32)
+
 # [2.0.0](https://github.com/graphprotocol/allocation-optimizer/compare/v1.8.0...v2.0.0) (2023-04-14)
 
 
