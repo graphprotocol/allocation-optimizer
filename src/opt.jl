@@ -67,9 +67,9 @@ SemioticOpt.hooks(a::AnalyticOpt) = a.hooks
 Perform the analytic optimisation.
 """
 function SemioticOpt.iteration(f::Function, a::AnalyticOpt)
-    ixs = f(nothing)
-    Ω = a.Ω
-    ψ = a.ψ
+    ixs = f(SemioticOpt.x(a))
+    Ω = a.Ω[ixs]
+    ψ = a.ψ[ixs]
     σ = a.σ
     v = dual(Ω, ψ, σ)
     x = primal(Ω, ψ, v)
@@ -94,7 +94,7 @@ julia> AllocationOpt.optimizeanalytic(Ω, ψ, σ)
 ```
 """
 function optimizeanalytic(Ω, ψ, σ)
-    f(::Nothing) = 1:length(ψ)  # This doesn't matter; we're not using it
+    f(::Any) = 1:length(ψ)
     alg = AllocationOpt.AnalyticOpt(;
         x=zero(ψ), Ω=Ω, ψ=ψ, σ=σ, hooks=[StopWhen((a; kws...) -> kws[:i] > 1)]
     )
@@ -240,6 +240,67 @@ function optimizek(xopt, Ω, ψ, σ, k, Φ, Ψ)
     f = x -> indexingreward(x, ψ, Ω, Φ, Ψ)
     sol = minimize!(f, alg)
     return floor.(SemioticOpt.x(sol); digits=1)
+end
+
+"""
+    optimize(::Val{:optimal}, Ω, ψ, σ, K, Φ, Ψ, g)
+
+Find the optimal solution vector given allocations of other indexers `Ω`, signals
+`ψ`, available stake `σ`, new tokens issued `Φ`, total signal `Ψ`, and gas in grt `g`.
+
+# Example
+```julia
+julia> using AllocationOpt
+julia> Ω = [1.0, 1.0]
+julia> ψ = [10.0, 10.0]
+julia> σ = 5.0
+julia> K = 2
+julia> Φ = 1.0
+julia> Ψ = 20.0
+julia> g = 0.01
+julia> xs, nonzeros, profits = AllocationOpt.optimize(
+           Val(:optimal), Ω, ψ, σ, K, Φ, Ψ, g
+       )
+([2.5; 2.5;;], Int32[2], [0.34714285714285714; 0.34714285714285714;;])
+```
+"""
+function optimize(::Val{:optimal}, Ω, ψ, σ, K, Φ, Ψ, g)
+    # Helper function to compute profit
+    obj = x -> profit.(indexingreward.(x, Ω, ψ, Φ, Ψ), g) |> sum
+
+    # Preallocate solution vectors for in-place operations
+    _x = zeros(length(ψ), 1)
+    profits = Matrix{Float64}(undef, length(ψ), 1)
+    nonzeros = Vector{Int32}(undef, 1)
+
+    f(x, ixs) = ixs
+
+    # Set up optimizer
+    function makeanalytic(x)
+        return AllocationOpt.AnalyticOpt(;
+            x=x, Ω=Ω, ψ=ψ, σ=σ, hooks=[StopWhen((a; kws...) -> kws[:i] > 1)]
+        )
+    end
+    alg = PairwiseGreedyOpt(;
+        kmax=K,
+        x=zeros(length(ψ)),
+        xinit=zeros(length(ψ)),
+        f=f,
+        a=makeanalytic,
+        hooks=[
+            StopWhen((a; kws...) -> kws[:f](kws[:z]) ≤ kws[:f](SemioticOpt.x(a)))
+            StopWhen(
+                (a; kws...) -> length(kws[:z]) == length(SemioticOpt.nonzeroixs(kws[:z]))
+            )
+        ],
+    )
+    sol = minimize!(obj, alg)
+
+    _x[:, 1] .= SemioticOpt.x(sol)
+    nonzeros[1] = _x[:, 1] |> nonzero |> length
+    profits[:, 1] .= profit.(indexingreward.(_x[:, 1], Ω, ψ, Φ, Ψ), g)
+
+    return _x, nonzeros, profits
 end
 
 """

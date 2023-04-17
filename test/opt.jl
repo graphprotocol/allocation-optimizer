@@ -7,7 +7,7 @@
         Ω = [1.0, 1.0]
         ψ = [10.0, 10.0]
         σ = 5.0
-        f(::Nothing) = 1:length(ψ)
+        f(::Any) = 1:length(ψ)
         alg = AllocationOpt.AnalyticOpt(;
             x=x, Ω=Ω, ψ=ψ, σ=σ, hooks=[StopWhen((a; kws...) -> kws[:i] > 1)]
         )
@@ -104,6 +104,23 @@
             @test nonzeros == [1, 2]
             @test isapprox(profits, [[0.41 0.35]; [0.0 0.35]]; atol=0.1)
         end
+
+        @testset "optimal" begin
+            Ω = [1.0, 1.0]
+            ψ = [10.0, 10.0]
+            σ = 5.0
+            K = 2
+            Φ = 1.0
+            Ψ = 20.0
+            g = 0.01
+            xs, nonzeros, profits = AllocationOpt.optimize(
+                Val(:optimal), Ω, ψ, σ, K, Φ, Ψ, g
+            )
+            @test xs == [2.5; 2.5;;]
+            @test nonzeros == [2]
+            @test isapprox(profits, [0.35; 0.35]; atol=0.1)
+        end
+
         @testset "dispatch" begin
             config = Dict("opt_mode" => "fast")
             Ω = [1.0, 1.0]
@@ -114,6 +131,19 @@
             Ψ = 20.0
             g = 0.01
             xs, nonzeros, profits = AllocationOpt.optimize(Ω, ψ, σ, K, Φ, Ψ, g, config)
+
+            config = Dict("opt_mode" => "optimal")
+            Ω = [1.0, 1.0]
+            ψ = [10.0, 10.0]
+            σ = 5.0
+            K = 2
+            Φ = 1.0
+            Ψ = 20.0
+            g = 0.01
+            xs, nonzeros, profits = AllocationOpt.optimize(Ω, ψ, σ, K, Φ, Ψ, g, config)
+            @test xs == [2.5; 2.5;;]
+            @test nonzeros == [2]
+            @test isapprox(profits, [0.35; 0.35]; atol=0.1)
         end
     end
 end
