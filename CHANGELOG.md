@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.1](https://github.com/graphprotocol/allocation-optimizer/compare/v2.1.0...v2.1.1) (2023-04-17)
+
+
+### Bug Fixes
+
+* RoundDown when converting from BigFloat ([f8cce14](https://github.com/graphprotocol/allocation-optimizer/commit/f8cce14c26b046b2aebeae681ad57e8ef08b6e5c))
+
 # [2.1.0](https://github.com/graphprotocol/allocation-optimizer/compare/v2.0.1...v2.1.0) (2023-04-17)
 
 
