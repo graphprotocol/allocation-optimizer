@@ -268,7 +268,7 @@ function optimize(::Val{:optimal}, Ω, ψ, σ, K, Φ, Ψ, g)
     @warn "This uses the pairwise greedy algorithm, which is currently experimental."
 
     # Helper function to compute profit
-    obj = x -> profit.(indexingreward.(x, Ω, ψ, Φ, Ψ), g) |> sum
+    obj = x -> -profit.(indexingreward.(x, Ω, ψ, Φ, Ψ), g) |> sum
 
     # Preallocate solution vectors for in-place operations
     _x = zeros(length(ψ), 1)
@@ -280,7 +280,7 @@ function optimize(::Val{:optimal}, Ω, ψ, σ, K, Φ, Ψ, g)
     # Set up optimizer
     function makeanalytic(x)
         return AllocationOpt.AnalyticOpt(;
-            x=x, Ω=Ω, ψ=ψ, σ=σ, hooks=[StopWhen((a; kws...) -> kws[:i] > 1)]
+            x=x, Ω=Ω, ψ=ψ, σ=σ, hooks=[StopWhen((a; kws...) -> kws[:i] > 0)]
         )
     end
     alg = PairwiseGreedyOpt(;
@@ -290,10 +290,10 @@ function optimize(::Val{:optimal}, Ω, ψ, σ, K, Φ, Ψ, g)
         f=f,
         a=makeanalytic,
         hooks=[
-            StopWhen((a; kws...) -> kws[:f](kws[:z]) ≤ kws[:f](SemioticOpt.x(a)))
+            StopWhen((a; kws...) -> kws[:f](kws[:z]) ≥ kws[:f](SemioticOpt.x(a))),
             StopWhen(
                 (a; kws...) -> length(kws[:z]) == length(SemioticOpt.nonzeroixs(kws[:z]))
-            )
+            ),
         ],
     )
     sol = minimize!(obj, alg)
