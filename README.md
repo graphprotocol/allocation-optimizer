@@ -48,8 +48,10 @@ opt_mode = "fast"
 ### Detailed Field Descriptions
 
 - `id::String`: The ID of the indexer for whom we're optimising. No default value.
-- `network_subgraph_endpoint::String`: The network subgraph endpoint to query.
-    If unspecified, `"https://api.thegraph.com/subgraphs/name/graphprotocol/graph-network-mainnet"`
+- `network_subgraph_endpoint::String`: The network subgraph endpoint to query. The optimizer 
+    support any network (such as mainnet, goerli, arbitrum-one, arbitrum-goerli) as long as the 
+    provided API serves the query requests. If unspecified, 
+    `"https://api.thegraph.com/subgraphs/name/graphprotocol/graph-network-mainnet"`
 - `writedir::String`: The directory to which to write the results of optimisation.
     If don't specify `readdir`, `writedir` also specifies the path to which to save
     the input data tables. If unspecified, `"."`
@@ -161,14 +163,19 @@ num_reported_options = 2
 execution_mode = "none"
 ```
 
-#### Query data for Testnet
+#### Query data for specified networks
 
-Specify the network subgraph endpoint for testnet. Here we use the endpoint to goerli network subgraph.
+Specify the network subgraph endpoint for networks other than The Graph network on Ethereum mainnet. Here we use the endpoint to goerli network subgraph.
 
 ``` toml
 id = "0xE9a1CABd57700B17945Fd81feeFba82340D9568F"
 network_subgraph_endpoint = "https://api.thegraph.com/subgraphs/name/graphprotocol/graph-network-goerli"
 ```
+
+Other available endpoints examples are
+- Mainnet (default): https://api.thegraph.com/subgraphs/name/graphprotocol/graph-network-mainnet
+- Arbitrum-One: https://api.thegraph.com/subgraphs/name/graphprotocol/graph-network-arbitrum
+- Arbitrum-Goerli: https://api.thegraph.com/subgraphs/name/graphprotocol/graph-network-arbitrum-goerli
 
 #### Quiet Mode
 
