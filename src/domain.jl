@@ -404,6 +404,7 @@ julia> config = Dict(
             "whitelist" => String["Qmb", "Qmc"],
             "blacklist" => String[],
             "frozenlist" => String[],
+            "pinnedlist" => String[],
             "min_signal" => 0.0
 )
 julia> fs = AllocationOpt.allocatablesubgraphs(s, config)
@@ -416,8 +417,8 @@ FlexTable with 2 columns and 2 rows:
 """
 function allocatablesubgraphs(s::FlexTable, config::AbstractDict)
     # If no whitelist, whitelist is all subgraphs
-    whitelist =
-        isempty(config["whitelist"]) ? ipfshash(Val(:subgraph), s) : config["whitelist"]
+    w = config["whitelist"] ∪ config["pinnedlist"]
+    whitelist = isempty(w) ? ipfshash(Val(:subgraph), s) : w
 
     # For filtering, blacklist contains both the blacklist and frozenlist,
     # since frozen allocations aren't considered during optimisation.

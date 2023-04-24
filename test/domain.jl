@@ -110,6 +110,7 @@
             "whitelist" => String[],
             "blacklist" => String[],
             "frozenlist" => String["Qma", "Qmb"],
+            "pinnedlist" => String[],
             "min_signal" => 0.0,
         )
         fs = AllocationOpt.allocatablesubgraphs(s, config)
@@ -119,6 +120,7 @@
             "whitelist" => String[],
             "blacklist" => String["Qma"],
             "frozenlist" => String["Qmb"],
+            "pinnedlist" => String[],
             "min_signal" => 0.0,
         )
         fs = AllocationOpt.allocatablesubgraphs(s, config)
@@ -128,6 +130,7 @@
             "whitelist" => String["Qmb", "Qmc"],
             "blacklist" => String[],
             "frozenlist" => String[],
+            "pinnedlist" => String[],
             "min_signal" => 0.0,
         )
         fs = AllocationOpt.allocatablesubgraphs(s, config)
@@ -137,6 +140,7 @@
             "whitelist" => String["Qmb", "Qmc"],
             "blacklist" => String["Qma"],
             "frozenlist" => String[],
+            "pinnedlist" => String[],
             "min_signal" => 0.0,
         )
         fs = AllocationOpt.allocatablesubgraphs(s, config)
@@ -146,6 +150,7 @@
             "whitelist" => String[],
             "blacklist" => String[],
             "frozenlist" => String[],
+            "pinnedlist" => String[],
             "min_signal" => 0.0,
         )
         fs = AllocationOpt.allocatablesubgraphs(s, config)
@@ -155,7 +160,18 @@
             "whitelist" => String[],
             "blacklist" => String[],
             "frozenlist" => String[],
+            "pinnedlist" => String[],
             "min_signal" => 7.0,
+        )
+        fs = AllocationOpt.allocatablesubgraphs(s, config)
+        @test AllocationOpt.ipfshash(Val(:subgraph), fs) == ["Qmb", "Qmc"]
+
+        config = Dict(
+            "whitelist" => String[],
+            "blacklist" => String[],
+            "frozenlist" => String[],
+            "pinnedlist" => String["Qmb", "Qmc"],
+            "min_signal" => 0.0,
         )
         fs = AllocationOpt.allocatablesubgraphs(s, config)
         @test AllocationOpt.ipfshash(Val(:subgraph), fs) == ["Qmb", "Qmc"]
