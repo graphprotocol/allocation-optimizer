@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.2](https://github.com/graphprotocol/allocation-optimizer/compare/v2.1.1...v2.1.2) (2023-04-24)
+
+
+### Bug Fixes
+
+* Pinned subgraphs are now whitelisted ([ddacc55](https://github.com/graphprotocol/allocation-optimizer/commit/ddacc555df08730b3fce04e83ce2aa06dc7a3b7e))
+
 ## [2.1.1](https://github.com/graphprotocol/allocation-optimizer/compare/v2.1.0...v2.1.1) (2023-04-17)
 
 
