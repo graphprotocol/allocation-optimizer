@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.2.1](https://github.com/graphprotocol/allocation-optimizer/compare/v2.2.0...v2.2.1) (2023-04-27)
+
+
+### Bug Fixes
+
+* Pinnedlist behaviour fixed ([9cc96ba](https://github.com/graphprotocol/allocation-optimizer/commit/9cc96baf85d1be9e890d91f4bb2067e095d99ce2)), closes [#38](https://github.com/graphprotocol/allocation-optimizer/issues/38)
+
 # [2.2.0](https://github.com/graphprotocol/allocation-optimizer/compare/v2.1.2...v2.2.0) (2023-04-27)
 
 
