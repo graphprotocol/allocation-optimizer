@@ -12,8 +12,8 @@ paginated_query_success_patch = @patch function paginated_query(v, a, f)
     if v == "subgraphDeployments"
         @info "paginated query stub ==> simulating subgraphs"
         return [
-            Dict("ipfsHash" => "Qma", "signalledTokens" => "1", "stakedTokens" => "1"),
-            Dict("ipfsHash" => "Qmb", "signalledTokens" => "2", "stakedTokens" => "2"),
+            Dict("ipfsHash" => "Qma", "signalledTokens" => "1", "stakedTokens" => "1", "deniedAt" => 0),
+            Dict("ipfsHash" => "Qmb", "signalledTokens" => "2", "stakedTokens" => "2", "deniedAt" => 0),
         ]
     end
     if v == "allocations"

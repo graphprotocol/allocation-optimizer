@@ -5,7 +5,7 @@
     @testset "squery" begin
         v, a, f = AllocationOpt.squery()
         @test v == "subgraphDeployments"
-        @test f == ["ipfsHash", "signalledTokens", "stakedTokens"]
+        @test f == ["ipfsHash", "signalledTokens", "stakedTokens", "deniedAt"]
         @test a == Dict{String,Union{Dict{String,String},String}}()
     end
 
@@ -68,14 +68,15 @@
 
         @testset "subgraph" begin
             s = flextable([
-                Dict("stakedTokens" => "1", "signalledTokens" => "0", "ipfsHash" => "Qma"),
-                Dict("stakedTokens" => "2", "signalledTokens" => "0", "ipfsHash" => "Qmb"),
-                Dict("stakedTokens" => "3", "signalledTokens" => "0", "ipfsHash" => "Qmc"),
+                Dict("stakedTokens" => "1", "signalledTokens" => "0", "ipfsHash" => "Qma", "deniedAt" => 0),
+                Dict("stakedTokens" => "2", "signalledTokens" => "0", "ipfsHash" => "Qmb", "deniedAt" => 0),
+                Dict("stakedTokens" => "3", "signalledTokens" => "0", "ipfsHash" => "Qmc", "deniedAt" => 0)
             ])
             AllocationOpt.correcttypes!(Val(:subgraph), s)
             @test s.stakedTokens == [1e-18, 2e-18, 3e-18]
             @test s.signalledTokens == [0, 0, 0]
             @test s.ipfsHash == ["Qma", "Qmb", "Qmc"]
+            @test s.deniedAt == [0, 0, 0]
         end
 
         @testset "allocation" begin
@@ -127,9 +128,9 @@
                 Dict("stakedTokens" => "1", "delegatedTokens" => "0", "lockedTokens" => "0")
             ])
             s = flextable([
-                Dict("stakedTokens" => "1", "signalledTokens" => "0", "ipfsHash" => "Qma"),
-                Dict("stakedTokens" => "2", "signalledTokens" => "0", "ipfsHash" => "Qmb"),
-                Dict("stakedTokens" => "3", "signalledTokens" => "0", "ipfsHash" => "Qmc"),
+                Dict("stakedTokens" => "1", "signalledTokens" => "0", "ipfsHash" => "Qma", "deniedAt" => 0),
+                Dict("stakedTokens" => "2", "signalledTokens" => "0", "ipfsHash" => "Qmb", "deniedAt" => 0),
+                Dict("stakedTokens" => "3", "signalledTokens" => "0", "ipfsHash" => "Qmc", "deniedAt" => 0)
             ])
             a = flextable([
                 Dict(
@@ -165,6 +166,7 @@
             @test s.stakedTokens == [1e-18, 2e-18, 3e-18]
             @test s.signalledTokens == [0, 0, 0]
             @test s.ipfsHash == ["Qma", "Qmb", "Qmc"]
+            @test s.deniedAt == [0, 0, 0]
             @test a.allocatedTokens == [1e-18, 2e-18, 3e-18]
             @test getproperty(a, Symbol("subgraphDeployment.ipfsHash")) ==
                 ["Qma", "Qmb", "Qmc"]

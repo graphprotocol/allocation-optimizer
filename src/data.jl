@@ -20,7 +20,7 @@ You can find TheGraphData.jl at https://github.com/semiotic-ai/TheGraphData.jl
 function squery()
     v = "subgraphDeployments"
     a = Dict{String,Union{Dict{String,String},String}}()
-    f = ["ipfsHash", "signalledTokens", "stakedTokens"]
+    f = ["ipfsHash", "signalledTokens", "stakedTokens", "deniedAt"]
     return v, a, f
 end
 
@@ -283,13 +283,14 @@ julia> s = flextable([
         "stakedTokens" => "1",
         "signalledTokens" => "0",
         "ipfsHash" => "Qma",
+        "deniedAt" => 0,
     ),
 ])
 julia> AllocationOpt.correcttypes!(Val(:subgraph), s)
-FlexTable with 3 columns and 1 row:
-     stakedTokens  signalledTokens  ipfsHash
-   ┌────────────────────────────────────────
- 1 │ 1.0e-18       0.0              Qma
+FlexTable with 4 columns and 1 row:
+     deniedAt  stakedTokens  signalledTokens  ipfsHash
+   ┌──────────────────────────────────────────────────
+ 1 │ 0         1.0e-18       0.0              Qma
 ```
 """
 function correcttypes!(::Val{:subgraph}, s::FlexTable)
