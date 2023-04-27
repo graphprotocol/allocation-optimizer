@@ -40,11 +40,12 @@
 
         @testset "subgraph" begin
             x = flextable([
-                Dict("stakedTokens" => 1, "ipfsHash" => "Qma", "signalledTokens" => 2)
+                Dict("stakedTokens" => 1, "ipfsHash" => "Qma", "signalledTokens" => 2, "deniedAt" => 0)
             ])
             @test AllocationOpt.ipfshash(Val(:subgraph), x) == ["Qma"]
             @test AllocationOpt.stake(Val(:subgraph), x) == [1]
             @test AllocationOpt.signal(Val(:subgraph), x) == [2]
+            @test AllocationOpt.deniedat(Val(:subgraph), x) == [0]
         end
 
         @testset "indexer" begin

@@ -256,6 +256,26 @@ julia> AllocationOpt.signal(Val(:subgraph), x)
 signal(::Val{:subgraph}, x) = x.signalledTokens
 
 """
+    deniedat(::Val{:subgraph}, x)
+
+If this value is non-zero, the subgraph doesn't receive indexing rewards.
+
+```julia
+julia> using AllocationOpt
+julia> using TheGraphData
+julia> x = flextable([
+    Dict("deniedAt" => 10,),
+    Dict("deniedAt" => 0,),
+])
+julia> AllocationOpt.deniedat(Val(:subgraph), x)
+2-element view(transpose(lazystack(::Vector{Vector{Int64}})), :, 1) with eltype Int64:
+ 10
+  0
+```
+"""
+deniedat(::Val{:subgraph}, x) = x.deniedAt
+
+"""
     stake(::Val{:indexer}, x)
 
 The tokens staked by the indexer in table `x`.
