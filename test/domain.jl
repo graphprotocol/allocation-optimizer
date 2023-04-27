@@ -167,14 +167,24 @@
         @test AllocationOpt.ipfshash(Val(:subgraph), fs) == ["Qmb", "Qmc"]
 
         config = Dict(
-            "whitelist" => String[],
+            "whitelist" => String["Qma"],
             "blacklist" => String[],
             "frozenlist" => String[],
-            "pinnedlist" => String["Qmb", "Qmc"],
+            "pinnedlist" => String["Qmb"],
             "min_signal" => 0.0,
         )
         fs = AllocationOpt.allocatablesubgraphs(s, config)
-        @test AllocationOpt.ipfshash(Val(:subgraph), fs) == ["Qmb", "Qmc"]
+        @test AllocationOpt.ipfshash(Val(:subgraph), fs) == ["Qma", "Qmb"]
+
+        config = Dict(
+            "whitelist" => String[],
+            "blacklist" => String[],
+            "frozenlist" => String[],
+            "pinnedlist" => String["Qmb"],
+            "min_signal" => 0.0,
+        )
+        fs = AllocationOpt.allocatablesubgraphs(s, config)
+        @test AllocationOpt.ipfshash(Val(:subgraph), fs) == ["Qma", "Qmb", "Qmc"]
     end
 
     @testset "newtokenissuance" begin

@@ -416,9 +416,12 @@ FlexTable with 2 columns and 2 rows:
 ```
 """
 function allocatablesubgraphs(s::FlexTable, config::AbstractDict)
-    # If no whitelist, whitelist is all subgraphs
-    w = config["whitelist"] ∪ config["pinnedlist"]
-    whitelist = isempty(w) ? ipfshash(Val(:subgraph), s) : w
+    # If no whitelist, whitelist is all subgraphs. Pinned subgraphs are treated as whitelisted.
+    whitelist = if isempty(config["whitelist"])
+        ipfshash(Val(:subgraph), s)
+    else
+        config["whitelist"] ∪ config["pinnedlist"]
+    end
 
     # For filtering, blacklist contains both the blacklist and frozenlist,
     # since frozen allocations aren't considered during optimisation.
