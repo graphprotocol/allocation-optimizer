@@ -600,3 +600,24 @@ julia> AllocationOpt.profit(r, g)
 ```
 """
 profit(r::Real, g::Real) = r == 0 ? 0 : r - g
+
+"""
+    deniedzeroixs(s::FlexTable)
+
+Find the indices of subgraphs that have "deniedAt" equal to zero.
+
+```julia
+julia> using AllocationOpt
+julia> using TheGraphData
+julia> s = flextable([
+           Dict("ipfsHash" => "Qma", "signalledTokens" => 5.0, "deniedAt" => 0),
+           Dict("ipfsHash" => "Qmb", "signalledTokens" => 10.0, "deniedAt" => 10),
+           Dict("ipfsHash" => "Qmc", "signalledTokens" => 15.0, "deniedAt" => 0),
+       ])
+julia> AllocationOpt.deniedzeroixs(s)
+2-element Vector{Int64}:
+ 1
+ 3
+```
+"""
+deniedzeroixs(s::FlexTable) = findall(r -> deniedat(Val(:subgraph), r) == 0, s)

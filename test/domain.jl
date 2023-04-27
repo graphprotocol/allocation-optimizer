@@ -86,6 +86,15 @@
         @test AllocationOpt.frozen(a, config) == 0
     end
 
+    @testset "deniedzeroixs" begin
+        s = flextable([
+            Dict("ipfsHash" => "Qma", "signalledTokens" => 5.0, "deniedAt" => 0),
+            Dict("ipfsHash" => "Qmb", "signalledTokens" => 10.0, "deniedAt" => 10),
+            Dict("ipfsHash" => "Qmc", "signalledTokens" => 15.0, "deniedAt" => 0),
+        ])
+        @test AllocationOpt.deniedzeroixs(s) == [1, 3]
+    end
+
     @testset "pinned" begin
         s = flextable([
             Dict("ipfsHash" => "Qma", "signalledTokens" => 5.0),
