@@ -1,5 +1,13 @@
 # Changelog
 
+# [2.2.0](https://github.com/graphprotocol/allocation-optimizer/compare/v2.1.2...v2.2.0) (2023-04-27)
+
+
+### Features
+
+* Descriptive error when bad `readdir` ([66b264a](https://github.com/graphprotocol/allocation-optimizer/commit/66b264a00c878d9f545ebe552d7cab6b2e365d56))
+* Warn users about not filtering deniedAt ([630f6b5](https://github.com/graphprotocol/allocation-optimizer/commit/630f6b581bdc3bd23dec00cfa78689da717751b0))
+
 ## [2.1.2](https://github.com/graphprotocol/allocation-optimizer/compare/v2.1.1...v2.1.2) (2023-04-24)
 
 
