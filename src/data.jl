@@ -138,7 +138,13 @@ function read(f::AbstractString, config::AbstractDict)
     d = FlexTable[]
     for p in savenames(f)
         config["verbose"] && @info "Reading data from $p"
-        push!(d, flextable(@mock(TheGraphData.read(p))))
+        try
+            push!(d, flextable(@mock(TheGraphData.read(p))))
+        catch e
+            ArgumentError(
+                "Could not read $p. If you meant to query the network subgraph, remove the `readdir` argument from the config. Else your specified `readdir` is probably incorrect.",
+            ) |> throw
+        end
     end
     i, a, s, n = d
     return i, a, s, n

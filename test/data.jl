@@ -80,9 +80,21 @@
 
         @testset "allocation" begin
             a = flextable([
-                Dict("allocatedTokens" => "1", "subgraphDeployment.ipfsHash" => "Qma", "id" => "0xa"),
-                Dict("allocatedTokens" => "2", "subgraphDeployment.ipfsHash" => "Qmb", "id" => "0xb"),
-                Dict("allocatedTokens" => "3", "subgraphDeployment.ipfsHash" => "Qmc", "id" => "0xc"),
+                Dict(
+                    "allocatedTokens" => "1",
+                    "subgraphDeployment.ipfsHash" => "Qma",
+                    "id" => "0xa",
+                ),
+                Dict(
+                    "allocatedTokens" => "2",
+                    "subgraphDeployment.ipfsHash" => "Qmb",
+                    "id" => "0xb",
+                ),
+                Dict(
+                    "allocatedTokens" => "3",
+                    "subgraphDeployment.ipfsHash" => "Qmc",
+                    "id" => "0xc",
+                ),
             ])
             AllocationOpt.correcttypes!(Val(:allocation), a)
             @test a.allocatedTokens == [1e-18, 2e-18, 3e-18]
@@ -120,9 +132,21 @@
                 Dict("stakedTokens" => "3", "signalledTokens" => "0", "ipfsHash" => "Qmc"),
             ])
             a = flextable([
-                Dict("allocatedTokens" => "1", "subgraphDeployment.ipfsHash" => "Qma", "id" => "0xa"),
-                Dict("allocatedTokens" => "2", "subgraphDeployment.ipfsHash" => "Qmb", "id" => "0xb"),
-                Dict("allocatedTokens" => "3", "subgraphDeployment.ipfsHash" => "Qmc", "id" => "0xc"),
+                Dict(
+                    "allocatedTokens" => "1",
+                    "subgraphDeployment.ipfsHash" => "Qma",
+                    "id" => "0xa",
+                ),
+                Dict(
+                    "allocatedTokens" => "2",
+                    "subgraphDeployment.ipfsHash" => "Qmb",
+                    "id" => "0xb",
+                ),
+                Dict(
+                    "allocatedTokens" => "3",
+                    "subgraphDeployment.ipfsHash" => "Qmc",
+                    "id" => "0xc",
+                ),
             ])
             n = flextable([
                 Dict(
@@ -159,6 +183,11 @@
             apply(read_csv_success_patch) do
                 i, a, s, n = AllocationOpt.read(config)
                 @test i.X == ["b", "c", "a", "c"]
+            end
+
+            config = Dict("verbose" => false, "readdir" => "foo")
+            apply(read_csv_success_patch) do
+                @test_throws ArgumentError AllocationOpt.read(config)
             end
         end
 
@@ -203,8 +232,16 @@
             Dict("ipfsHash" => "Qmc", "stakedTokens" => 5),
         ])
         a = flextable([
-            Dict("allocatedTokens" => 5, "subgraphDeployment.ipfsHash" => "Qma", "id" => "0xa"),
-            Dict("allocatedTokens" => 10, "subgraphDeployment.ipfsHash" => "Qmb", "id" => "0xb"),
+            Dict(
+                "allocatedTokens" => 5,
+                "subgraphDeployment.ipfsHash" => "Qma",
+                "id" => "0xa",
+            ),
+            Dict(
+                "allocatedTokens" => 10,
+                "subgraphDeployment.ipfsHash" => "Qmb",
+                "id" => "0xb",
+            ),
         ])
         a, s = AllocationOpt.subtractindexer!(a, s)
         @test s.stakedTokens == [5, 10, 5]

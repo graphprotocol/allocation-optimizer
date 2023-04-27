@@ -1,6 +1,11 @@
 read_csv_success_patch = @patch function TheGraphData.read(f; kwargs...)
-    @info "TheGraphData.read stub => simulating success"
-    return CSV.File(IOBuffer("X\nb\nc\na\nc"))
+    if f ∈ ("indexer.csv", "allocation.csv", "subgraph.csv", "network.csv")
+        @info "TheGraphData.read stub => simulating success"
+        return CSV.File(IOBuffer("X\nb\nc\na\nc"))
+    else
+        @info "TheGraphData.read stub => simulating failure"
+        throw(ArgumentError("TheGraphData.read stub => simulating failure"))
+    end
 end
 
 paginated_query_success_patch = @patch function paginated_query(v, a, f)
@@ -17,7 +22,7 @@ paginated_query_success_patch = @patch function paginated_query(v, a, f)
             Dict(
                 "subgraphDeployment" => Dict("ipfsHash" => "Qma"),
                 "id" => "0xa",
-                "allocatedTokens" => "1"
+                "allocatedTokens" => "1",
             ),
         ]
     end
