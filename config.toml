@@ -12,3 +12,4 @@ verbose = true
 num_reported_options = 2
 execution_mode = "none"
 opt_mode = "fast"
+network_subgraph_endpoint = "https://api.thegraph.com/subgraphs/name/graphprotocol/graph-network-mainnet"
