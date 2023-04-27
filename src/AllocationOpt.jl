@@ -42,6 +42,8 @@ function main(path::AbstractString)
 end
 
 function main(config::Dict)
+    @warn "The allocation optimizer does not currently filter out subgraphs with 0 indexing reward due to deniedAt. Please add these subgraphs to your blacklist explicitly."
+
     # Read data
     i, a, s, n = AllocationOpt.read(config)
 
