@@ -1,7 +1,7 @@
 name = "AllocationOpt"
 uuid = "e2472b13-1eb9-46f1-ac4b-64ea04136a8a"
 authors = ["The Graph Foundation"]
-version = "2.2.1"
+version = "2.3.0"
 
 [deps]
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"

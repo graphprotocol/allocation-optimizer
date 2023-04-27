@@ -1,5 +1,19 @@
 # Changelog
 
+# [2.3.0](https://github.com/graphprotocol/allocation-optimizer/compare/v2.2.1...v2.3.0) (2023-04-27)
+
+
+### Bug Fixes
+
+* Filter out subgraphs with nonzero deniedAt ([219d4e0](https://github.com/graphprotocol/allocation-optimizer/commit/219d4e0930705e28e241e4d2e71169a0838dbb5e)), closes [#37](https://github.com/graphprotocol/allocation-optimizer/issues/37)
+
+
+### Features
+
+* deniedAt field accessor ([a37263b](https://github.com/graphprotocol/allocation-optimizer/commit/a37263bd9d193684423de28d37eb2846a794167b))
+* Function gets indices of rewarded subgraphs ([113a86e](https://github.com/graphprotocol/allocation-optimizer/commit/113a86e6aea54ac07330cb8b6175a1919c37a503))
+* Query deniedAt ([a7acaa4](https://github.com/graphprotocol/allocation-optimizer/commit/a7acaa4d4d451378f22aac46334120608033e5dc))
+
 ## [2.2.1](https://github.com/graphprotocol/allocation-optimizer/compare/v2.2.0...v2.2.1) (2023-04-27)
 
 
