@@ -42,8 +42,6 @@ function main(path::AbstractString)
 end
 
 function main(config::Dict)
-    @warn "The allocation optimizer does not currently filter out subgraphs with 0 indexing reward due to deniedAt. Please add these subgraphs to your blacklist explicitly."
-
     # Read data
     i, a, s, n = AllocationOpt.read(config)
 
@@ -71,15 +69,18 @@ function main(config::Dict)
     # New tokens issued over allocation lifetime
     Φ = newtokenissuance(n, config)
 
+    # Get indices of subgraphs that can get indexing rewards
+    rixs = deniedzeroixs(fs)
+
     # Get max number of allocations
-    K = min(config["max_allocations"], length(fs))
+    K = min(config["max_allocations"], length(fs) - length(rixs))
 
     # Get gas cost in GRT
     g = config["gas"]
 
     # Get optimal values
     config["verbose"] && @info "Optimizing"
-    xs, nonzeros, profitmatrix = optimize(Ω, ψ, σ, K, Φ, Ψ, g, config)
+    xs, nonzeros, profitmatrix = optimize(Ω, ψ, σ, K, Φ, Ψ, g, rixs, config)
 
     # Add the pinned stake back in
     xs .= xs .+ pinnedvec

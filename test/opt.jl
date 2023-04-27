@@ -92,20 +92,7 @@
 
     @testset "optimize" begin
         @testset "fast" begin
-            Ω = [1.0, 1.0]
-            ψ = [10.0, 10.0]
-            σ = 5.0
-            K = 2
-            Φ = 1.0
-            Ψ = 20.0
-            g = 0.01
-            xs, nonzeros, profits = AllocationOpt.optimize(Val(:fast), Ω, ψ, σ, K, Φ, Ψ, g)
-            @test xs == [[5.0 2.5]; [0.0 2.5]]
-            @test nonzeros == [1, 2]
-            @test isapprox(profits, [[0.41 0.35]; [0.0 0.35]]; atol=0.1)
-        end
-
-        @testset "optimal" begin
+            rixs = [1, 2]
             Ω = [1.0, 1.0]
             ψ = [10.0, 10.0]
             σ = 5.0
@@ -114,15 +101,63 @@
             Ψ = 20.0
             g = 0.01
             xs, nonzeros, profits = AllocationOpt.optimize(
-                Val(:optimal), Ω, ψ, σ, K, Φ, Ψ, g
+                Val(:fast), Ω, ψ, σ, K, Φ, Ψ, g, rixs
+            )
+            @test xs == [[5.0 2.5]; [0.0 2.5]]
+            @test nonzeros == [1, 2]
+            @test isapprox(profits, [[0.41 0.35]; [0.0 0.35]]; atol=0.1)
+
+            rixs = [2]
+            Ω = [1.0, 1.0]
+            ψ = [10.0, 10.0]
+            σ = 5.0
+            K = 1
+            Φ = 1.0
+            Ψ = 20.0
+            g = 0.01
+            xs, nonzeros, profits = AllocationOpt.optimize(
+                Val(:fast), Ω, ψ, σ, K, Φ, Ψ, g, rixs
+            )
+            @test xs == [0.0; 5.0;;]
+            @test nonzeros == [1]
+            @test isapprox(profits, [0.0, 0.41]; atol=0.1)
+        end
+
+        @testset "optimal" begin
+            rixs = [1, 2]
+            Ω = [1.0, 1.0]
+            ψ = [10.0, 10.0]
+            σ = 5.0
+            K = 2
+            Φ = 1.0
+            Ψ = 20.0
+            g = 0.01
+            xs, nonzeros, profits = AllocationOpt.optimize(
+                Val(:optimal), Ω, ψ, σ, K, Φ, Ψ, g, rixs
             )
             @test xs == [2.5; 2.5;;]
             @test nonzeros == [2]
             @test isapprox(profits, [0.35; 0.35]; atol=0.1)
+
+            rixs = [2]
+            Ω = [1.0, 1.0]
+            ψ = [10.0, 10.0]
+            σ = 5.0
+            K = 1
+            Φ = 1.0
+            Ψ = 20.0
+            g = 0.01
+            xs, nonzeros, profits = AllocationOpt.optimize(
+                Val(:optimal), Ω, ψ, σ, K, Φ, Ψ, g, rixs
+            )
+            @test xs == [0.0; 5.0;;]
+            @test nonzeros == [1]
+            @test isapprox(profits, [0.0, 0.41]; atol=0.1)
         end
 
         @testset "dispatch" begin
             config = Dict("opt_mode" => "fast")
+            rixs = [1, 2]
             Ω = [1.0, 1.0]
             ψ = [10.0, 10.0]
             σ = 5.0
@@ -130,9 +165,12 @@
             Φ = 1.0
             Ψ = 20.0
             g = 0.01
-            xs, nonzeros, profits = AllocationOpt.optimize(Ω, ψ, σ, K, Φ, Ψ, g, config)
+            xs, nonzeros, profits = AllocationOpt.optimize(
+                Ω, ψ, σ, K, Φ, Ψ, g, rixs, config
+            )
 
             config = Dict("opt_mode" => "optimal")
+            rixs = [1, 2]
             Ω = [1.0, 1.0]
             ψ = [10.0, 10.0]
             σ = 5.0
@@ -140,7 +178,9 @@
             Φ = 1.0
             Ψ = 20.0
             g = 0.01
-            xs, nonzeros, profits = AllocationOpt.optimize(Ω, ψ, σ, K, Φ, Ψ, g, config)
+            xs, nonzeros, profits = AllocationOpt.optimize(
+                Ω, ψ, σ, K, Φ, Ψ, g, rixs, config
+            )
             @test xs == [2.5; 2.5;;]
             @test nonzeros == [2]
             @test isapprox(profits, [0.35; 0.35]; atol=0.1)

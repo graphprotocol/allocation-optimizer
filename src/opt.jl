@@ -2,13 +2,19 @@
 # SPDX-License-Identifier: MIT
 
 """
-    AnalyticOpt{T<:Real,V<:AbstractArray{T},A<:AbstractArray{T},S<:AbstractVector{<:Hook}} <: OptAlgorithm
+    AnalyticOpt{
+        T<:Real,
+        V<:AbstractArray{T},
+        U<:AbstractArray{T},
+        A<:AbstractArray{T},
+        S<:AbstractVector{<:Hook},
+    } <: SemioticOpt.OptAlgorithm
 
 Optimise the indexing reward analytically.
 
 # Fields
 - `x::V` is the current best guess for the solution. Typically zeros.
-- `Ω::V` is the allocation vector of other indexers.
+- `Ω::U` is the allocation vector of other indexers.
 - `ψ::A` is the signal vector.
 - `σ::T` is the stake.
 - `hooks::S` are the hooks
@@ -33,10 +39,14 @@ julia> SemioticOpt.x(alg)
 ```
 """
 Base.@kwdef struct AnalyticOpt{
-    T<:Real,V<:AbstractVector{T},A<:AbstractArray{T},S<:AbstractVector{<:Hook}
+    T<:Real,
+    V<:AbstractArray{T},
+    U<:AbstractArray{T},
+    A<:AbstractArray{T},
+    S<:AbstractVector{<:Hook},
 } <: SemioticOpt.OptAlgorithm
     x::V
-    Ω::V
+    Ω::U
     ψ::A
     σ::T
     hooks::S
@@ -135,10 +145,11 @@ function dual(Ω, ψ, σ)
 end
 
 """
-    optimize(Ω, ψ, σ, K, Φ, Ψ, g, config::AbstractDict)
+    optimize(Ω, ψ, σ, K, Φ, Ψ, g, rixs, config::AbstractDict)
 
 Find the optimal solution vector given allocations of other indexers `Ω`, signals
 `ψ`, available stake `σ`, new tokens issued `Φ`, total signal `Ψ`, and gas in grt `g`.
+`rixs` are the indices of subgraphs that are eligible to receive indexing rewards.
 
 
 Dispatches to [`optimize`](@ref) with the `opt_mode` key.
@@ -149,6 +160,7 @@ If `opt_mode` is `optimal`, then run Pairwise Greedy Optimisation.
 ```julia
 julia> using AllocationOpt
 julia> config = Dict("opt_mode" => "fast")
+julia> rixs = [1, 2]
 julia> Ω = [1.0, 1.0]
 julia> ψ = [10.0, 10.0]
 julia> σ = 5.0
@@ -156,22 +168,24 @@ julia> K = 2
 julia> Φ = 1.0
 julia> Ψ = 20.0
 julia> g = 0.01
-julia> xs, nonzeros, profits = AllocationOpt.optimize(Ω, ψ, σ, K, Φ, Ψ, g, config)
+julia> xs, nonzeros, profits = AllocationOpt.optimize(Ω, ψ, σ, K, Φ, Ψ, g, rixs, config)
 ([5.0 2.5; 0.0 2.5], Int32[1, 2], [0.4066666666666667 0.34714285714285714; 0.0 0.34714285714285714])
 ```
 """
-function optimize(Ω, ψ, σ, K, Φ, Ψ, g, config::AbstractDict)
-    return optimize(Val(Symbol(config["opt_mode"])), Ω, ψ, σ, K, Φ, Ψ, g)
+function optimize(Ω, ψ, σ, K, Φ, Ψ, g, rixs, config::AbstractDict)
+    return optimize(Val(Symbol(config["opt_mode"])), Ω, ψ, σ, K, Φ, Ψ, g, rixs)
 end
 
 """
-    optimize(::Val{:fast}, Ω, ψ, σ, K, Φ, Ψ, g)
+    optimize(::Val{:fast}, Ω, ψ, σ, K, Φ, Ψ, g, rixs)
 
 Find the optimal vectors for k ∈ [1,`K`] given allocations of other indexers `Ω`, signals
 `ψ`, available stake `σ`, new tokens issued `Φ`, total signal `Ψ`, and gas in grt `g`.
+`rixs` are the indices of subgraphs that are eligible to receive indexing rewards.
 
 ```julia
 julia> using AllocationOpt
+julia> rixs = [1, 2]
 julia> Ω = [1.0, 1.0]
 julia> ψ = [10.0, 10.0]
 julia> σ = 5.0
@@ -179,16 +193,23 @@ julia> K = 2
 julia> Φ = 1.0
 julia> Ψ = 20.0
 julia> g = 0.01
-julia> xs, nonzeros, profits = AllocationOpt.optimize(Val(:fast), Ω, ψ, σ, K, Φ, Ψ, g)
+julia> xs, nonzeros, profits = AllocationOpt.optimize(Val(:fast), Ω, ψ, σ, K, Φ, Ψ, g, rixs)
 ([5.0 2.5; 0.0 2.5], Int32[1, 2], [0.4066666666666667 0.34714285714285714; 0.0 0.34714285714285714])
 ```
 """
-function optimize(::Val{:fast}, Ω, ψ, σ, K, Φ, Ψ, g)
+function optimize(::Val{:fast}, Ω, ψ, σ, K, Φ, Ψ, g, rixs)
     # Helper function to compute profit
     f = x -> profit.(indexingreward.(x, Ω, ψ, Φ, Ψ), g)
 
+    # Only use the eligible subgraphs
+    _Ω = @view Ω[rixs]
+    _ψ = @view ψ[rixs]
+
     # Get the anchor point for Halpern iteration
-    xopt = optimizeanalytic(Ω, ψ, σ)
+    _xopt = optimizeanalytic(_Ω, _ψ, σ)
+
+    xopt = zeros(length(Ω))
+    xopt[rixs] .= _xopt
 
     # Preallocate solution vectors for in-place operations
     x = repeat(xopt, 1, K)
@@ -197,7 +218,7 @@ function optimize(::Val{:fast}, Ω, ψ, σ, K, Φ, Ψ, g)
 
     # Optimize
     for k in 1:K
-        x[:, k] .= AllocationOpt.optimizek(x[:, k], Ω, ψ, σ, k, Φ, Ψ)
+        x[rixs, k] .= AllocationOpt.optimizek(x[rixs, k], _Ω, _ψ, σ, k, Φ, Ψ)
         nonzeros[k] = x[:, k] |> nonzero |> length
         profits[:, k] .= f(x[:, k])
     end
@@ -243,14 +264,16 @@ function optimizek(xopt, Ω, ψ, σ, k, Φ, Ψ)
 end
 
 """
-    optimize(::Val{:optimal}, Ω, ψ, σ, K, Φ, Ψ, g)
+    optimize(::Val{:optimal}, Ω, ψ, σ, K, Φ, Ψ, g, rixs)
 
 Find the optimal solution vector given allocations of other indexers `Ω`, signals
 `ψ`, available stake `σ`, new tokens issued `Φ`, total signal `Ψ`, and gas in grt `g`.
+`rixs` are the indices of subgraphs that are eligible to receive indexing rewards.
 
 # Example
 ```julia
 julia> using AllocationOpt
+julia> rixs = [1, 2]
 julia> Ω = [1.0, 1.0]
 julia> ψ = [10.0, 10.0]
 julia> σ = 5.0
@@ -259,16 +282,20 @@ julia> Φ = 1.0
 julia> Ψ = 20.0
 julia> g = 0.01
 julia> xs, nonzeros, profits = AllocationOpt.optimize(
-           Val(:optimal), Ω, ψ, σ, K, Φ, Ψ, g
+           Val(:optimal), Ω, ψ, σ, K, Φ, Ψ, g, rixs
        )
 ([2.5; 2.5;;], Int32[2], [0.34714285714285714; 0.34714285714285714;;])
 ```
 """
-function optimize(::Val{:optimal}, Ω, ψ, σ, K, Φ, Ψ, g)
+function optimize(::Val{:optimal}, Ω, ψ, σ, K, Φ, Ψ, g, rixs)
     @warn "This uses the pairwise greedy algorithm, which is currently experimental."
 
+    # Only use the eligible subgraphs
+    _Ω = @view Ω[rixs]
+    _ψ = @view ψ[rixs]
+
     # Helper function to compute profit
-    obj = x -> -profit.(indexingreward.(x, Ω, ψ, Φ, Ψ), g) |> sum
+    obj = x -> -profit.(indexingreward.(x, _Ω, _ψ, Φ, Ψ), g) |> sum
 
     # Preallocate solution vectors for in-place operations
     _x = zeros(length(ψ), 1)
@@ -280,13 +307,14 @@ function optimize(::Val{:optimal}, Ω, ψ, σ, K, Φ, Ψ, g)
     # Set up optimizer
     function makeanalytic(x)
         return AllocationOpt.AnalyticOpt(;
-            x=x, Ω=Ω, ψ=ψ, σ=σ, hooks=[StopWhen((a; kws...) -> kws[:i] > 0)]
+            x=x, Ω=_Ω, ψ=_ψ, σ=σ, hooks=[StopWhen((a; kws...) -> kws[:i] > 0)]
         )
     end
+
     alg = PairwiseGreedyOpt(;
         kmax=K,
-        x=zeros(length(ψ)),
-        xinit=zeros(length(ψ)),
+        x=zeros(length(_ψ)),
+        xinit=zeros(length(_ψ)),
         f=f,
         a=makeanalytic,
         hooks=[
@@ -298,7 +326,7 @@ function optimize(::Val{:optimal}, Ω, ψ, σ, K, Φ, Ψ, g)
     )
     sol = minimize!(obj, alg)
 
-    _x[:, 1] .= SemioticOpt.x(sol)
+    _x[rixs, 1] .= SemioticOpt.x(sol)
     nonzeros[1] = _x[:, 1] |> nonzero |> length
     profits[:, 1] .= profit.(indexingreward.(_x[:, 1], Ω, ψ, Φ, Ψ), g)
 
