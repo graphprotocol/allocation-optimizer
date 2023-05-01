@@ -251,6 +251,11 @@ git-tree-sha1 = "6667aadd1cdee2c6cd068128b3d226ebc4fb0c67"
 uuid = "3587e190-3f89-42d0-90ee-14403ec27112"
 version = "0.1.9"
 
+[[deps.InvertedIndices]]
+git-tree-sha1 = "0dc7b50b8d436461be01300fd8cd45aa0274b038"
+uuid = "41ab1584-1d38-5bbf-9106-f11c6c58b48f"
+version = "1.3.0"
+
 [[deps.IrrationalConstants]]
 git-tree-sha1 = "630b497eafcc20001bba38a4651b327dcfc491d2"
 uuid = "92d709cd-6900-40b7-9082-c6be49f344b6"
@@ -506,12 +511,12 @@ uuid = "6c6a2e73-6563-6170-7368-637461726353"
 version = "1.2.0"
 
 [[deps.SemioticOpt]]
-deps = ["Accessors", "Lazy", "LinearAlgebra", "Zygote"]
-git-tree-sha1 = "741baaa2aaff182201d39d1f732acc393ce1ef74"
+deps = ["Accessors", "InvertedIndices", "Lazy", "LinearAlgebra", "Zygote"]
+git-tree-sha1 = "b62c65e53d5c492058b548a43313b5739d8cbfe2"
 repo-rev = "main"
 repo-url = "https://github.com/semiotic-ai/SemioticOpt.jl.git"
 uuid = "a0c0fc10-8635-40d2-82ff-39f738735ee1"
-version = "0.6.1"
+version = "0.6.2"
 
 [[deps.SentinelArrays]]
 deps = ["Dates", "Random"]
