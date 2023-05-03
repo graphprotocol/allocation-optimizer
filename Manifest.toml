@@ -496,9 +496,9 @@ version = "1.3.0"
 
 [[deps.Roots]]
 deps = ["ChainRulesCore", "CommonSolve", "Printf", "Setfield"]
-git-tree-sha1 = "2505d1dcab54520ed5e0a12583f2877f68bec704"
+git-tree-sha1 = "e19c09f5cc868785766f86435ba40576cf751257"
 uuid = "f2b01f46-fcfa-551c-844a-d8ac1e96c665"
-version = "2.0.13"
+version = "2.0.14"
 
 [[deps.SHA]]
 uuid = "ea8e919c-243c-51af-8825-aaa63cd721ce"
@@ -512,11 +512,11 @@ version = "1.2.0"
 
 [[deps.SemioticOpt]]
 deps = ["Accessors", "InvertedIndices", "Lazy", "LinearAlgebra", "Zygote"]
-git-tree-sha1 = "b62c65e53d5c492058b548a43313b5739d8cbfe2"
+git-tree-sha1 = "aa0a71db5ad4cfc49f5a4fb24c786805c311f184"
 repo-rev = "main"
 repo-url = "https://github.com/semiotic-ai/SemioticOpt.jl.git"
 uuid = "a0c0fc10-8635-40d2-82ff-39f738735ee1"
-version = "0.6.2"
+version = "0.6.3"
 
 [[deps.SentinelArrays]]
 deps = ["Dates", "Random"]
