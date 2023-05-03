@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.3.1](https://github.com/graphprotocol/allocation-optimizer/compare/v2.3.0...v2.3.1) (2023-05-03)
+
+
+### Bug Fixes
+
+* Correcting K for deniedAt filtering ([5840fbd](https://github.com/graphprotocol/allocation-optimizer/commit/5840fbdf1e7b8d9dbd3783f8c0f61c2d7ce012a5))
+
 # [2.3.0](https://github.com/graphprotocol/allocation-optimizer/compare/v2.2.1...v2.3.0) (2023-04-27)
 
 
