@@ -307,8 +307,17 @@ function optimize(::Val{:optimal}, Ω, ψ, σ, K, Φ, Ψ, g, rixs)
     # Set up optimizer
     function makeanalytic(x)
         return AllocationOpt.AnalyticOpt(;
-            x=x, Ω=_Ω, ψ=_ψ, σ=σ, hooks=[StopWhen((a; kws...) -> kws[:i] > 0)]
+            x=x, Ω=_Ω, ψ=_ψ, σ=σ, hooks=[StopWhen((a; kws...) -> kws[:i] > 1)]
         )
+    end
+
+    # Can't make any more swaps, so stop. Also assign the final value of x.
+    function stop_full(a; kws...)
+        v = length(kws[:z]) == length(SemioticOpt.nonzeroixs(kws[:z]))
+        if v
+            kws[:op](a, kws[:z])
+        end
+        return v
     end
 
     alg = PairwiseGreedyOpt(;
@@ -319,9 +328,7 @@ function optimize(::Val{:optimal}, Ω, ψ, σ, K, Φ, Ψ, g, rixs)
         a=makeanalytic,
         hooks=[
             StopWhen((a; kws...) -> kws[:f](kws[:z]) ≥ kws[:f](SemioticOpt.x(a))),
-            StopWhen(
-                (a; kws...) -> length(kws[:z]) == length(SemioticOpt.nonzeroixs(kws[:z]))
-            ),
+            StopWhen(stop_full),
         ],
     )
     sol = minimize!(obj, alg)

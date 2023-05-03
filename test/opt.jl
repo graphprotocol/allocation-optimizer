@@ -168,6 +168,9 @@
             xs, nonzeros, profits = AllocationOpt.optimize(
                 Ω, ψ, σ, K, Φ, Ψ, g, rixs, config
             )
+            @test xs == [[5.0 2.5]; [0.0 2.5]]
+            @test nonzeros == [1, 2]
+            @test isapprox(profits, [[0.41 0.35]; [0.0 0.35]]; atol=0.1)
 
             config = Dict("opt_mode" => "optimal")
             rixs = [1, 2]
