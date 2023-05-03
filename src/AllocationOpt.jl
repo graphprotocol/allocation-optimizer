@@ -73,7 +73,7 @@ function main(config::Dict)
     rixs = deniedzeroixs(fs)
 
     # Get max number of allocations
-    K = min(config["max_allocations"], length(fs) - length(rixs))
+    K = min(config["max_allocations"], length(rixs))
 
     # Get gas cost in GRT
     g = config["gas"]
