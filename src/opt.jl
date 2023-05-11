@@ -217,7 +217,7 @@ function optimize(val::Val{:fast}, Ω, ψ, σ, K, Φ, Ψ, g, rixs)
     nonzeros = Vector{Int32}(undef, K)
 
     # Optimize
-    for k in 1:K
+    @inbounds for k in 1:K
         x[rixs, k] .= AllocationOpt.optimizek(val, x[rixs, k], _Ω, _ψ, σ, k, Φ, Ψ)
         nonzeros[k] = x[:, k] |> nonzero |> length
         profits[:, k] .= f(x[:, k])
@@ -307,7 +307,7 @@ function optimize(val::Val{:optimal}, Ω, ψ, σ, K, Φ, Ψ, g, rixs)
     nonzeros = ones(Int32, K)
 
     # Optimize
-    for k in 1:K
+    @inbounds for k in 1:K
         x[:, k] .= k == 1 ? zeros(length(Ω)) : x[:, k - 1]
         x[rixs, k] .= AllocationOpt.optimizek(val, x[rixs, k], _Ω, _ψ, σ, k, Φ, Ψ, g)
         nonzeros[k] = x[:, k] |> nonzero |> length
