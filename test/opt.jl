@@ -179,6 +179,37 @@
             @test xs == [0.0; 5.0;;]
             @test nonzeros == [1]
             @test isapprox(profits, [0.0, 0.41]; atol=0.1)
+
+            # Test Early stopping
+            # Should run the final iteration
+            rixs = [1, 2, 3, 4]
+            Ω = [1.0, 1.0, 1.0, 1.0]
+            ψ = [10.0, 10.0, 0.01, 0.01]
+            σ = 5.0
+            K = 4
+            Φ = 1.0
+            Ψ = 20.0
+            g = 0.01
+            xs, nonzeros, profits = AllocationOpt.optimize(
+                Val(:optimal), Ω, ψ, σ, K, Φ, Ψ, g, rixs
+            )
+            @test xs ≈ [
+                [5.0 2.5 2.5 0.0]
+                [0.0 2.5 2.5 0.0]
+                [0.0 0.0 0.0 0.0]
+                [0.0 0.0 0.0 0.0]
+            ]
+            @test nonzeros == [1, 2, 2, 1]
+            @test isapprox(
+                profits,
+                [
+                    [0.406667 0.347143 0.347143 0.0]
+                    [0.0 0.347143 0.347143 0.0]
+                    [0.0 0.0 0.0 0.0]
+                    [0.0 0.0 0.0 0.0]
+                ];
+                atol=0.1,
+            )
         end
 
         @testset "dispatch" begin

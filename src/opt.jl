@@ -299,8 +299,12 @@ function optimize(val::Val{:optimal}, Ω, ψ, σ, K, Φ, Ψ, g, rixs)
 
     # Preallocate solution vectors for in-place operations
     x = Matrix{Float64}(undef, length(Ω), K)
-    profits = Matrix{Float64}(undef, length(Ω), K)
-    nonzeros = Vector{Int32}(undef, K)
+    profits = zeros(length(Ω), K)
+    # Nonzeros defaults to ones and not zeros because the optimiser will always find
+    # at least one non-zero, meaning that the ones with zero profits will be filtered out
+    # during reporting. In other words, this prevents the optimiser from reporting or
+    # executing something that was never run.
+    nonzeros = ones(Int32, K)
 
     # Optimize
     for k in 1:K
@@ -308,6 +312,12 @@ function optimize(val::Val{:optimal}, Ω, ψ, σ, K, Φ, Ψ, g, rixs)
         x[rixs, k] .= AllocationOpt.optimizek(val, x[rixs, k], _Ω, _ψ, σ, k, Φ, Ψ, g)
         nonzeros[k] = x[:, k] |> nonzero |> length
         profits[:, k] .= f(x[:, k])
+        # Early stoppping if converged
+        if k > 1
+            if norm(x[:, k] - x[:, k - 1]) ≤ 0.1
+                break
+            end
+        end
     end
 
     return x, nonzeros, profits
