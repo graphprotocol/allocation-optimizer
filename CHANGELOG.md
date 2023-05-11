@@ -1,5 +1,22 @@
 # Changelog
 
+# [2.4.0](https://github.com/graphprotocol/allocation-optimizer/compare/v2.3.1...v2.4.0) (2023-05-11)
+
+
+### Bug Fixes
+
+* PGO computes optimal value for each sparsity ([2121343](https://github.com/graphprotocol/allocation-optimizer/commit/212134307b652f6b83bbd9096cd152e4ac2b55b2))
+
+
+### Features
+
+* PGO stops when it finds the same value twice ([d96592d](https://github.com/graphprotocol/allocation-optimizer/commit/d96592d2ce1658e6aeedd4cc6c0f010ce234c5d2))
+
+
+### Performance Improvements
+
+* Disable bounds checking on opt loops ([8b0ae3c](https://github.com/graphprotocol/allocation-optimizer/commit/8b0ae3c461c31fe3fd75a0a0311fce877f381182))
+
 ## [2.3.1](https://github.com/graphprotocol/allocation-optimizer/compare/v2.3.0...v2.3.1) (2023-05-03)
 
 
