@@ -22,6 +22,11 @@ Run the provided binary pointing at the configuration TOML that you would like t
 **NOTE:** This binary only works for x86 Linux.
 If you are you a different operating system or architecture, please see the documentation for other options.
 
+**IMPORTANT:** By default, `opt_mode="fast"`.
+Fast-mode is not guaranteed to converge to a global optimum.
+If you get strange results, you should try `opt_mode="optimal"`.
+This mode is still experimental, and will take longer to run, but you may get more reasonable results with it.
+
 ## Configuration
 
 An example configuration TOML file might look as below.
