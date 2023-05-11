@@ -197,7 +197,7 @@ julia> xs, nonzeros, profits = AllocationOpt.optimize(Val(:fast), Ω, ψ, σ, K,
 ([5.0 2.5; 0.0 2.5], Int32[1, 2], [0.4066666666666667 0.34714285714285714; 0.0 0.34714285714285714])
 ```
 """
-function optimize(::Val{:fast}, Ω, ψ, σ, K, Φ, Ψ, g, rixs)
+function optimize(val::Val{:fast}, Ω, ψ, σ, K, Φ, Ψ, g, rixs)
     # Helper function to compute profit
     f = x -> profit.(indexingreward.(x, Ω, ψ, Φ, Ψ), g)
 
@@ -218,7 +218,7 @@ function optimize(::Val{:fast}, Ω, ψ, σ, K, Φ, Ψ, g, rixs)
 
     # Optimize
     for k in 1:K
-        x[rixs, k] .= AllocationOpt.optimizek(x[rixs, k], _Ω, _ψ, σ, k, Φ, Ψ)
+        x[rixs, k] .= AllocationOpt.optimizek(val, x[rixs, k], _Ω, _ψ, σ, k, Φ, Ψ)
         nonzeros[k] = x[:, k] |> nonzero |> length
         profits[:, k] .= f(x[:, k])
     end
@@ -227,34 +227,34 @@ function optimize(::Val{:fast}, Ω, ψ, σ, K, Φ, Ψ, g, rixs)
 end
 
 """
-    optimizek(Ω, ψ, σ, k, Φ, Ψ)
+    optimizek(::Val{:fast}, x₀, Ω, ψ, σ, k, Φ, Ψ)
 
-Find the optimal `k` sparse vector given allocations of other indexers `Ω`, signals
-`ψ`, available stake `σ`, new tokens issued `Φ`, and total signal `Ψ`.
+Find the optimal `k` sparse vector given initial value `x₀`, allocations of other indexers
+`Ω`, signals `ψ`, available stake `σ`, new tokens issued `Φ`, and total signal `Ψ`.
 
 ```julia
 julia> using AllocationOpt
-julia> xopt = [2.5, 2.5]
+julia> x₀ = [2.5, 2.5]
 julia> Ω = [1.0, 1.0]
 julia> ψ = [10.0, 10.0]
 julia> σ = 5.0
 julia> k = 1
 julia> Φ = 1.0
 julia> Ψ = 20.0
-julia> AllocationOpt.optimizek(xopt, Ω, ψ, σ, k, Φ, Ψ)
+julia> AllocationOpt.optimizek(Val(:fast), x₀, Ω, ψ, σ, k, Φ, Ψ)
 2-element Vector{Float64}:
  5.0
  0.0
 ```
 """
-function optimizek(xopt, Ω, ψ, σ, k, Φ, Ψ)
+function optimizek(::Val{:fast}, x₀, Ω, ψ, σ, k, Φ, Ψ)
     projection = x -> gssp(x, k, σ)
     alg = ProjectedGradientDescent(;
-        x=xopt,
+        x=x₀,
         η=stepsize(lipschitzconstant(ψ, Ω)),
         hooks=[
             StopWhen((a; kws...) -> norm(x(a) - kws[:z]) < 1e-32),
-            HalpernIteration(; x₀=xopt, λ=i -> 1.0 / i),
+            HalpernIteration(; x₀=x₀, λ=i -> 1.0 / i),
         ],
         t=projection,
     )
@@ -284,30 +284,69 @@ julia> g = 0.01
 julia> xs, nonzeros, profits = AllocationOpt.optimize(
            Val(:optimal), Ω, ψ, σ, K, Φ, Ψ, g, rixs
        )
-([2.5; 2.5;;], Int32[2], [0.34714285714285714; 0.34714285714285714;;])
+([5.0 2.5; 0.0 2.5], Int32[1, 2], [0.4066666666666667 0.34714285714285714; 0.0 0.34714285714285714])
 ```
 """
-function optimize(::Val{:optimal}, Ω, ψ, σ, K, Φ, Ψ, g, rixs)
+function optimize(val::Val{:optimal}, Ω, ψ, σ, K, Φ, Ψ, g, rixs)
     @warn "This uses the pairwise greedy algorithm, which is currently experimental."
+
+    # Helper function to compute profit
+    f = x -> profit.(indexingreward.(x, Ω, ψ, Φ, Ψ), g)
 
     # Only use the eligible subgraphs
     _Ω = @view Ω[rixs]
     _ψ = @view ψ[rixs]
 
-    # Helper function to compute profit
-    obj = x -> -profit.(indexingreward.(x, _Ω, _ψ, Φ, Ψ), g) |> sum
-
     # Preallocate solution vectors for in-place operations
-    _x = zeros(length(ψ), 1)
-    profits = Matrix{Float64}(undef, length(ψ), 1)
-    nonzeros = Vector{Int32}(undef, 1)
+    x = Matrix{Float64}(undef, length(Ω), K)
+    profits = Matrix{Float64}(undef, length(Ω), K)
+    nonzeros = Vector{Int32}(undef, K)
 
+    # Optimize
+    for k in 1:K
+        x[:, k] .= k == 1 ? zeros(length(Ω)) : x[:, k - 1]
+        x[rixs, k] .= AllocationOpt.optimizek(val, x[rixs, k], _Ω, _ψ, σ, k, Φ, Ψ, g)
+        nonzeros[k] = x[:, k] |> nonzero |> length
+        profits[:, k] .= f(x[:, k])
+    end
+
+    return x, nonzeros, profits
+end
+
+"""
+    optimizek(::Val{:optimal}, x₀, Ω, ψ, σ, k, Φ, Ψ, g)
+
+Find the optimal `k` sparse vector given allocations of other indexers `Ω`, signals
+`ψ`, available stake `σ`, new tokens issued `Φ`, total signal `Ψ`, and gas `g`.
+
+# Example
+```julia
+julia> using AllocationOpt
+julia> Ω = [1.0, 1.0]
+julia> ψ = [10.0, 10.0]
+julia> σ = 5.0
+julia> k = 1
+julia> Φ = 1.0
+julia> Ψ = 20.0
+julia> g = 0.01
+julia> x₀ = zeros(length(Ω))
+julia> x = AllocationOpt.optimizek(Val(:optimal), x₀, Ω, ψ, σ, k, Φ, Ψ, g)
+2-element Vector{Float64}:
+ 5.0
+ 0.0
+```
+"""
+function optimizek(::Val{:optimal}, x₀, Ω, ψ, σ, k, Φ, Ψ, g)
+    # Helper function to compute profit
+    obj = x -> -profit.(indexingreward.(x, Ω, ψ, Φ, Ψ), g) |> sum
+
+    # Function to get support for analytic optimisation
     f(x, ixs) = ixs
 
     # Set up optimizer
     function makeanalytic(x)
         return AllocationOpt.AnalyticOpt(;
-            x=x, Ω=_Ω, ψ=_ψ, σ=σ, hooks=[StopWhen((a; kws...) -> kws[:i] > 1)]
+            x=x, Ω=Ω, ψ=ψ, σ=σ, hooks=[StopWhen((a; kws...) -> kws[:i] > 1)]
         )
     end
 
@@ -321,9 +360,9 @@ function optimize(::Val{:optimal}, Ω, ψ, σ, K, Φ, Ψ, g, rixs)
     end
 
     alg = PairwiseGreedyOpt(;
-        kmax=K,
-        x=zeros(length(_ψ)),
-        xinit=zeros(length(_ψ)),
+        kmax=k,
+        x=x₀,
+        xinit=zeros(length(ψ)),
         f=f,
         a=makeanalytic,
         hooks=[
@@ -333,11 +372,7 @@ function optimize(::Val{:optimal}, Ω, ψ, σ, K, Φ, Ψ, g, rixs)
     )
     sol = minimize!(obj, alg)
 
-    _x[rixs, 1] .= SemioticOpt.x(sol)
-    nonzeros[1] = _x[:, 1] |> nonzero |> length
-    profits[:, 1] .= profit.(indexingreward.(_x[:, 1], Ω, ψ, Φ, Ψ), g)
-
-    return _x, nonzeros, profits
+    return floor.(SemioticOpt.x(sol); digits=1)
 end
 
 """

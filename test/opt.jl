@@ -71,23 +71,49 @@
     end
 
     @testset "optimizek" begin
-        xopt = [2.5, 2.5]
-        Ω = [1.0, 1.0]
-        ψ = [10.0, 10.0]
-        σ = 5.0
-        k = 1
-        Φ = 1.0
-        Ψ = 20.0
-        @test AllocationOpt.optimizek(xopt, Ω, ψ, σ, k, Φ, Ψ) == [5.0, 0.0]
+        @testset "fast" begin
+            x₀ = [2.5, 2.5]
+            Ω = [1.0, 1.0]
+            ψ = [10.0, 10.0]
+            σ = 5.0
+            k = 1
+            Φ = 1.0
+            Ψ = 20.0
+            @test AllocationOpt.optimizek(Val(:fast), x₀, Ω, ψ, σ, k, Φ, Ψ) == [5.0, 0.0]
 
-        xopt = [2.5, 2.5]
-        Ω = [1.0, 1.0]
-        ψ = [10.0, 10.0]
-        σ = 5.0
-        k = 2
-        Φ = 1.0
-        Ψ = 20.0
-        @test AllocationOpt.optimizek(xopt, Ω, ψ, σ, k, Φ, Ψ) == [2.5, 2.5]
+            x₀ = [2.5, 2.5]
+            Ω = [1.0, 1.0]
+            ψ = [10.0, 10.0]
+            σ = 5.0
+            k = 2
+            Φ = 1.0
+            Ψ = 20.0
+            @test AllocationOpt.optimizek(Val(:fast), x₀, Ω, ψ, σ, k, Φ, Ψ) == [2.5, 2.5]
+        end
+
+        @testset "optimal" begin
+            Ω = [1.0, 1.0]
+            ψ = [10.0, 10.0]
+            σ = 5.0
+            k = 1
+            Φ = 1.0
+            Ψ = 20.0
+            g = 0.01
+            x₀ = zeros(length(Ω))
+            x = AllocationOpt.optimizek(Val(:optimal), x₀, Ω, ψ, σ, k, Φ, Ψ, g)
+            @test x == [5.0, 0.0]
+
+            Ω = [1.0, 1.0]
+            ψ = [10.0, 10.0]
+            σ = 5.0
+            k = 2
+            Φ = 1.0
+            Ψ = 20.0
+            g = 0.01
+            x₀ = zeros(length(Ω))
+            x = AllocationOpt.optimizek(Val(:optimal), x₀, Ω, ψ, σ, k, Φ, Ψ, g)
+            @test x == [2.5, 2.5]
+        end
     end
 
     @testset "optimize" begin
@@ -135,9 +161,9 @@
             xs, nonzeros, profits = AllocationOpt.optimize(
                 Val(:optimal), Ω, ψ, σ, K, Φ, Ψ, g, rixs
             )
-            @test xs == [2.5; 2.5;;]
-            @test nonzeros == [2]
-            @test isapprox(profits, [0.35; 0.35]; atol=0.1)
+            @test xs == [[5.0 2.5]; [0.0 2.5]]
+            @test nonzeros == [1, 2]
+            @test isapprox(profits, [[0.41 0.35]; [0.0 0.35]]; atol=0.1)
 
             rixs = [2]
             Ω = [1.0, 1.0]
@@ -184,9 +210,9 @@
             xs, nonzeros, profits = AllocationOpt.optimize(
                 Ω, ψ, σ, K, Φ, Ψ, g, rixs, config
             )
-            @test xs == [2.5; 2.5;;]
-            @test nonzeros == [2]
-            @test isapprox(profits, [0.35; 0.35]; atol=0.1)
+            @test xs == [[5.0 2.5]; [0.0 2.5]]
+            @test nonzeros == [1, 2]
+            @test isapprox(profits, [[0.41 0.35]; [0.0 0.35]]; atol=0.1)
         end
     end
 end
