@@ -73,11 +73,12 @@ opt_mode = "fast"
     to execute the allocation strategies on. If you specify `"actionqueue"`, you must also
     specify `indexer_url`. If unspecified, `nothing`
 - `opt_mode::String`: We support two optimisation modes. One is `"fast"`. This mode is
-    fast, but may not find the optimal allocation. This mode is also used to the top
+    fast, but may not find the optimal strategy. This mode is also used to the top
     `num_reported_options` allocation strategies. The other mode is `"optimal"`. This
-    mode is slower, but will find the optimal allocation. In general, we recommend
+    mode is slower, but it satisfy stronger optimality conditions. It will find strategies
+    at least as good as `"fast"`, but not guaranteed to be better. In general, we recommend
     exploring config options using `"fast"` mode first, and then using `"optimal"`
-    mode to find the optimal allocation. By default, `"fast"`
+    mode to find the optimal allocation. By default, `"optimal"`
 
 ### Example Configurations
 

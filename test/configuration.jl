@@ -24,7 +24,7 @@
         @test config["execution_mode"] == "none"
         @test isnothing(config["indexer_url"])
         @test !config["verbose"]
-        @test config["opt_mode"] == "fast"
+        @test config["opt_mode"] == "optimal"
 
         config = Dict{String,Any}("id" => "a", "gas" => 0)
         config = AllocationOpt.configuredefaults!(config)

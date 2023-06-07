@@ -50,11 +50,12 @@ Set default values for the config dictionary if the value was not specified in t
     to execute the allocation strategies on. If you specify `"actionqueue"`, you must also
     specify `indexer_url`. By default, `nothing`
 - `opt_mode::String`: We support two optimisation modes. One is `"fast"`. This mode is
-    fast, but may not find the optimal allocation. This mode is also used to the top
+    fast, but may not find the optimal strategy. This mode is also used to the top
     `num_reported_options` allocation strategies. The other mode is `"optimal"`. This
-    mode is slower, but will find the optimal allocation. In general, we recommend
+    mode is slower, but it satisfy stronger optimality conditions. It will find strategies
+    at least as good as `"fast"`, but not guaranteed to be better. In general, we recommend
     exploring config options using `"fast"` mode first, and then using `"optimal"`
-    mode to find the optimal allocation. By default, `"fast"`
+    mode to find the optimal allocation. By default, `"optimal"`
 
 ```julia
 julia> using AllocationOpt
@@ -99,7 +100,7 @@ function configuredefaults!(config::AbstractDict)
     setdefault!(config, "indexer_url", nothing)
     setdefault!(config, "execution_mode", "none")
     setdefault!(config, "verbose", false)
-    setdefault!(config, "opt_mode", "fast")
+    setdefault!(config, "opt_mode", "optimal")
     return config
 end
 
