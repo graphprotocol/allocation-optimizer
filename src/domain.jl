@@ -21,29 +21,6 @@ julia> AllocationOpt.togrt("1")
 togrt(x::AbstractString) = parse(Float64, x) / ethtogrt
 
 """
-    totalsupply(::Val{:network}, x)
-
-The total GRT supply.
-
-```julia
-julia> using AllocationOpt
-julia> using TheGraphData
-julia> n = flextable([
-    Dict(
-        "id" => 1,
-        "totalSupply" => 1,
-        "networkGRTIssuance" => 1,
-        "epochLength" => 28,
-        "totalTokensSignalled" => 2,
-        "currentEpoch" => 1,
-    )
-])
-julia> AllocationOpt.totalsupply(Val(:network), n)
-1
-"""
-totalsupply(::Val{:network}, x) = x.totalSupply |> only
-
-"""
     blockissuance(::Val{:network}, x)
 
 The tokens issued per block.
@@ -54,8 +31,7 @@ julia> using TheGraphData
 julia> n = flextable([
     Dict(
         "id" => 1,
-        "totalSupply" => 1,
-        "networkGRTIssuance" => 1,
+        "networkGRTIssuancePerBlock" => 1,
         "epochLength" => 28,
         "totalTokensSignalled" => 2,
         "currentEpoch" => 1,
@@ -64,7 +40,7 @@ julia> n = flextable([
 julia> AllocationOpt.blockissuance(Val(:network), n)
 1
 """
-blockissuance(::Val{:network}, x) = x.networkGRTIssuance |> only
+blockissuance(::Val{:network}, x) = x.networkGRTIssuancePerBlock |> only
 
 """
     blocksperepoch(::Val{:network}, x)
@@ -77,8 +53,7 @@ julia> using TheGraphData
 julia> n = flextable([
     Dict(
         "id" => 1,
-        "totalSupply" => 1,
-        "networkGRTIssuance" => 1,
+        "networkGRTIssuancePerBlock" => 1,
         "epochLength" => 28,
         "totalTokensSignalled" => 2,
         "currentEpoch" => 1,
@@ -100,8 +75,7 @@ julia> using TheGraphData
 julia> n = flextable([
     Dict(
         "id" => 1,
-        "totalSupply" => 1,
-        "networkGRTIssuance" => 1,
+        "networkGRTIssuancePerBlock" => 1,
         "epochLength" => 28,
         "totalTokensSignalled" => 2,
         "currentEpoch" => 1,
@@ -123,8 +97,7 @@ julia> using TheGraphData
 julia> n = flextable([
     Dict(
         "id" => 1,
-        "totalSupply" => 1,
-        "networkGRTIssuance" => 1,
+        "networkGRTIssuancePerBlock" => 1,
         "epochLength" => 28,
         "totalTokensSignalled" => 2,
         "currentEpoch" => 1,
@@ -467,7 +440,7 @@ end
 """
     newtokenissuance(n::FlexTable, config::Dict)
 
-How many new tokens are issued over the allocation lifetime given network parameters `n`.
+How many new tokens are issued over the allocation lifetime given network parameters `n`. Calcualted by networkGRTIssuancePerBlock * epochLength * allocation_lifetime
 
 ```julia
 julia> using AllocationOpt
@@ -475,8 +448,7 @@ julia> using TheGraphData
 julia> n = flextable([
             Dict(
                 "id" => 1,
-                "totalSupply" => 1,
-                "networkGRTIssuance" => 2,
+                "networkGRTIssuancePerBlock" => 2,
                 "epochLength" => 1,
                 "totalTokensSignalled" => 2,
                 "currentEpoch" => 1,
@@ -488,11 +460,10 @@ julia> AllocationOpt.newtokenissuance(n, config)
 ```
 """
 function newtokenissuance(n::FlexTable, config::Dict)
-    p = totalsupply(Val(:network), n)
     r = blockissuance(Val(:network), n)
     t = blocksperepoch(Val(:network), n) * config["allocation_lifetime"]
 
-    newtokens = p * (r^t - 1.0)
+    newtokens = r * t
     return newtokens
 end
 

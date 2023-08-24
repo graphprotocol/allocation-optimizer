@@ -288,8 +288,6 @@ julia> xs, nonzeros, profits = AllocationOpt.optimize(
 ```
 """
 function optimize(val::Val{:optimal}, Ω, ψ, σ, K, Φ, Ψ, g, rixs)
-    @warn "This uses the pairwise greedy algorithm, which is currently experimental."
-
     # Helper function to compute profit
     f = x -> profit.(indexingreward.(x, Ω, ψ, Φ, Ψ), g)
 

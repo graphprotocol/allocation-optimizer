@@ -41,9 +41,8 @@ query_success_patch = @patch function query(v, a, f)
             Dict(
                 "totalTokensSignalled" => "100",
                 "currentEpoch" => 1,
-                "totalSupply" => "100",
                 "id" => "1",
-                "networkGRTIssuance" => "100",
+                "networkGRTIssuancePerBlock" => "100",
                 "epochLength" => 1,
             ),
         ]

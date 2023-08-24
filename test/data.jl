@@ -32,8 +32,7 @@
         @test v == "graphNetwork"
         @test f == [
             "id",
-            "totalSupply",
-            "networkGRTIssuance",
+            "networkGRTIssuancePerBlock",
             "epochLength",
             "totalTokensSignalled",
             "currentEpoch",
@@ -108,18 +107,16 @@
                 Dict(
                     "totalTokensSignalled" => "100",
                     "currentEpoch" => 1,
-                    "totalSupply" => "100",
                     "id" => "1",
-                    "networkGRTIssuance" => "100",
+                    "networkGRTIssuancePerBlock" => "100",
                     "epochLength" => 1,
                 ),
             ])
             AllocationOpt.correcttypes!(Val(:network), n)
             @test n.totalTokensSignalled == [1e-16]
             @test n.currentEpoch == [1]
-            @test n.totalSupply == [1e-16]
             @test n.id == ["1"]
-            @test n.networkGRTIssuance == [1e-16]
+            @test n.networkGRTIssuancePerBlock == [1e-16]
             @test n.epochLength == [1]
         end
 
@@ -153,9 +150,8 @@
                 Dict(
                     "totalTokensSignalled" => "100",
                     "currentEpoch" => 1,
-                    "totalSupply" => "100",
                     "id" => "1",
-                    "networkGRTIssuance" => "100",
+                    "networkGRTIssuancePerBlock" => "100",
                     "epochLength" => 1,
                 ),
             ])
@@ -172,9 +168,8 @@
                 ["Qma", "Qmb", "Qmc"]
             @test n.totalTokensSignalled == [1e-16]
             @test n.currentEpoch == [1]
-            @test n.totalSupply == [1e-16]
             @test n.id == ["1"]
-            @test n.networkGRTIssuance == [1e-16]
+            @test n.networkGRTIssuancePerBlock == [1e-16]
             @test n.epochLength == [1]
         end
     end

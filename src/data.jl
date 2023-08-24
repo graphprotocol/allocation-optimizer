@@ -84,7 +84,7 @@ For use with the TheGraphData.jl package.
 ```julia
 julia> using AllocationOpt
 julia> value, args, fields = AllocationOpt.nquery()
-("graphNetwork", Dict("id" => 1), ["id", "totalSupply", "networkGRTIssuance", "epochLength", "totalTokensSignalled", "currentEpoch"])
+("graphNetwork", Dict("id" => 1), ["id", "networkGRTIssuance", "epochLength", "totalTokensSignalled", "currentEpoch"])
 ```
 
 # Extended Help
@@ -95,8 +95,7 @@ function nquery()
     a = Dict("id" => 1)
     f = [
         "id",
-        "totalSupply",
-        "networkGRTIssuance",
+        "networkGRTIssuancePerBlock",
         "epochLength",
         "totalTokensSignalled",
         "currentEpoch",
@@ -336,8 +335,7 @@ julia> using TheGraphData
 julia> n = flextable([
     Dict(
         "id" => 1,
-        "totalSupply" => "1",
-        "networkGRTIssuance" => "1",
+        "networkGRTIssuancePerBlock" => "1",
         "epochLength" => 28,
         "totalTokensSignalled" => "2",
         "currentEpoch" => 1,
@@ -345,15 +343,14 @@ julia> n = flextable([
 ])
 julia> AllocationOpt.correcttypes!(Val(:network), n)
 FlexTable with 6 columns and 1 row:
-     totalTokensSignalled  currentEpoch  totalSupply  id  networkGRTIssuance  epochLength
-   ┌─────────────────────────────────────────────────────────────────────────────────────
- 1 │ 2.0e-18               1             1.0e-18      1   1.0e-18             28
+    totalTokensSignalled  currentEpoch  id  networkGRTIssuancePerBlock  epochLength
+┌────────────────────────────────────────────────────────────────────────────────
+1 │ 2.0e-18               1             1   1.0e-18                     28
 ```
 """
 function correcttypes!(::Val{:network}, n::FlexTable)
-    n.totalSupply = n.totalSupply .|> togrt
     n.totalTokensSignalled = n.totalTokensSignalled .|> togrt
-    n.networkGRTIssuance = n.networkGRTIssuance .|> togrt
+    n.networkGRTIssuancePerBlock = n.networkGRTIssuancePerBlock .|> togrt
     return n
 end
 
@@ -389,8 +386,7 @@ julia> a = flextable([
 julia> n = flextable([
     Dict(
         "id" => 1,
-        "totalSupply" => "1",
-        "networkGRTIssuance" => "1",
+        "networkGRTIssuancePerBlock" => "1",
         "epochLength" => 28,
         "totalTokensSignalled" => "2",
         "currentEpoch" => 1,
