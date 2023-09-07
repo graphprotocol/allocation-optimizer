@@ -42,7 +42,7 @@ frozenlist = []
 pinnedlist = []
 allocation_lifetime = 28
 gas = 100
-min_signal = 1000
+min_signal = 100
 verbose = true
 num_reported_options = 2
 execution_mode = "none"
@@ -81,7 +81,7 @@ opt_mode = "optimal"
     the optimiser finds to be open. If unspecified, `28`
 - `gas::Real`: The estimated gas cost in GRT to open/close allocations. If unspecified, `100`
 - `min_signal::Real`: The minimum amount of signal in GRT that must be on a subgraph
-    in order for you to consider allocating to it. If unspecified, `1000`
+    in order for you to consider allocating to it. If unspecified, `100`
 - `max_allocations::Integer`: The maximum number of new allocations you'd like the optimiser
     to consider opening. If unspecified, `10`
 - `num_reported_options::Integer`: The number of proposed allocation strategies to report.
@@ -121,7 +121,7 @@ frozenlist = []
 pinnedlist = []
 allocation_lifetime = 28
 gas = 100
-min_signal = 1000
+min_signal = 100
 verbose = true
 num_reported_options = 2
 execution_mode = "actionqueue"
@@ -143,7 +143,7 @@ frozenlist = []
 pinnedlist = []
 allocation_lifetime = 28
 gas = 100
-min_signal = 1000
+min_signal = 100
 verbose = true
 num_reported_options = 2
 execution_mode = "rules"
@@ -163,7 +163,7 @@ frozenlist = []
 pinnedlist = []
 allocation_lifetime = 28
 gas = 100
-min_signal = 1000
+min_signal = 100
 verbose = true
 num_reported_options = 2
 execution_mode = "none"
@@ -198,7 +198,7 @@ frozenlist = []
 pinnedlist = []
 allocation_lifetime = 28
 gas = 100
-min_signal = 1000
+min_signal = 100
 verbose = false
 num_reported_options = 2
 execution_mode = "none"
@@ -227,7 +227,7 @@ frozenlist = []
 pinnedlist = []
 allocation_lifetime = 28
 gas = 100
-min_signal = 1000
+min_signal = 100
 verbose = false
 num_reported_options = 2
 execution_mode = "none"

@@ -18,7 +18,7 @@
         @test config["pinnedlist"] == String[]
         @test config["allocation_lifetime"] == 28
         @test config["gas"] == 100
-        @test config["min_signal"] == 1000
+        @test config["min_signal"] == 100
         @test config["max_allocations"] == 10
         @test config["num_reported_options"] == 1
         @test config["execution_mode"] == "none"

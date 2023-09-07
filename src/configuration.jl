@@ -34,7 +34,7 @@ Set default values for the config dictionary if the value was not specified in t
     the optimiser finds to be open. By default, `28`
 - `gas::Real`: The estimated gas cost in GRT to open/close allocations. By default, `100`
 - `min_signal::Real`: The minimum amount of signal in GRT that must be on a subgraph
-    in order for you to consider allocating to it. By default, `1000`
+    in order for you to consider allocating to it. By default, `100`
 - `max_allocations::Integer`: The maximum number of new allocations you'd like the optimiser
     to consider opening. By default, `10`
 - `num_reported_options::Integer`: The number of proposed allocation strategies to report.
@@ -73,7 +73,7 @@ Dict{String, Any} with 16 entries:
   "allocation_lifetime"       => 28
   "blacklist"                 => String[]
   "verbose"                   => false
-  "min_signal"                => 1000
+  "min_signal"                => 100
   "network_subgraph_endpoint" => "https://api.thegraph.com/subgraphs/name/graphprotocol/graph-network-mainnet"
   "whitelist"                 => String[]
   ⋮                           => ⋮
@@ -94,7 +94,7 @@ function configuredefaults!(config::AbstractDict)
     setdefault!(config, "pinnedlist", String[])
     setdefault!(config, "allocation_lifetime", 28)
     setdefault!(config, "gas", 100)
-    setdefault!(config, "min_signal", 1000)
+    setdefault!(config, "min_signal", 100)
     setdefault!(config, "max_allocations", 10)
     setdefault!(config, "num_reported_options", 1)
     setdefault!(config, "indexer_url", nothing)
@@ -143,7 +143,7 @@ Dict{String, Any} with 13 entries:
   "allocation_lifetime"  => 28
   "blacklist"            => Union{}[]
   "verbose"              => true
-  "min_signal"           => 1000
+  "min_signal"           => 100
   "whitelist"            => Union{}[]
   "max_allocations"      => 5
   "frozenlist"           => Union{}[]
