@@ -168,7 +168,18 @@ function read(::Nothing, config::AbstractDict{String,Any})
     client!(url)
     config["verbose"] && @info "Querying data from $url"
     i = flextable(@mock(query(iquery(config["id"])...)))
-    a = flextable(flatten.(@mock(paginated_query(aquery(config["id"])...))))
+    d = flatten.(@mock(paginated_query(aquery(config["id"])...)))
+    a = if isempty(d)
+        FlexTable(
+        Dict(
+            key => String[] for
+            key in ["subgraphDeployment.ipfsHash", "allocatedTokens", "id"]
+        ),
+    )
+    else
+        flextable(d)
+    end
+
     s = flextable(@mock(paginated_query(squery()...)))
     n = flextable(@mock(query(nquery()...)))
 
@@ -432,6 +443,10 @@ function subtractindexer!(a::FlexTable, s::FlexTable)
     a = sort(a; by=getproperty(Symbol("subgraphDeployment.ipfsHash")))
 
     na = length(a)
+    # Return early if there's no allocations
+    if isempty(a)
+        return a, s
+    end
 
     # Preallocate vector of staked tokens on subgraphs
     ts = stake(Val(:subgraph), s)
