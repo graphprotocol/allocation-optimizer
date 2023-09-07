@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.4.2](https://github.com/graphprotocol/allocation-optimizer/compare/v2.4.1...v2.4.2) (2023-09-07)
+
+
+### Bug Fixes
+
+* allow no current allocations ([4438cf5](https://github.com/graphprotocol/allocation-optimizer/commit/4438cf56851d9a4e154a60013e12b89b128bd644))
+* N/A options for some k less than max_allocations ([8e4f8a0](https://github.com/graphprotocol/allocation-optimizer/commit/8e4f8a0b87a67ac115879b04d5f63d0912c4ed79))
+
 ## [2.4.1](https://github.com/graphprotocol/allocation-optimizer/compare/v2.4.0...v2.4.1) (2023-09-05)
 
 
