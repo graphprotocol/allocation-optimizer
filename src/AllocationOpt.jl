@@ -88,7 +88,9 @@ function main(config::Dict)
     # Ensure that the indexer stake is not exceeded
     σmax = σ + σpinned
     for x in sum(xs; dims=1)
-        x ≤ σmax || error("Tried to allocate more stake than is available by $(x - σmax)")
+        isnan(x) ||
+            x ≤ σmax ||
+            error("Tried to allocate more stake than is available by $(x - σmax)")
     end
 
     # Write the result values
