@@ -1,5 +1,13 @@
 # Changelog
 
+# [2.5.0](https://github.com/graphprotocol/allocation-optimizer/compare/v2.4.2...v2.5.0) (2023-09-27)
+
+
+### Features
+
+* support protocol_network config to actionqueue ([bba8173](https://github.com/graphprotocol/allocation-optimizer/commit/bba81730ba9d5eaaa8c6e7eda9fba8ba4e0dbd4d))
+* support syncing_network filter in subgraph selection ([09a3b38](https://github.com/graphprotocol/allocation-optimizer/commit/09a3b3861c77c6b0448f70a9473a856e7036b698))
+
 ## [2.4.2](https://github.com/graphprotocol/allocation-optimizer/compare/v2.4.1...v2.4.2) (2023-09-07)
 
 
