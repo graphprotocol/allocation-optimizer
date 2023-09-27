@@ -56,6 +56,9 @@ Set default values for the config dictionary if the value was not specified in t
     at least as good as `"fast"`, but not guaranteed to be better. In general, we recommend
     exploring config options using `"fast"` mode first, and then using `"optimal"`
     mode to find the optimal allocation. By default, `"optimal"`
+- `protocol_network::String`: Defines the protocol network that allocation transactions 
+    should be sent to. The current protocol network options are "mainnet", "goerli", 
+    "arbitrum", and "arbitrum-goerli". By default, `"mainnet"`
 
 ```julia
 julia> using AllocationOpt
@@ -76,7 +79,7 @@ Dict{String, Any} with 16 entries:
   "min_signal"                => 100
   "network_subgraph_endpoint" => "https://api.thegraph.com/subgraphs/name/graphprotocol/graph-network-mainnet"
   "whitelist"                 => String[]
-  ⋮                           => ⋮
+  "protocol_network"          => "mainnet"
 ```
 """
 function configuredefaults!(config::AbstractDict)
@@ -101,6 +104,7 @@ function configuredefaults!(config::AbstractDict)
     setdefault!(config, "execution_mode", "none")
     setdefault!(config, "verbose", false)
     setdefault!(config, "opt_mode", "optimal")
+    setdefault!(config, "protocol_network", "mainnet")
     return config
 end
 
@@ -147,6 +151,7 @@ Dict{String, Any} with 13 entries:
   "whitelist"            => Union{}[]
   "max_allocations"      => 5
   "frozenlist"           => Union{}[]
+  "protocol_network"     => "mainnet"
 ```
 """
 readconfig(p::AbstractString) = p |> TOML.parsefile

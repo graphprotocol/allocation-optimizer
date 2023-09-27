@@ -23,6 +23,7 @@ verbose = true
 num_reported_options = 2
 execution_mode = "none"
 opt_mode = "fast"
+protocol_network = "mainnet"
 ```
 
 
@@ -79,6 +80,9 @@ opt_mode = "fast"
     at least as good as `"fast"`, but not guaranteed to be better. In general, we recommend
     exploring config options using `"fast"` mode first, and then using `"optimal"`
     mode to find the optimal allocation. By default, `"optimal"`
+- `protocol_network::String`: Defines the protocol network that allocation transactions 
+    should be sent to. The current protocol network options are "mainnet", "goerli", 
+    "arbitrum", and "arbitrum-goerli". By default, `"mainnet"`
 
 ### Example Configurations
 
@@ -102,6 +106,7 @@ verbose = true
 num_reported_options = 2
 execution_mode = "actionqueue"
 indexer_url = "https://localhost:8000"
+protocol_network = "arbitrum"
 ```
 
 #### Indexer Rules

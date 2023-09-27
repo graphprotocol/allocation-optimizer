@@ -398,7 +398,7 @@ julia> config = Dict(
 julia> TheGraphData.client!(config["indexer_url"])
 julia> AllocationOpt.unallocate_action(Val(:actionqueue), a, t, config)
 1-element Vector{Dict{String, Any}}:
- Dict("priority" => 0, "status" => AllocationOpt.queued, "allocationID" => "0xa", "source" => "AllocationOpt", "reason" => "AllocationOpt", "type" => AllocationOpt.unallocate, "deploymentID" => "Qma")
+ Dict("priority" => 0, "status" => AllocationOpt.queued, "allocationID" => "0xa", "source" => "AllocationOpt", "reason" => "AllocationOpt", "type" => AllocationOpt.unallocate, "deploymentID" => "Qma", "protocolNetwork" => "mainnet")
 """
 function unallocate_action(
     ::Val{:actionqueue}, a::FlexTable, t::FlexTable, config::AbstractDict
@@ -415,6 +415,7 @@ function unallocate_action(
             "source" => "AllocationOpt",
             "reason" => "AllocationOpt",
             "priority" => 0,
+            "protocolNetwork" => config["protocol_network"],
         ),
         ft,
     )
@@ -444,7 +445,7 @@ julia> config = Dict("indexer_url" => "http://localhost:18000")
 julia> TheGraphData.client!(config["indexer_url"])
 julia> AllocationOpt.reallocate_action(Val(:actionqueue), a, t, config)
 1-element Vector{Dict{String, Any}}:
- Dict("amount" => "1", "priority" => 0, "status" => AllocationOpt.queued, "allocationID" => "0xa", "source" => "AllocationOpt", "reason" => "Expected profit: 0", "type" => AllocationOpt.reallocate, "deploymentID" => "Qma")
+ Dict("amount" => "1", "priority" => 0, "status" => AllocationOpt.queued, "allocationID" => "0xa", "source" => "AllocationOpt", "reason" => "Expected profit: 0", "type" => AllocationOpt.reallocate, "deploymentID" => "Qma", "protocolNetwork" => "mainnet")
 ```
 """
 function reallocate_action(
@@ -464,6 +465,7 @@ function reallocate_action(
             "source" => "AllocationOpt",
             "reason" => "Expected profit: $(format(r.profit))",
             "priority" => 0,
+            "protocolNetwork" => config["protocol_network"],
         ),
         ti,
     )
@@ -493,9 +495,9 @@ julia> config = Dict(
     "indexer_url" => "http://localhost:18000"
 )
 julia> TheGraphData.client!(config["indexer_url"])
-julia> AllocationOpt.allocate_action(Val(:actionqueue), a, t, Dict())
+julia> AllocationOpt.allocate_action(Val(:actionqueue), a, t, config)
 1-element Vector{Dict{String, Any}}:
- Dict("amount" => "2", "priority" => 0, "status" => AllocationOpt.queued, "source" => "AllocationOpt", "reason" => "Expected profit: 0", "type" => AllocationOpt.allocate, "deploymentID" => "Qmb")
+ Dict("amount" => "2", "priority" => 0, "status" => AllocationOpt.queued, "source" => "AllocationOpt", "reason" => "Expected profit: 0", "type" => AllocationOpt.allocate, "deploymentID" => "Qmb", "protocolNetwork" => "mainnet")
 ```
 """
 function allocate_action(
@@ -514,6 +516,7 @@ function allocate_action(
             "source" => "AllocationOpt",
             "reason" => "Expected profit: $(format(r.profit))",
             "priority" => 0,
+            "protocolNetwork" => config["protocol_network"],
         ),
         ts,
     )

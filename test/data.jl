@@ -67,9 +67,24 @@
 
         @testset "subgraph" begin
             s = flextable([
-                Dict("stakedTokens" => "1", "signalledTokens" => "0", "ipfsHash" => "Qma", "deniedAt" => 0),
-                Dict("stakedTokens" => "2", "signalledTokens" => "0", "ipfsHash" => "Qmb", "deniedAt" => 0),
-                Dict("stakedTokens" => "3", "signalledTokens" => "0", "ipfsHash" => "Qmc", "deniedAt" => 0)
+                Dict(
+                    "stakedTokens" => "1",
+                    "signalledTokens" => "0",
+                    "ipfsHash" => "Qma",
+                    "deniedAt" => 0,
+                ),
+                Dict(
+                    "stakedTokens" => "2",
+                    "signalledTokens" => "0",
+                    "ipfsHash" => "Qmb",
+                    "deniedAt" => 0,
+                ),
+                Dict(
+                    "stakedTokens" => "3",
+                    "signalledTokens" => "0",
+                    "ipfsHash" => "Qmc",
+                    "deniedAt" => 0,
+                ),
             ])
             AllocationOpt.correcttypes!(Val(:subgraph), s)
             @test s.stakedTokens == [1e-18, 2e-18, 3e-18]
@@ -125,9 +140,24 @@
                 Dict("stakedTokens" => "1", "delegatedTokens" => "0", "lockedTokens" => "0")
             ])
             s = flextable([
-                Dict("stakedTokens" => "1", "signalledTokens" => "0", "ipfsHash" => "Qma", "deniedAt" => 0),
-                Dict("stakedTokens" => "2", "signalledTokens" => "0", "ipfsHash" => "Qmb", "deniedAt" => 0),
-                Dict("stakedTokens" => "3", "signalledTokens" => "0", "ipfsHash" => "Qmc", "deniedAt" => 0)
+                Dict(
+                    "stakedTokens" => "1",
+                    "signalledTokens" => "0",
+                    "ipfsHash" => "Qma",
+                    "deniedAt" => 0,
+                ),
+                Dict(
+                    "stakedTokens" => "2",
+                    "signalledTokens" => "0",
+                    "ipfsHash" => "Qmb",
+                    "deniedAt" => 0,
+                ),
+                Dict(
+                    "stakedTokens" => "3",
+                    "signalledTokens" => "0",
+                    "ipfsHash" => "Qmc",
+                    "deniedAt" => 0,
+                ),
             ])
             a = flextable([
                 Dict(

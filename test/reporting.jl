@@ -22,10 +22,7 @@
         @test popts[1] == (; :profit => 6.0, :index => 2)
     end
     @testset "sortprofits!" begin
-        popts = [
-            (; :profit => 5.0, :index => 2),
-            (; :profit => 6.0, :index => 1)
-        ]
+        popts = [(; :profit => 5.0, :index => 2), (; :profit => 6.0, :index => 1)]
         @test AllocationOpt.sortprofits!(popts)[1][:profit] == 6.0
     end
     @testset "reportingtable" begin
@@ -37,15 +34,12 @@
         ps = [[3.0 5.0]; [3.0 0.0]]
         i = 2
         t = AllocationOpt.reportingtable(s, xs, ps, i)
-        @test t.ipfshash ==  ["Qma"]
+        @test t.ipfshash == ["Qma"]
         @test t.amount == [5.0]
         @test t.profit == [5.0]
     end
     @testset "strategydict" begin
-        popts = [
-            (; :profit => 6.0, :index => 1),
-            (; :profit => 5.0, :index => 2)
-        ]
+        popts = [(; :profit => 6.0, :index => 1), (; :profit => 5.0, :index => 2)]
         xs = [[2.5 5.0]; [2.5 0.0]]
         profits = [[3.0 5.0]; [3.0 0.0]]
         nonzeros = [2, 1]
@@ -53,9 +47,10 @@
             Dict("stakedTokens" => "1", "signalledTokens" => "0", "ipfsHash" => "Qma"),
             Dict("stakedTokens" => "2", "signalledTokens" => "0", "ipfsHash" => "Qmb"),
         ])
-        out = AllocationOpt.strategydict.(
-            popts, Ref(xs), Ref(nonzeros), Ref(fs), Ref(profits)
-        )
+        out =
+            AllocationOpt.strategydict.(
+                popts, Ref(xs), Ref(nonzeros), Ref(fs), Ref(profits)
+            )
         expected = [
             Dict(
                 "num_allocations" => 2,
@@ -71,17 +66,18 @@
                         "allocationAmount" => "2.5",
                         "profit" => 3.0,
                     )
-                ]
+                ],
             )
-            Dict("num_allocations" => 1,
+            Dict(
+                "num_allocations" => 1,
                 "profit" => 5.0,
                 "allocations" => [
                     Dict(
                         "deploymentID" => "Qma",
                         "allocationAmount" => "5",
-                        "profit" => 5.0
-                    )
-                ]
+                        "profit" => 5.0,
+                    ),
+                ],
             )
         ]
         @test out == expected
@@ -98,15 +94,11 @@
     end
 
     @testset "unallocate" begin
-        a = flextable([
-            Dict("subgraphDeployment.ipfsHash" => "Qma", "id" => "0xa")
-        ])
-        t = flextable([
-            Dict("amount" => "2", "profit" => "0", "ipfshash" => "Qmb"),
-        ])
+        a = flextable([Dict("subgraphDeployment.ipfsHash" => "Qma", "id" => "0xa")])
+        t = flextable([Dict("amount" => "2", "profit" => "0", "ipfshash" => "Qmb")])
 
-        config = Dict("frozenlist" => String[])
-        cfg = Dict("frozenlist" => ["Qma"])
+        config = Dict("frozenlist" => String[], "protocol_network" => "mainnet")
+        cfg = Dict("frozenlist" => ["Qma"], "protocol_network" => "mainnet")
 
         @testset "none" begin
             @inferred AllocationOpt.unallocate_action(Val(:none), a, t, config)
@@ -137,7 +129,8 @@
                         "source" => "AllocationOpt",
                         "reason" => "AllocationOpt",
                         "priority" => 0,
-                    )
+                        "protocolNetwork" => "mainnet",
+                    ),
                 ]
             end
 
@@ -149,14 +142,12 @@
     end
 
     @testset "reallocate" begin
-        a = flextable([
-            Dict("subgraphDeployment.ipfsHash" => "Qma", "id" => "0xa")
-        ])
+        a = flextable([Dict("subgraphDeployment.ipfsHash" => "Qma", "id" => "0xa")])
         t = flextable([
             Dict("amount" => "1", "profit" => "0", "ipfshash" => "Qma"),
             Dict("amount" => "2", "profit" => "0", "ipfshash" => "Qmb"),
         ])
-        config = Dict()
+        config = Dict("protocol_network" => "mainnet")
 
         @testset "none" begin
             @inferred AllocationOpt.reallocate_action(Val(:none), a, t, config)
@@ -165,7 +156,9 @@
         @testset "rules" begin
             @inferred AllocationOpt.reallocate_action(Val(:rules), a, t, config)
             out = AllocationOpt.reallocate_action(Val(:rules), a, t, config)
-            @test out == ["\e[0mgraph indexer rules stop Qma\n\e[1m\e[38;2;255;0;0;249mCheck allocation status being closed before submitting: \e[0mgraph indexer rules set Qma decisionBasis always allocationAmount 1"]
+            @test out == [
+                "\e[0mgraph indexer rules stop Qma\n\e[1m\e[38;2;255;0;0;249mCheck allocation status being closed before submitting: \e[0mgraph indexer rules set Qma decisionBasis always allocationAmount 1",
+            ]
         end
 
         @testset "actionqueue" begin
@@ -185,21 +178,20 @@
                         "source" => "AllocationOpt",
                         "reason" => "Expected profit: 0",
                         "priority" => 0,
-                    )
+                        "protocolNetwork" => "mainnet",
+                    ),
                 ]
             end
         end
     end
 
     @testset "allocate" begin
-        a = flextable([
-            Dict("subgraphDeployment.ipfsHash" => "Qma", "id" => "0xa")
-        ])
+        a = flextable([Dict("subgraphDeployment.ipfsHash" => "Qma", "id" => "0xa")])
         t = flextable([
             Dict("amount" => "1", "profit" => "0", "ipfshash" => "Qma"),
             Dict("amount" => "2", "profit" => "0", "ipfshash" => "Qmb"),
         ])
-        config = Dict()
+        config = Dict("protocol_network" => "mainnet")
 
         @testset "none" begin
             @inferred AllocationOpt.allocate_action(Val(:none), a, t, config)
@@ -208,7 +200,9 @@
         @testset "rules" begin
             @inferred AllocationOpt.allocate_action(Val(:rules), a, t, config)
             out = AllocationOpt.allocate_action(Val(:rules), a, t, config)
-            @test out == ["\e[0mgraph indexer rules set Qmb decisionBasis always allocationAmount 2"]
+            @test out == [
+                "\e[0mgraph indexer rules set Qmb decisionBasis always allocationAmount 2"
+            ]
         end
 
         @testset "actionqueue" begin
@@ -227,7 +221,8 @@
                         "source" => "AllocationOpt",
                         "reason" => "Expected profit: 0",
                         "priority" => 0,
-                    )
+                        "protocolNetwork" => "mainnet",
+                    ),
                 ]
             end
         end

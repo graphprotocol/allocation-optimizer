@@ -171,11 +171,11 @@ function read(::Nothing, config::AbstractDict{String,Any})
     d = flatten.(@mock(paginated_query(aquery(config["id"])...)))
     a = if isempty(d)
         FlexTable(
-        Dict(
-            key => String[] for
-            key in ["subgraphDeployment.ipfsHash", "allocatedTokens", "id"]
-        ),
-    )
+            Dict(
+                key => String[] for
+                key in ["subgraphDeployment.ipfsHash", "allocatedTokens", "id"]
+            ),
+        )
     else
         flextable(d)
     end
