@@ -24,6 +24,7 @@ num_reported_options = 2
 execution_mode = "none"
 opt_mode = "fast"
 protocol_network = "mainnet"
+syncing_networks = ["mainnet"]
 ```
 
 
@@ -83,6 +84,9 @@ protocol_network = "mainnet"
 - `protocol_network::String`: Defines the protocol network that allocation transactions 
     should be sent to. The current protocol network options are "mainnet", "goerli", 
     "arbitrum", and "arbitrum-goerli". By default, `"mainnet"`
+- `syncing_networks::Vector{String}`: The list of syncing networks to support when selecting 
+    the set of possible subgraphs. This list should match the networks available to your 
+    graph-node. By default, the list is a singleton of your protocol network
 
 ### Example Configurations
 
@@ -107,6 +111,7 @@ num_reported_options = 2
 execution_mode = "actionqueue"
 indexer_url = "https://localhost:8000"
 protocol_network = "arbitrum"
+syncing_network = ["mainnet"]
 ```
 
 #### Indexer Rules

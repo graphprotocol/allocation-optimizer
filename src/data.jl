@@ -2,7 +2,7 @@
 # SPDX-Licen se-Identifier: MIT
 
 """
-    squery()
+    squery(config::AbstractDict)
 
 Return the components of a GraphQL query for subgraphs.
 
@@ -10,16 +10,19 @@ For use with the TheGraphData.jl package.
 
 ```julia
 julia> using AllocationOpt
-julia> value, args, fields = AllocationOpt.squery()
+julia> config = Dict("syncing_networking" => ["mainnet"])
+julia> value, args, fields = AllocationOpt.squery(config)
 ("subgraphDeployments", Dict{String, Union{Dict{String, String}, String}}(), ["ipfsHash", "signalledTokens", "stakedTokens"])
 ```
 
 # Extended Help
 You can find TheGraphData.jl at https://github.com/semiotic-ai/TheGraphData.jl
 """
-function squery()
+function squery(config::AbstractDict)
     v = "subgraphDeployments"
-    a = Dict{String,Union{Dict{String,String},String}}()
+    a = Dict{String,Any}(
+        "where" => Dict{String,Any}("network_in" => config["syncing_networks"])
+    )
     f = ["ipfsHash", "signalledTokens", "stakedTokens", "deniedAt"]
     return v, a, f
 end
@@ -180,7 +183,7 @@ function read(::Nothing, config::AbstractDict{String,Any})
         flextable(d)
     end
 
-    s = flextable(@mock(paginated_query(squery()...)))
+    s = flextable(@mock(paginated_query(squery(config)...)))
     n = flextable(@mock(query(nquery()...)))
 
     # Convert string types to GRT

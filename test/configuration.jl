@@ -26,6 +26,7 @@
         @test !config["verbose"]
         @test config["opt_mode"] == "optimal"
         @test config["protocol_network"] == "mainnet"
+        @test config["syncing_networks"] == ["mainnet"]
 
         config = Dict{String,Any}("id" => "a", "gas" => 0)
         config = AllocationOpt.configuredefaults!(config)

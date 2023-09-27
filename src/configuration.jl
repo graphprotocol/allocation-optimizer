@@ -59,6 +59,9 @@ Set default values for the config dictionary if the value was not specified in t
 - `protocol_network::String`: Defines the protocol network that allocation transactions 
     should be sent to. The current protocol network options are "mainnet", "goerli", 
     "arbitrum", and "arbitrum-goerli". By default, `"mainnet"`
+- `syncing_networks::Vector{String}`: The list of syncing networks to support when selecting 
+    the set of possible subgraphs. This list should match the networks available to your 
+    graph-node. By default, the list is a singleton of your protocol network
 
 ```julia
 julia> using AllocationOpt
@@ -80,6 +83,7 @@ Dict{String, Any} with 16 entries:
   "network_subgraph_endpoint" => "https://api.thegraph.com/subgraphs/name/graphprotocol/graph-network-mainnet"
   "whitelist"                 => String[]
   "protocol_network"          => "mainnet"
+  "syncing_networks"          => String["mainnet"]
 ```
 """
 function configuredefaults!(config::AbstractDict)
@@ -105,6 +109,7 @@ function configuredefaults!(config::AbstractDict)
     setdefault!(config, "verbose", false)
     setdefault!(config, "opt_mode", "optimal")
     setdefault!(config, "protocol_network", "mainnet")
+    setdefault!(config, "syncing_networks", String[config["protocol_network"]])
     return config
 end
 
@@ -152,6 +157,7 @@ Dict{String, Any} with 13 entries:
   "max_allocations"      => 5
   "frozenlist"           => Union{}[]
   "protocol_network"     => "mainnet"
+  "syncing_networks"     => String["mainnet", "gnosis"]
 ```
 """
 readconfig(p::AbstractString) = p |> TOML.parsefile

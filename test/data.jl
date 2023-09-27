@@ -3,10 +3,13 @@
 
 @testset "data" begin
     @testset "squery" begin
-        v, a, f = AllocationOpt.squery()
+        config = Dict("syncing_networks" => ["mainnet"])
+        v, a, f = AllocationOpt.squery(config)
         @test v == "subgraphDeployments"
         @test f == ["ipfsHash", "signalledTokens", "stakedTokens", "deniedAt"]
-        @test a == Dict{String,Union{Dict{String,String},String}}()
+        @test a == Dict{String,Union{Dict{String,Vector{String}},String}}(
+            "where" => Dict("network_in" => ["mainnet"])
+        )
     end
 
     @testset "iquery" begin
@@ -224,6 +227,7 @@
                 "verbose" => false,
                 "network_subgraph_endpoint" => "https://api.thegraph.com/subgraphs/name/graphprotocol/graph-network-mainnet",
                 "readdir" => nothing,
+                "syncing_networks" => ["mainnet"],
             )
             apply(paginated_query_success_patch) do
                 apply(query_success_patch) do
