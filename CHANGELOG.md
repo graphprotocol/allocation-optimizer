@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.5.1](https://github.com/graphprotocol/allocation-optimizer/compare/v2.5.0...v2.5.1) (2024-01-25)
+
+
+### Bug Fixes
+
+* network subgraph FDS schema update ([2556c59](https://github.com/graphprotocol/allocation-optimizer/commit/2556c59342ebc0df353a14d5366336fb4227b9f3))
+
 # [2.5.0](https://github.com/graphprotocol/allocation-optimizer/compare/v2.4.2...v2.5.0) (2023-09-27)
 
 
