@@ -21,7 +21,9 @@ You can find TheGraphData.jl at https://github.com/semiotic-ai/TheGraphData.jl
 function squery(config::AbstractDict)
     v = "subgraphDeployments"
     a = Dict{String,Any}(
-        "where" => Dict{String,Any}("network_in" => config["syncing_networks"])
+        "where" => Dict{String,Any}(
+            "manifest_" => Dict{String,Any}("network_in" => config["syncing_networks"])
+        ),
     )
     f = ["ipfsHash", "signalledTokens", "stakedTokens", "deniedAt"]
     return v, a, f

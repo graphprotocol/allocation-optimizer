@@ -7,8 +7,8 @@
         v, a, f = AllocationOpt.squery(config)
         @test v == "subgraphDeployments"
         @test f == ["ipfsHash", "signalledTokens", "stakedTokens", "deniedAt"]
-        @test a == Dict{String,Union{Dict{String,Vector{String}},String}}(
-            "where" => Dict("network_in" => ["mainnet"])
+        @test a == Dict{String,Union{Dict{String,Dict{String,Vector{String}}},String}}(
+            "where" => Dict("manifest_" => Dict("network_in" => ["mainnet"]))
         )
     end
 
