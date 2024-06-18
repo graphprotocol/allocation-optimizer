@@ -6,7 +6,6 @@ DocMeta.setdocmeta!(AllocationOpt, :DocTestSetup, :(using AllocationOpt); recurs
 makedocs(;
     modules=[AllocationOpt],
     authors="The Graph Foundation",
-    repo="https://github.com/graphprotocol/allocation-optimizer/blob/{commit}{path}#{line}",
     sitename="The Allocation Optimizer",
     format=Documenter.HTML(;
         prettyurls=get(ENV, "CI", "false") == "true",

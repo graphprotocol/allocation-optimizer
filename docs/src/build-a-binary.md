@@ -22,9 +22,9 @@ curl -fsSL https://install.julialang.org | sh
 ```
    
 !!! note
-    As of writing this documentation, the latest version of Julia is v1.8.
+    As of writing this documentation, the latest version of Julia is v1.10.
     This the version the Allocation Optimizer currently uses, and the version `juliaup` will install by default.
-    If `juliaup` begins to use v1.9, then you may need to use `juliaup` to manually install v1.8 via `juliaup add 1.8`. Then, you can either set the default to be v1.8 using `juliaup default 1.8`, or you can replace every time you see `julia` with `julia +1.8` below.
+    If `juliaup` begins to use v1.11, then you may need to use `juliaup` to manually install v1.11 via `juliaup add 1.10`. Then, you can either set the default to be v1.10 using `juliaup default 1.10`, or you can replace every time you see `julia` with `julia +1.10` below.
 
 Clone this repository and `cd` into it.
 
