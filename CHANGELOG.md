@@ -1,5 +1,12 @@
 # Changelog
 
+# [2.7.0](https://github.com/graphprotocol/allocation-optimizer/compare/v2.6.0...v2.7.0) (2024-06-18)
+
+
+### Features
+
+* add fastnogas optimisation option ([7cde58f](https://github.com/graphprotocol/allocation-optimizer/commit/7cde58f581658421cb83dc4d53a2f53657ab0212))
+
 # [2.6.0](https://github.com/graphprotocol/allocation-optimizer/compare/v2.5.1...v2.6.0) (2024-06-18)
 
 
