@@ -1,5 +1,6 @@
 id = "0x6f8a032b4b1ee622ef2f0fc091bdbb98cfae81a3"
 writedir = "data"
+readdir = "data"
 max_allocations = 10
 whitelist = []
 blacklist = []

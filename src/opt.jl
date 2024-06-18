@@ -154,12 +154,13 @@ Find the optimal solution vector given allocations of other indexers `Ω`, signa
 
 Dispatches to [`optimize`](@ref) with the `opt_mode` key.
 
-If `opt_mode` is `fast`, then run projected gradient descent with GSSP and Halpern.
+If `opt_mode` is `fastgas`, then run projected gradient descent with GSSP and Halpern.
+If `opt_mode` is `fastnogas`, then run analytics solution over all eligible subgraphs.
 If `opt_mode` is `optimal`, then run Pairwise Greedy Optimisation.
 
 ```julia
 julia> using AllocationOpt
-julia> config = Dict("opt_mode" => "fast")
+julia> config = Dict("opt_mode" => "fastgas")
 julia> rixs = [1, 2]
 julia> Ω = [1.0, 1.0]
 julia> ψ = [10.0, 10.0]
@@ -177,7 +178,57 @@ function optimize(Ω, ψ, σ, K, Φ, Ψ, g, rixs, config::AbstractDict)
 end
 
 """
-    optimize(::Val{:fast}, Ω, ψ, σ, K, Φ, Ψ, g, rixs)
+    optimize(::Val{:fastnogas}, Ω, ψ, σ, _, Φ, Ψ, g, rixs)
+
+Find the analytic optimal vector for given allocations of other indexers `Ω`, signals
+`ψ`, available stake `σ`, new tokens issued `Φ`, total signal `Ψ`.
+`g` is the gas, but it is not used since analytic optimisation assumes 0 gas fees.
+`rixs` are the indices of subgraphs that are eligible to receive indexing rewards.
+
+```julia
+julia> using AllocationOpt
+julia> rixs = [1, 2]
+julia> Ω = [1.0, 1.0]
+julia> ψ = [10.0, 10.0]
+julia> σ = 5.0
+julia> Φ = 1.0
+julia> Ψ = 20.0
+julia> g = 0.01
+julia> xs, nonzeros, profits = AllocationOpt.optimize(Val(:fastnogas), Ω, ψ, σ, K, Φ, Ψ, g, rixs)
+([5.0 2.5; 0.0 2.5], Int32[1, 2], [0.4066666666666667 0.34714285714285714; 0.0 0.34714285714285714])
+```
+"""
+function optimize(::Val{:fastnogas}, Ω, ψ, σ, _, Φ, Ψ, g, rixs)
+    if g != 0
+        @warn "fastnogas mode ignores the gas cost you set in your config"
+    end
+
+    # Helper function to compute profit
+    f = x -> profit.(indexingreward.(x, Ω, ψ, Φ, Ψ), zero(typeof(g)))
+
+    # Only use the eligible subgraphs
+    _Ω = @view Ω[rixs]
+    _ψ = @view ψ[rixs]
+
+    # Get the analytic solution
+    _xopt = optimizeanalytic(_Ω, _ψ, σ)
+
+    xopt = zeros(length(Ω), 1)
+    xopt[rixs, :] .= _xopt
+
+    # Preallocate solution vectors for in-place operations
+    profits = Matrix{Float64}(undef, length(xopt), 1)
+    nonzeros = Vector{Int32}(undef, 1)
+
+    # Compute non-zeros and profits
+    nonzeros[1] = xopt[:] |> nonzero |> length
+    profits[:, 1] .= f(xopt)
+
+    return xopt, nonzeros, profits
+end
+
+"""
+    optimize(::Val{:fastgas}, Ω, ψ, σ, K, Φ, Ψ, g, rixs)
 
 Find the optimal vectors for k ∈ [1,`K`] given allocations of other indexers `Ω`, signals
 `ψ`, available stake `σ`, new tokens issued `Φ`, total signal `Ψ`, and gas in grt `g`.
@@ -193,11 +244,11 @@ julia> K = 2
 julia> Φ = 1.0
 julia> Ψ = 20.0
 julia> g = 0.01
-julia> xs, nonzeros, profits = AllocationOpt.optimize(Val(:fast), Ω, ψ, σ, K, Φ, Ψ, g, rixs)
+julia> xs, nonzeros, profits = AllocationOpt.optimize(Val(:fastgas), Ω, ψ, σ, K, Φ, Ψ, g, rixs)
 ([5.0 2.5; 0.0 2.5], Int32[1, 2], [0.4066666666666667 0.34714285714285714; 0.0 0.34714285714285714])
 ```
 """
-function optimize(val::Val{:fast}, Ω, ψ, σ, K, Φ, Ψ, g, rixs)
+function optimize(val::Val{:fastgas}, Ω, ψ, σ, K, Φ, Ψ, g, rixs)
     # Helper function to compute profit
     f = x -> profit.(indexingreward.(x, Ω, ψ, Φ, Ψ), g)
 
@@ -227,7 +278,7 @@ function optimize(val::Val{:fast}, Ω, ψ, σ, K, Φ, Ψ, g, rixs)
 end
 
 """
-    optimizek(::Val{:fast}, x₀, Ω, ψ, σ, k, Φ, Ψ)
+    optimizek(::Val{:fastgas}, x₀, Ω, ψ, σ, k, Φ, Ψ)
 
 Find the optimal `k` sparse vector given initial value `x₀`, allocations of other indexers
 `Ω`, signals `ψ`, available stake `σ`, new tokens issued `Φ`, and total signal `Ψ`.
@@ -241,13 +292,13 @@ julia> σ = 5.0
 julia> k = 1
 julia> Φ = 1.0
 julia> Ψ = 20.0
-julia> AllocationOpt.optimizek(Val(:fast), x₀, Ω, ψ, σ, k, Φ, Ψ)
+julia> AllocationOpt.optimizek(Val(:fastgas), x₀, Ω, ψ, σ, k, Φ, Ψ)
 2-element Vector{Float64}:
  5.0
  0.0
 ```
 """
-function optimizek(::Val{:fast}, x₀, Ω, ψ, σ, k, Φ, Ψ)
+function optimizek(::Val{:fastgas}, x₀, Ω, ψ, σ, k, Φ, Ψ)
     projection = x -> gssp(x, k, σ)
     alg = ProjectedGradientDescent(;
         x=x₀,

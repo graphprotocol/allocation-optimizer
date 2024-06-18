@@ -71,7 +71,7 @@
     end
 
     @testset "optimizek" begin
-        @testset "fast" begin
+        @testset "fastgas" begin
             x₀ = [2.5, 2.5]
             Ω = [1.0, 1.0]
             ψ = [10.0, 10.0]
@@ -79,7 +79,7 @@
             k = 1
             Φ = 1.0
             Ψ = 20.0
-            @test AllocationOpt.optimizek(Val(:fast), x₀, Ω, ψ, σ, k, Φ, Ψ) == [5.0, 0.0]
+            @test AllocationOpt.optimizek(Val(:fastgas), x₀, Ω, ψ, σ, k, Φ, Ψ) == [5.0, 0.0]
 
             x₀ = [2.5, 2.5]
             Ω = [1.0, 1.0]
@@ -88,7 +88,7 @@
             k = 2
             Φ = 1.0
             Ψ = 20.0
-            @test AllocationOpt.optimizek(Val(:fast), x₀, Ω, ψ, σ, k, Φ, Ψ) == [2.5, 2.5]
+            @test AllocationOpt.optimizek(Val(:fastgas), x₀, Ω, ψ, σ, k, Φ, Ψ) == [2.5, 2.5]
         end
 
         @testset "optimal" begin
@@ -117,7 +117,39 @@
     end
 
     @testset "optimize" begin
-        @testset "fast" begin
+        @testset "fastnogas" begin
+            rixs = [1, 2]
+            Ω = [1.0, 1.0]
+            ψ = [10.0, 10.0]
+            σ = 5.0
+            K = 2
+            Φ = 1.0
+            Ψ = 20.0
+            g = 0.0
+            xs, nonzeros, profits = AllocationOpt.optimize(
+                Val(:fastnogas), Ω, ψ, σ, K, Φ, Ψ, g, rixs
+            )
+            @test xs == [2.5; 2.5;;]
+            @test nonzeros == [2]
+            @test isapprox(profits, [0.35; 0.35]; atol=0.1)
+
+            rixs = [2]
+            Ω = [1.0, 1.0]
+            ψ = [10.0, 10.0]
+            σ = 5.0
+            K = 1
+            Φ = 1.0
+            Ψ = 20.0
+            g = 0.0
+            xs, nonzeros, profits = AllocationOpt.optimize(
+                Val(:fastnogas), Ω, ψ, σ, K, Φ, Ψ, g, rixs
+            )
+            @test xs == [0.0; 5.0;;]
+            @test nonzeros == [1]
+            @test isapprox(profits, [0.0, 0.41]; atol=0.1)
+        end
+
+        @testset "fastgas" begin
             rixs = [1, 2]
             Ω = [1.0, 1.0]
             ψ = [10.0, 10.0]
@@ -127,7 +159,7 @@
             Ψ = 20.0
             g = 0.01
             xs, nonzeros, profits = AllocationOpt.optimize(
-                Val(:fast), Ω, ψ, σ, K, Φ, Ψ, g, rixs
+                Val(:fastgas), Ω, ψ, σ, K, Φ, Ψ, g, rixs
             )
             @test xs == [[5.0 2.5]; [0.0 2.5]]
             @test nonzeros == [1, 2]
@@ -142,7 +174,7 @@
             Ψ = 20.0
             g = 0.01
             xs, nonzeros, profits = AllocationOpt.optimize(
-                Val(:fast), Ω, ψ, σ, K, Φ, Ψ, g, rixs
+                Val(:fastgas), Ω, ψ, σ, K, Φ, Ψ, g, rixs
             )
             @test xs == [0.0; 5.0;;]
             @test nonzeros == [1]
@@ -213,7 +245,23 @@
         end
 
         @testset "dispatch" begin
-            config = Dict("opt_mode" => "fast")
+            config = Dict("opt_mode" => "fastnogas")
+            rixs = [1, 2]
+            Ω = [1.0, 1.0]
+            ψ = [10.0, 10.0]
+            σ = 5.0
+            K = 2
+            Φ = 1.0
+            Ψ = 20.0
+            g = 0.01
+            xs, nonzeros, profits = AllocationOpt.optimize(
+                Ω, ψ, σ, K, Φ, Ψ, g, rixs, config
+            )
+            @test xs == [2.5; 2.5;;]
+            @test nonzeros == [2]
+            @test isapprox(profits, [0.35; 0.35]; atol=0.1)
+
+            config = Dict("opt_mode" => "fastgas")
             rixs = [1, 2]
             Ω = [1.0, 1.0]
             ψ = [10.0, 10.0]

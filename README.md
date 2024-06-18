@@ -22,19 +22,22 @@ Run the provided binary pointing at the configuration TOML that you would like t
 **NOTE:** This binary only works for x86 Linux.
 If you are you a different operating system or architecture, please see the documentation for other options.
 
-**IMPORTANT:** By default, `opt_mode="fast"`.
-Fast-mode is not guaranteed to converge to a global optimum.
-If you get strange results, you should try `opt_mode="optimal"`.
-This mode is still experimental, and will take longer to run, but you may get more reasonable results with it.
+**IMPORTANT:** By default, `opt_mode="optimal"`.
+Because of our algorithm, `optimal` mode may take a long time to converge.
+If this is the case for you, you have two options.
+You can use `opt_mode=fastgas`, which runs a different algorithm.
+This algorithm is not guaranteed to find the optimal value, and may fail to ever converge (it could hang).
+However, it still considers gas unlike the third option `opt_mode=fastnogas`.
+This is your fastest option, but it won't take into account gas costs or your preferences for max allocations.
+This mode is appropriate when you have negligible gas fees and are okay with allocating to a large number of subgraphs.
 
 ## Configuration
 
 An example configuration TOML file might look as below.
 
 ``` toml
-id = "0xd75c4dbcb215a6cf9097cfbcc70aab2596b96a9c"
+id = "0x6f8a032b4b1ee622ef2f0fc091bdbb98cfae81a3"
 writedir = "data"
-readdir = "data"
 max_allocations = 10
 whitelist = []
 blacklist = []
@@ -47,15 +50,17 @@ verbose = true
 num_reported_options = 2
 execution_mode = "none"
 opt_mode = "optimal"
+network_subgraph_endpoint = "https://api.thegraph.com/subgraphs/name/graphprotocol/graph-network-arbitrum"
+protocol_network = "arbitrum"
+syncing_networks = ["mainnet", "gnosis", "arbitrum-one", "arbitrum"]
 ```
-
 
 ### Detailed Field Descriptions
 
 - `id::String`: The ID of the indexer for whom we're optimising. No default value.
-- `network_subgraph_endpoint::String`: The network subgraph endpoint to query. The optimizer 
-    support any network (such as mainnet, goerli, arbitrum-one, arbitrum-goerli) as long as the 
-    provided API serves the query requests. If unspecified, 
+- `network_subgraph_endpoint::String`: The network subgraph endpoint to query. The optimizer
+    support any network (such as mainnet, goerli, arbitrum-one, arbitrum-goerli) as long as the
+    provided API serves the query requests. If unspecified,
     `"https://api.thegraph.com/subgraphs/name/graphprotocol/graph-network-mainnet"`
 - `writedir::String`: The directory to which to write the results of optimisation.
     If don't specify `readdir`, `writedir` also specifies the path to which to save
@@ -96,13 +101,20 @@ opt_mode = "optimal"
 - `indexer_url::Union{String, Nothing}`: The URL of the indexer management server you want
     to execute the allocation strategies on. If you specify `"actionqueue"`, you must also
     specify `indexer_url`. If unspecified, `nothing`
-- `opt_mode::String`: We support two optimisation modes. One is `"fast"`. This mode is
-    fast, but may not find the optimal strategy. This mode is also used to the top
-    `num_reported_options` allocation strategies. The other mode is `"optimal"`. This
-    mode is slower, but it satisfy stronger optimality conditions. It will find strategies
-    at least as good as `"fast"`, but not guaranteed to be better. In general, we recommend
-    exploring config options using `"fast"` mode first, and then using `"optimal"`
-    mode to find the optimal allocation. By default, `"optimal"`
+- `opt_mode::String`: We support three optimisation modes. One is `"fastnogas"`. This mode does
+    not consider gas costs and optimises allocation amount over all subgraph deployments.
+    Second one is `"fastgas"`. This mode is fast, but may not find the optimal strategy and
+    could potentially fail to converge. This mode is also used to the top
+    `num_reported_options` allocation strategies. The final mode is `"optimal"`.
+    This mode is slower, but it satisfies stronger optimality conditions.
+    It will find strategies at least as good as `"fast"`, but not guaranteed to be better.
+    By default, `"optimal"`
+- `protocol_network::String`: Defines the protocol network that allocation transactions
+    should be sent to. The current protocol network options are "mainnet", "goerli",
+    "arbitrum", and "arbitrum-goerli". By default, `"mainnet"`
+- `syncing_networks::Vector{String}`: The list of syncing networks to support when selecting
+    the set of possible subgraphs. This list should match the networks available to your
+    graph-node. By default, the list is a singleton of your protocol network
 
 ### Example Configurations
 
@@ -149,7 +161,7 @@ num_reported_options = 2
 execution_mode = "rules"
 ```
 
-#### Query data Instead of Reading Local CSVs
+#### Query Data Instead of Reading Local CSVs
 
 Just don't specify the `readdir`.
 
@@ -167,21 +179,10 @@ min_signal = 100
 verbose = true
 num_reported_options = 2
 execution_mode = "none"
+network_subgraph_endpoint = "https://api.thegraph.com/subgraphs/name/graphprotocol/graph-network-arbitrum"
+protocol_network = "arbitrum"
+syncing_networks = ["mainnet", "gnosis", "arbitrum-one", "arbitrum"]
 ```
-
-#### Query data for specified networks
-
-Specify the network subgraph endpoint for networks other than The Graph network on Ethereum mainnet. Here we use the endpoint to goerli network subgraph.
-
-``` toml
-id = "0xE9a1CABd57700B17945Fd81feeFba82340D9568F"
-network_subgraph_endpoint = "https://api.thegraph.com/subgraphs/name/graphprotocol/graph-network-goerli"
-```
-
-Other available endpoints examples are
-- Mainnet (default): https://api.thegraph.com/subgraphs/name/graphprotocol/graph-network-mainnet
-- Arbitrum-One: https://api.thegraph.com/subgraphs/name/graphprotocol/graph-network-arbitrum
-- Arbitrum-Goerli: https://api.thegraph.com/subgraphs/name/graphprotocol/graph-network-arbitrum-goerli
 
 #### Quiet Mode
 

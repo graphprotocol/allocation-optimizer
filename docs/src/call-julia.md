@@ -1,7 +1,7 @@
 # Calling From Julia
 
 
-If you're okay with having the Julia runtime on your computer, and you don't mind the precompilation time, this is the preferred way to run the Allocation Optimizer.
+If you're okay with having the Julia runtime on your computer, and you don't mind the precompilation time (around 3 seconds), this is the preferred way to run the Allocation Optimizer.
 In part, this is because access the to Julia runtime will enable you to add your own features if you'd like.
 You can even (hopefully) even submit some PRs with features to help other indexers!
 Compiling on your machine also allows Julia to specialise on idiosyncrasies of your hardware.
@@ -13,17 +13,17 @@ That said, here's how to install and use the Allocation Optimizer from Julia.
 Install Julia!
 We prefer to use `juliaup`.
 You can install this via:
-   
+
 ```bash
 curl -fsSL https://install.julialang.org | sh
 ```
-   
+
 !!! note
-    As of writing this documentation, the latest version of Julia is v1.8.
+    As of writing this documentation, the latest version of Julia is v1.10.
     This the version the Allocation Optimizer currently uses, and the version `juliaup` will install by default.
-    If `juliaup` begins to use v1.9, then you may need to use `juliaup` to manually install v1.8 via `juliaup add 1.8`. Then, you can either set the default to be v1.8 using `juliaup default 1.8`, or you can replace every time you see `julia` with `julia +1.8` below.
-       
-       
+    If `juliaup` begins to use v1.11, then you may need to use `juliaup` to manually install v1.10 via `juliaup add 1.10`. Then, you can either set the default to be v1.10 using `juliaup default 1.10`, or you can replace every time you see `julia` with `julia +1.10` below.
+
+
 Clone this repository and `cd` into it.
 
 ```bash
@@ -44,7 +44,7 @@ julia> ]
 pkg> instantiate
 ```
 
-Set up your configuration file. 
+Set up your configuration file.
 See [Configuration](@ref) for details.
 
 From the Julia REPL (the TUI that comes up when you use `julia --project`), run the `main` function with the path to your config.

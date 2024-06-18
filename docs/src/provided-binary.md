@@ -4,7 +4,7 @@ Using the provided binary has the advantage of being that only method that doesn
 If you want to get running as quickly as possible, this is the path for you.
 
 !!! note
-    We only release binaries for x86 Linux.
+    We only release binaries for x86 Linux. We will not support any other architectures or operating systems.
 
 All you have to do is download the binary for the platform and release you want to use, unzip it, set up your configuration ([Configuration](@ref)) file, and run the binary from your terminal.
 

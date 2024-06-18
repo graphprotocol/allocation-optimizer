@@ -12,17 +12,19 @@ The goal of this project is to enable indexers to quickly determine how to alloc
     Query fee information is also not public.
     It is local to each gateway.
     As a result, we will never be able to optimise with respect to query fees unless this changes.
-    
+
 !!! note
-    By default, `opt_mode="fast"`.
-    Fast-mode is not guaranteed to converge to a global optimum.
-    If you get strange results, you should try `opt_mode="optimal"`.
-    This mode is still experimental, and will take longer to run, but you may get more reasonable results with it.
-    
+    By default, `opt_mode="optimal"`.
+    Because of our algorithm, `optimal` mode may take a long time to converge.
+    If this is the case for you, you have two options.
+    You can use `opt_mode=fastgas`, which runs a different algorithm.
+    This algorithm is not guaranteed to find the optimal value, and may fail to ever converge (it could hang).
+    However, it still considers gas unlike the third option `opt_mode=fastnogas`.
+    This is your fastest option, but it won't take into account gas costs or your preferences for max allocations.
+    This mode is appropriate when you have negligible gas fees and are okay with allocating to a large number of subgraphs.
+
 We will focus on usage of the code in this documentation.
 We refer you to these [blog posts](https://semiotic.ai/articles/indexer-allocation-optimisation/) for more technical details.
-We also plan to post a yellowpaper at some point diving into our approach in even more detail.
-Stay tuned for that!
 If interested in how the code works, take a peek [Under The Hood](@ref)!
 
 There are a few different ways you can run the allocation optimizer.

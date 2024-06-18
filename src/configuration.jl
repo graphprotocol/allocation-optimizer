@@ -49,18 +49,20 @@ Set default values for the config dictionary if the value was not specified in t
 - `indexer_url::Union{String, Nothing}`: The URL of the indexer management server you want
     to execute the allocation strategies on. If you specify `"actionqueue"`, you must also
     specify `indexer_url`. By default, `nothing`
-- `opt_mode::String`: We support two optimisation modes. One is `"fast"`. This mode is
-    fast, but may not find the optimal strategy. This mode is also used to the top
-    `num_reported_options` allocation strategies. The other mode is `"optimal"`. This
-    mode is slower, but it satisfy stronger optimality conditions. It will find strategies
-    at least as good as `"fast"`, but not guaranteed to be better. In general, we recommend
-    exploring config options using `"fast"` mode first, and then using `"optimal"`
+- `opt_mode::String`: We support three optimisation modes. One is `"fastnogas"`. This mode does
+    not consider gas costs and optimises allocation amount over all subgraph deployments.
+    Second one is `"fastgas"`. This mode considers gas, may not find the optimal strategy and
+    could potentially fail to converge. This mode is also used to the top
+    `num_reported_options` allocation strategies. The final mode is `"optimal"`.
+    This mode is slower, but it satisfies stronger optimality conditions.
+    It will find strategies at least as good as `"fastgas"`, but not guaranteed to be better.
+    By default, `"optimal"`
     mode to find the optimal allocation. By default, `"optimal"`
-- `protocol_network::String`: Defines the protocol network that allocation transactions 
-    should be sent to. The current protocol network options are "mainnet", "goerli", 
+- `protocol_network::String`: Defines the protocol network that allocation transactions
+    should be sent to. The current protocol network options are "mainnet", "goerli",
     "arbitrum", and "arbitrum-goerli". By default, `"mainnet"`
-- `syncing_networks::Vector{String}`: The list of syncing networks to support when selecting 
-    the set of possible subgraphs. This list should match the networks available to your 
+- `syncing_networks::Vector{String}`: The list of syncing networks to support when selecting
+    the set of possible subgraphs. This list should match the networks available to your
     graph-node. By default, the list is a singleton of your protocol network
 
 ```julia
