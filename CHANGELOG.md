@@ -1,5 +1,12 @@
 # Changelog
 
+# [2.6.0](https://github.com/graphprotocol/allocation-optimizer/compare/v2.5.1...v2.6.0) (2024-06-18)
+
+
+### Features
+
+* upgrade to use julia 1.10 ([d71cb11](https://github.com/graphprotocol/allocation-optimizer/commit/d71cb11133c328720ac0bb7a2cecfd8175263f86))
+
 ## [2.5.1](https://github.com/graphprotocol/allocation-optimizer/compare/v2.5.0...v2.5.1) (2024-01-25)
 
 
