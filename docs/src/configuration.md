@@ -22,7 +22,7 @@ verbose = true
 num_reported_options = 2
 execution_mode = "none"
 opt_mode = "optimal"
-network_subgraph_endpoint = "https://api.thegraph.com/subgraphs/name/graphprotocol/graph-network-arbitrum"
+network_subgraph_endpoint = "https://gateway.thegraph.com/api/{api-key}/subgraphs/id/DZz4kDTdmzWLWsV373w2bSmoar3umKKH9y82SUKr5qmp"
 protocol_network = "arbitrum"
 syncing_networks = ["mainnet", "gnosis", "arbitrum-one", "arbitrum"]
 ```
@@ -151,7 +151,7 @@ min_signal = 100
 verbose = true
 num_reported_options = 2
 execution_mode = "none"
-network_subgraph_endpoint = "https://api.thegraph.com/subgraphs/name/graphprotocol/graph-network-arbitrum"
+network_subgraph_endpoint = "https://gateway.thegraph.com/api/{api-key}/subgraphs/id/DZz4kDTdmzWLWsV373w2bSmoar3umKKH9y82SUKr5qmp"
 protocol_network = "arbitrum"
 syncing_networks = ["mainnet", "gnosis", "arbitrum-one", "arbitrum"]
 ```
@@ -183,7 +183,7 @@ verbose = true
 num_reported_options = 2
 execution_mode = "none"
 opt_mode = "optimal"
-network_subgraph_endpoint = "https://api.thegraph.com/subgraphs/name/graphprotocol/graph-network-arbitrum"
+network_subgraph_endpoint = "https://gateway.thegraph.com/api/{api-key}/subgraphs/id/DZz4kDTdmzWLWsV373w2bSmoar3umKKH9y82SUKr5qmp"
 protocol_network = "arbitrum"
 syncing_networks = ["mainnet", "gnosis", "arbitrum-one", "arbitrum"]
 ```
@@ -319,17 +319,17 @@ execution_mode = "none"
 
 #### Query data for specified networks
 
-Specify the network subgraph endpoint for networks other than The Graph network on Ethereum mainnet. Here we use the endpoint to goerli network subgraph.
+Specify the network subgraph endpoint for networks other than The Graph network on Ethereum mainnet. Here we use the endpoint to Ethereum Sepolia network subgraph.
 
 ``` toml
 id = "0xE9a1CABd57700B17945Fd81feeFba82340D9568F"
-network_subgraph_endpoint = "https://api.thegraph.com/subgraphs/name/graphprotocol/graph-network-goerli"
+network_subgraph_endpoint = "https://gateway.thegraph.com/api/{api-key}/subgraphs/id/8pVKDwHniAz87CHEQsiz2wgFXGZXrbMDkrxgauVVfMJC"
 ```
 
 Other available endpoints examples are
-- Mainnet (default): https://api.thegraph.com/subgraphs/name/graphprotocol/graph-network-mainnet
-- Arbitrum-One: https://api.thegraph.com/subgraphs/name/graphprotocol/graph-network-arbitrum
-- Arbitrum-Goerli: https://api.thegraph.com/subgraphs/name/graphprotocol/graph-network-arbitrum-goerli
+- Mainnet (default): https://gateway.thegraph.com/api/{api-key}/subgraphs/id/9Co7EQe5PgW3ugCUJrJgRv4u9zdEuDJf8NvMWftNsBH8
+- Arbitrum-One: https://gateway.thegraph.com/api/{api-key}/subgraphs/id/DZz4kDTdmzWLWsV373w2bSmoar3umKKH9y82SUKr5qmp
+- Arbitrum-Sepolia: https://gateway.thegraph.com/api/{api-key}/subgraphs/id/3xQHhMudr1oh69ut36G2mbzpYmYxwqCeU6wwqyCDCnqV
 
 #### Quiet Mode
 
