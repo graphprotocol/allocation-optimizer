@@ -50,7 +50,7 @@ verbose = true
 num_reported_options = 2
 execution_mode = "none"
 opt_mode = "optimal"
-network_subgraph_endpoint = "https://api.thegraph.com/subgraphs/name/graphprotocol/graph-network-arbitrum"
+network_subgraph_endpoint = "https://gateway.thegraph.com/api/{api-key}/subgraphs/id/DZz4kDTdmzWLWsV373w2bSmoar3umKKH9y82SUKr5qmp"
 protocol_network = "arbitrum"
 syncing_networks = ["mainnet", "gnosis", "arbitrum-one", "arbitrum"]
 ```
@@ -179,7 +179,7 @@ min_signal = 100
 verbose = true
 num_reported_options = 2
 execution_mode = "none"
-network_subgraph_endpoint = "https://api.thegraph.com/subgraphs/name/graphprotocol/graph-network-arbitrum"
+network_subgraph_endpoint = "https://gateway.thegraph.com/api/{api-key}/subgraphs/id/DZz4kDTdmzWLWsV373w2bSmoar3umKKH9y82SUKr5qmp"
 protocol_network = "arbitrum"
 syncing_networks = ["mainnet", "gnosis", "arbitrum-one", "arbitrum"]
 ```
